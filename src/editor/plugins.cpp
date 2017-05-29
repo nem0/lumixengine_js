@@ -565,7 +565,7 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 		, opened(false)
 		, autocomplete(_app.getWorldEditor()->getAllocator())
 	{
-		Action* action = LUMIX_NEW(app.getWorldEditor()->getAllocator(), Action)("Script Console", "script_console");
+		Action* action = LUMIX_NEW(app.getWorldEditor()->getAllocator(), Action)("JS Script Console", "script_console");
 		action->func.bind<ConsolePlugin, &ConsolePlugin::toggleOpened>(this);
 		action->is_selected.bind<ConsolePlugin, &ConsolePlugin::isOpened>(this);
 		app.addWindowAction(action);
@@ -579,11 +579,11 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 	bool isOpened() const { return opened; }
 	void toggleOpened() { opened = !opened; }
 
-
+	// TODO
+	/*
 	void autocompleteSubstep(JS_State* L, const char* str, ImGuiTextEditCallbackData *data)
 	{
-		// TODO
-		/*char item[128];
+		char item[128];
 		const char* next = str;
 		char* c = item;
 		while (*next != '.' && *next != '\0')
@@ -615,8 +615,8 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 			}
 			JS_pop(L, 1);
 		}
-		*/
 	}
+	*/
 
 
 	static bool isWordChar(char c)
@@ -678,19 +678,20 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 
 	void onWindowGUI() override
 	{
-		if (ImGui::BeginDock("Script console", &opened))
-		{
-			/*if (ImGui::Button("Execute"))
-			{
-				JS_State* L = app.getWorldEditor()->getEngine().getState();
-				bool errors = JSL_loadbuffer(L, buf, stringLength(buf), nullptr) != JS_OK;
-				errors = errors || JS_pcall(L, 0, 0, 0) != JS_OK;
+		auto* scene = (JSScriptScene*)app.getWorldEditor()->getUniverse()->getScene(JS_SCRIPT_TYPE);
+		duk_context* context = scene->getGlobalContext();
 
-				if (errors)
+		if (ImGui::BeginDock("JS Script console", &opened))
+		{
+			if (ImGui::Button("Execute"))
+			{
+				duk_push_string(context, buf);
+				if (duk_peval(context) != 0)
 				{
-					g_log_error.log("JS Script") << JS_tostring(L, -1);
-					JS_pop(L, 1);
+					const char* error = duk_safe_to_string(context, -1);
+					g_log_error.log("JS Script") << error;
 				}
+				duk_pop(context);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Execute file"))
@@ -704,18 +705,17 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 					{
 						size_t size = file.size();
 						Array<char> data(allocator);
-						data.resize((int)size);
+						data.resize((int)size + 1);
 						file.read(&data[0], size);
 						file.close();
-						JS_State* L = app.getWorldEditor()->getEngine().getState();
-						bool errors = JSL_loadbuffer(L, &data[0], data.size(), tmp) != JS_OK;
-						errors = errors || JS_pcall(L, 0, 0, 0) != JS_OK;
-
-						if (errors)
+						data[(int)size] = '\0';
+						duk_push_string(context, &data[0]);
+						if (duk_peval(context) != 0)
 						{
-							g_log_error.log("JS Script") << JS_tostring(L, -1);
-							JS_pop(L, 1);
+							const char* error = duk_safe_to_string(context, -1);
+							g_log_error.log("JS Script") << error;
 						}
+						duk_pop(context);
 					}
 					else
 					{
@@ -758,7 +758,7 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 					}
 				}
 				ImGui::EndPopup();
-			}*/
+			}
 		}
 		ImGui::EndDock();
 	}

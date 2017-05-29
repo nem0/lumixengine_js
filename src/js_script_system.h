@@ -5,9 +5,7 @@
 #include "engine/path.h"
 #include "engine/resource.h"
 #include "engine/string.h"
-
-
-struct JS_State;
+#include "duktape/duktape.h"
 
 
 namespace Lumix
@@ -17,6 +15,7 @@ namespace Lumix
 class JSScriptScene : public IScene
 {
 public:
+
 	struct Property
 	{
 		enum Type : int
@@ -49,8 +48,8 @@ public:
 		virtual void addEnvironment(int env) = 0;
 	};
 
-
-	typedef int (*JS_CFunction) (JS_State *L);
+	// TODO
+	//typedef int (*JS_CFunction) (JS_State *L);
 
 public:
 	virtual Path getScriptPath(ComponentHandle cmp, int scr_index) = 0;	
@@ -60,7 +59,7 @@ public:
 	virtual IFunctionCall* beginFunctionCall(ComponentHandle cmp, int scr_index, const char* function) = 0;
 	virtual void endFunctionCall() = 0;
 	virtual int getScriptCount(ComponentHandle cmp) = 0;
-	virtual JS_State* getState(ComponentHandle cmp, int scr_index) = 0;
+	virtual duk_context* getContext(ComponentHandle cmp, int scr_index) = 0;
 	virtual void insertScript(ComponentHandle cmp, int idx) = 0;
 	virtual int addScript(ComponentHandle cmp) = 0;
 	virtual void removeScript(ComponentHandle cmp, int scr_index) = 0;
@@ -75,6 +74,7 @@ public:
 	virtual ResourceType getPropertyResourceType(ComponentHandle cmp, int scr_index, int prop_index) = 0;
 	virtual void getScriptData(ComponentHandle cmp, OutputBlob& blob) = 0;
 	virtual void setScriptData(ComponentHandle cmp, InputBlob& blob) = 0;
+	virtual duk_context* getGlobalContext() = 0;
 };
 
 

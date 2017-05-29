@@ -1,6 +1,7 @@
 project "lumixengine_js"
 	libType()
 	files { 
+		"src/**.c",
 		"src/**.cpp",
 		"src/**.h",
 		"genie.lua"

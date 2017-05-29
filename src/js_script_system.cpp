@@ -25,8 +25,6 @@
 
 namespace Lumix
 {
-
-
 	static const ComponentType JS_SCRIPT_TYPE = PropertyRegister::getComponentType("js_script");
 	static const ResourceType JS_SCRIPT_RESOURCE_TYPE("js_script");
 
@@ -49,10 +47,12 @@ namespace Lumix
 		void destroyScene(IScene* scene) override;
 		const char* getName() const override { return "js_script"; }
 		JSScriptManager& getScriptManager() { return m_script_manager; }
+		void registerGlobalAPI();
 
 		Engine& m_engine;
 		Debug::Allocator m_allocator;
 		JSScriptManager m_script_manager;
+		duk_context* m_global_context;
 	};
 
 
@@ -61,14 +61,14 @@ namespace Lumix
 		struct TimerData
 		{
 			float time;
-			JS_State* state;
+			duk_context* context;
 			int func;
 		};
 
 		struct UpdateData
 		{
 			JSScript* script;
-			JS_State* state;
+			duk_context* context;
 			int environment;
 		};
 
@@ -78,14 +78,13 @@ namespace Lumix
 			explicit ScriptInstance(IAllocator& allocator)
 				: m_properties(allocator)
 				, m_script(nullptr)
-				, m_state(nullptr)
 				, m_environment(-1)
 				, m_thread_ref(-1)
 			{
 			}
 
 			JSScript* m_script;
-			JS_State* m_state;
+			duk_context* m_context;
 			int m_environment;
 			int m_thread_ref;
 			Array<Property> m_properties;
@@ -293,7 +292,7 @@ namespace Lumix
 
 
 			int parameter_count;
-			JS_State* state;
+			duk_context* context;
 			bool is_in_progress;
 			ScriptComponent* cmp;
 			int scr_index;
@@ -424,6 +423,12 @@ namespace Lumix
 		}
 
 
+		duk_context* getGlobalContext() override
+		{
+			return m_system.m_global_context;
+		}
+
+
 		void setScriptData(ComponentHandle cmp, InputBlob& blob) override
 		{
 			// TODO
@@ -481,9 +486,9 @@ namespace Lumix
 		}
 
 
-		JS_State* getState(ComponentHandle cmp, int scr_index) override
+		duk_context* getContext(ComponentHandle cmp, int scr_index) override
 		{
-			return m_scripts[{cmp.index}]->m_scripts[scr_index].m_state;
+			return m_scripts[{cmp.index}]->m_scripts[scr_index].m_context;
 		}
 
 
@@ -1070,7 +1075,7 @@ namespace Lumix
 
 			if (inst.m_script)
 			{
-				if (inst.m_state) destroyInstance(cmp, inst);
+				if (inst.m_context) destroyInstance(cmp, inst);
 				inst.m_properties.clear();
 				auto& cb = inst.m_script->getObserverCb();
 				cb.unbind<ScriptComponent, &ScriptComponent::onScriptLoaded>(&cmp);
@@ -1171,7 +1176,7 @@ namespace Lumix
 			auto* script = m_scripts[entity];
 			for (auto& scr : script->m_scripts)
 			{
-				if (scr.m_state) destroyInstance(*script, scr);
+				if (scr.m_context) destroyInstance(*script, scr);
 				if (scr.m_script)
 				{
 					auto& cb = scr.m_script->getObserverCb();
@@ -1424,7 +1429,7 @@ namespace Lumix
 
 					char tmp[MAX_PATH_LENGTH];
 					serializer.readString(tmp, MAX_PATH_LENGTH);
-					scr.m_state = nullptr;
+					scr.m_context = nullptr;
 					int prop_count;
 					serializer.read(prop_count);
 					scr.m_properties.reserve(prop_count);
@@ -1699,11 +1704,29 @@ namespace Lumix
 		PropertyRegister::add("js_script",
 			LUMIX_NEW(allocator, BlobPropertyDescriptor<JSScriptScene>)(
 				"data", &JSScriptScene::getScriptData, &JSScriptScene::setScriptData));
+
+		m_global_context = duk_create_heap_default();
+		registerGlobalAPI();
+	}
+
+
+	static duk_ret_t logError(duk_context* ctx)
+	{
+		g_log_error.log("JS Script") << duk_to_string(ctx, -1);
+		return 0;
+	}
+
+
+	void JSScriptSystemImpl::registerGlobalAPI()
+	{
+		duk_push_c_function(m_global_context, logError, 1);
+		duk_put_global_string(m_global_context, "logError");
 	}
 
 
 	JSScriptSystemImpl::~JSScriptSystemImpl()
 	{
+		duk_destroy_heap(m_global_context);
 		m_script_manager.destroy();
 	}
 
