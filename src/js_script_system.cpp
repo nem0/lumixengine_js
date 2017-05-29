@@ -21,6 +21,7 @@
 #include "engine/string.h"
 #include "engine/universe/universe.h"
 #include "js_script_manager.h"
+#include "js_wrapper.h"
 
 
 namespace Lumix
@@ -1710,17 +1711,24 @@ namespace Lumix
 	}
 
 
-	static duk_ret_t logError(duk_context* ctx)
-	{
-		g_log_error.log("JS Script") << duk_to_string(ctx, -1);
-		return 0;
-	}
+	static void logError(const char* msg) { g_log_error.log("JS Script") << msg; }
+	static void logWarning(const char* msg) { g_log_warning.log("JS Script") << msg; }
+	static void logInfo(const char* msg) { g_log_info.log("JS Script") << msg; }
 
 
 	void JSScriptSystemImpl::registerGlobalAPI()
 	{
-		duk_push_c_function(m_global_context, logError, 1);
-		duk_put_global_string(m_global_context, "logError");
+		#define REGISTER_JS_FUNCTION(F) \
+			do { \
+				duk_push_c_function(m_global_context, &JSWrapper::wrap<decltype(logError), &F>, DUK_VARARGS); \
+				duk_put_global_string(m_global_context, #F); \
+			} while(false)
+
+		REGISTER_JS_FUNCTION(logError);
+		REGISTER_JS_FUNCTION(logWarning);
+		REGISTER_JS_FUNCTION(logInfo);
+
+		#undef REGISTER_JS_FUNCTION
 	}
 
 
