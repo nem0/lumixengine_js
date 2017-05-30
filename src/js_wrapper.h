@@ -522,8 +522,11 @@ template <typename T, T t> int wrap(duk_context* ctx)
 template <typename C, typename T, T t> int wrapMethod(duk_context* ctx)
 {
 	using indices = typename details::build_indices<1, details::arity(t)>::result;
-	auto* inst = checkArg<C*>(ctx, 1);
-	return details::Caller<indices>::callMethod(inst, t, L);
+	duk_push_this(ctx);
+	duk_get_prop_string(ctx, -1, "c_ptr");
+	auto* inst = toType<C*>(ctx, -1);
+	duk_pop(ctx);
+	return details::Caller<indices>::callMethod(inst, t, ctx);
 }
 
 

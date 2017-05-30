@@ -1716,17 +1716,85 @@ namespace Lumix
 	static void logInfo(const char* msg) { g_log_info.log("JS Script") << msg; }
 
 
+	static int emptyJSConstructor(duk_context* ctx)
+	{
+		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
+		
+		duk_push_this(ctx);
+		duk_dup(ctx, 0);
+		duk_put_prop_string(ctx, -2, "c_ptr");
+		
+		return 0;
+	}
+
+
+	static void registerJSObject(duk_context* ctx, const char* name)
+	{
+		duk_push_c_function(ctx, emptyJSConstructor, 1);
+		
+		duk_push_object(ctx); // prototype
+		duk_put_prop_string(ctx, -2, "prototype");
+
+		duk_put_global_string(ctx, name);
+	}
+
+
+	static void registerMethod(duk_context* ctx, const char* obj, const char* method_name, duk_c_function method)
+	{
+		if (duk_get_global_string(ctx, obj) == 0)
+		{
+			ASSERT(false);
+			return;
+		}
+
+		if (duk_get_prop_string(ctx, -1, "prototype") != 1)
+		{
+			ASSERT(false);
+			return;
+		}
+		duk_push_string(ctx, method_name);
+		duk_push_c_function(ctx, method, DUK_VARARGS);
+		duk_put_prop(ctx, -3);
+		duk_pop_2(ctx);
+	}
+
+
+	static void registerGlobal(duk_context* ctx, const char* type_name, const char* var_name, void* ptr)
+	{
+		if (duk_get_global_string(ctx, type_name) != 1)
+		{
+			ASSERT(false);
+			return;
+		}
+		duk_push_pointer(ctx, ptr);
+		duk_new(ctx, 1);
+		duk_put_global_string(ctx, var_name);
+	}
+
+
 	void JSScriptSystemImpl::registerGlobalAPI()
 	{
 		#define REGISTER_JS_FUNCTION(F) \
 			do { \
-				duk_push_c_function(m_global_context, &JSWrapper::wrap<decltype(logError), &F>, DUK_VARARGS); \
+				duk_push_c_function(m_global_context, &JSWrapper::wrap<decltype(F), &F>, DUK_VARARGS); \
 				duk_put_global_string(m_global_context, #F); \
+			} while(false)
+		#define REGISTER_JS_METHOD(O, F) \
+			do { \
+				auto f = &JSWrapper::wrapMethod<O, decltype(&O::F), &O::F>; \
+				registerMethod(m_global_context, #O, #F, f); \
 			} while(false)
 
 		REGISTER_JS_FUNCTION(logError);
 		REGISTER_JS_FUNCTION(logWarning);
 		REGISTER_JS_FUNCTION(logInfo);
+
+		registerJSObject(m_global_context, "Engine");
+		registerGlobal(m_global_context, "Engine", "g_engine", &m_engine);
+
+		REGISTER_JS_METHOD(Engine, pause);
+		REGISTER_JS_METHOD(Engine, nextFrame);
+//		REGISTER_JS_METHOD(Engine, startGame);
 
 		#undef REGISTER_JS_FUNCTION
 	}
