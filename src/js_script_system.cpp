@@ -38,6 +38,62 @@ namespace Lumix
 	};
 
 
+	static int emptyJSConstructor(duk_context* ctx)
+	{
+		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
+
+		duk_push_this(ctx);
+		duk_dup(ctx, 0);
+		duk_put_prop_string(ctx, -2, "c_ptr");
+
+		return 0;
+	}
+
+
+	static void registerJSObject(duk_context* ctx, const char* name)
+	{
+		duk_push_c_function(ctx, emptyJSConstructor, 1);
+
+		duk_push_object(ctx); // prototype
+		duk_put_prop_string(ctx, -2, "prototype");
+
+		duk_put_global_string(ctx, name);
+	}
+
+
+	static void registerMethod(duk_context* ctx, const char* obj, const char* method_name, duk_c_function method)
+	{
+		if (duk_get_global_string(ctx, obj) == 0)
+		{
+			ASSERT(false);
+			return;
+		}
+
+		if (duk_get_prop_string(ctx, -1, "prototype") != 1)
+		{
+			ASSERT(false);
+			return;
+		}
+		duk_push_string(ctx, method_name);
+		duk_push_c_function(ctx, method, DUK_VARARGS);
+		duk_put_prop(ctx, -3);
+		duk_pop_2(ctx);
+	}
+
+
+	static void registerGlobal(duk_context* ctx, const char* type_name, const char* var_name, void* ptr)
+	{
+		if (duk_get_global_string(ctx, type_name) != 1)
+		{
+			ASSERT(false);
+			return;
+		}
+		duk_push_pointer(ctx, ptr);
+		duk_new(ctx, 1);
+		duk_put_global_string(ctx, var_name);
+	}
+
+
 	class JSScriptSystemImpl LUMIX_FINAL : public IPlugin
 	{
 	public:
@@ -313,8 +369,7 @@ namespace Lumix
 		{
 			m_function_call.is_in_progress = false;
 			
-			// TODO
-			//registerAPI();
+			registerAPI();
 			ctx.registerComponentType(JS_SCRIPT_TYPE, this, &JSScriptSceneImpl::serializeJSScript, &JSScriptSceneImpl::deserializeJSScript);
 		}
 
@@ -868,17 +923,18 @@ namespace Lumix
 		{
 			setScriptPath(cmp, scr_index, Path(path));
 		}
-
+		*/
 
 		void registerAPI()
 		{
 			if (m_is_api_registered) return;
-
 			m_is_api_registered = true;
 
-			JS_State* engine_state = m_system.m_engine.getState();
-			
-			registerProperties();
+			duk_context* ctx = m_system.m_global_context;
+			registerGlobal(ctx, "Universe", "g_universe", &m_universe);
+
+			//TODO
+/*			registerProperties();
 			registerPropertyAPI();
 			JSWrapper::createSystemFunction(
 				engine_state, "JSScript", "getEnvironment", &JSScriptSceneImpl::getEnvironment);
@@ -898,10 +954,10 @@ namespace Lumix
 
 			#undef REGISTER_FUNCTION
 
-			JSWrapper::createSystemFunction(engine_state, "JSScript", "setTimer", &JSScriptSceneImpl::setTimer);
-		}*/
+			JSWrapper::createSystemFunction(engine_state, "JSScript", "setTimer", &JSScriptSceneImpl::setTimer);*/
+		}
 
-
+		
 		int getEnvironment(ComponentHandle cmp, int scr_index) override
 		{
 			return m_scripts[{cmp.index}]->m_scripts[scr_index].m_environment;
@@ -1716,62 +1772,6 @@ namespace Lumix
 	static void logInfo(const char* msg) { g_log_info.log("JS Script") << msg; }
 
 
-	static int emptyJSConstructor(duk_context* ctx)
-	{
-		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
-		
-		duk_push_this(ctx);
-		duk_dup(ctx, 0);
-		duk_put_prop_string(ctx, -2, "c_ptr");
-		
-		return 0;
-	}
-
-
-	static void registerJSObject(duk_context* ctx, const char* name)
-	{
-		duk_push_c_function(ctx, emptyJSConstructor, 1);
-		
-		duk_push_object(ctx); // prototype
-		duk_put_prop_string(ctx, -2, "prototype");
-
-		duk_put_global_string(ctx, name);
-	}
-
-
-	static void registerMethod(duk_context* ctx, const char* obj, const char* method_name, duk_c_function method)
-	{
-		if (duk_get_global_string(ctx, obj) == 0)
-		{
-			ASSERT(false);
-			return;
-		}
-
-		if (duk_get_prop_string(ctx, -1, "prototype") != 1)
-		{
-			ASSERT(false);
-			return;
-		}
-		duk_push_string(ctx, method_name);
-		duk_push_c_function(ctx, method, DUK_VARARGS);
-		duk_put_prop(ctx, -3);
-		duk_pop_2(ctx);
-	}
-
-
-	static void registerGlobal(duk_context* ctx, const char* type_name, const char* var_name, void* ptr)
-	{
-		if (duk_get_global_string(ctx, type_name) != 1)
-		{
-			ASSERT(false);
-			return;
-		}
-		duk_push_pointer(ctx, ptr);
-		duk_new(ctx, 1);
-		duk_put_global_string(ctx, var_name);
-	}
-
-
 	void JSScriptSystemImpl::registerGlobalAPI()
 	{
 		#define REGISTER_JS_FUNCTION(F) \
@@ -1794,7 +1794,15 @@ namespace Lumix
 
 		REGISTER_JS_METHOD(Engine, pause);
 		REGISTER_JS_METHOD(Engine, nextFrame);
-//		REGISTER_JS_METHOD(Engine, startGame);
+		REGISTER_JS_METHOD(Engine, startGame);
+		REGISTER_JS_METHOD(Engine, stopGame);
+		REGISTER_JS_METHOD(Engine, getFPS);
+		REGISTER_JS_METHOD(Engine, getTime);
+		REGISTER_JS_METHOD(Engine, getLastTimeDelta);
+
+		registerJSObject(m_global_context, "Universe");
+		REGISTER_JS_METHOD(Universe, setScale);
+		REGISTER_JS_METHOD(Universe, destroyEntity);
 
 		#undef REGISTER_JS_FUNCTION
 	}

@@ -12,43 +12,67 @@ namespace JSWrapper
 {
 
 
+template <typename T> struct ToType;
+
+template <>
+struct ToType<bool>
+{
+	static bool value(duk_context* ctx, int index)
+	{
+		return duk_to_boolean(ctx, index) != 0;
+	}
+};
+
+template <>
+struct ToType<float>
+{
+	static float value(duk_context* ctx, int index)
+	{
+		return (float)duk_to_number(ctx, index);
+	}
+};
+
+template <>
+struct ToType<const char*>
+{
+	static const char* value(duk_context* ctx, int index)
+	{
+		return duk_to_string(ctx, index);
+	}
+};
+
+template <typename T>
+struct ToType<T*>
+{
+	static T* value(duk_context* ctx, int index)
+	{
+		return (T*)duk_to_pointer(ctx, index);
+	}
+};
+
+template <>
+struct ToType<Entity>
+{
+	static Entity value(duk_context* ctx, int index)
+	{
+		return {duk_to_int(ctx, index)};
+	}
+};
+
+template <typename T>
+struct ToType<T&>
+{
+	static T& value(duk_context* ctx, int index)
+	{
+		return *(T*)duk_to_pointer(ctx, index);
+	}
+};
+
+
 template <typename T> inline T toType(duk_context* ctx, int index)
 {
-	return (T)duk_to_pointer(ctx, index);
+	return ToType<T>::value(ctx, index);
 }
-template <> inline int toType(duk_context* ctx, int index)
-{
-	return duk_to_int(ctx, index);
-}
-template <> inline Entity toType(duk_context* ctx, int index)
-{
-	return {duk_to_int(ctx, index)};
-}
-template <> inline ComponentHandle toType(duk_context* ctx, int index)
-{
-	return {duk_to_int(ctx, index)};
-}
-template <> inline u32 toType(duk_context* ctx, int index)
-{
-	return duk_to_uint32(ctx, index);
-}
-template <> inline bool toType(duk_context* ctx, int index)
-{
-	return duk_to_boolean(ctx, index) != 0;
-}
-template <> inline float toType(duk_context* ctx, int index)
-{
-	return (float)duk_to_number(ctx, index);
-}
-template <> inline const char* toType(duk_context* ctx, int index)
-{
-	return duk_to_string(ctx, index);
-}
-template <> inline void* toType(duk_context* ctx, int index)
-{
-	return duk_to_pointer(ctx, index);
-}
-
 
 template <typename T> inline const char* typeToString()
 {
@@ -78,10 +102,9 @@ template <> inline const char* typeToString<bool>()
 {
 	return "boolean";
 }
-
 template <> inline const char* typeToString<float>()
 {
-	return "number|float";
+	return "float";
 }
 
 
@@ -128,6 +151,10 @@ template <typename T> inline void push(duk_context* ctx, T value)
 	duk_push_pointer(ctx, value);
 }
 template <> inline void push(duk_context* ctx, float value)
+{
+	duk_push_number(ctx, value);
+}
+template <> inline void push(duk_context* ctx, double value)
 {
 	duk_push_number(ctx, value);
 }
@@ -349,6 +376,11 @@ template <class T> struct remove_volatile<volatile T>
 	using type = T;
 };
 
+template <class T> struct remove_cv
+{
+	using type = typename remove_const<typename remove_volatile<T>::type>::type;
+};
+
 template <class T> struct remove_cv_reference
 {
 	using type =  typename remove_const<typename remove_volatile<typename remove_reference<T>::type>::type>::type;
@@ -374,9 +406,9 @@ struct build_indices<offset, 0, T...>
 
 
 template <typename T, int index>
-typename remove_cv_reference<T>::type convert(duk_context* ctx)
+typename remove_cv<T>::type convert(duk_context* ctx)
 {
-	return checkArg<typename remove_cv_reference<T>::type>(ctx, -index);
+	return checkArg<typename remove_cv<T>::type>(ctx, index - 1);
 }
 
 
@@ -521,7 +553,7 @@ template <typename T, T t> int wrap(duk_context* ctx)
 
 template <typename C, typename T, T t> int wrapMethod(duk_context* ctx)
 {
-	using indices = typename details::build_indices<1, details::arity(t)>::result;
+	using indices = typename details::build_indices<0, details::arity(t)>::result;
 	duk_push_this(ctx);
 	duk_get_prop_string(ctx, -1, "c_ptr");
 	auto* inst = toType<C*>(ctx, -1);
