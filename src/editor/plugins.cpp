@@ -579,9 +579,8 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 	bool isOpened() const { return opened; }
 	void toggleOpened() { opened = !opened; }
 
-	// TODO
-	/*
-	void autocompleteSubstep(JS_State* L, const char* str, ImGuiTextEditCallbackData *data)
+
+	void autocompleteSubstep(duk_context* ctx, const char* str, ImGuiTextEditCallbackData *data)
 	{
 		char item[128];
 		const char* next = str;
@@ -594,15 +593,18 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 		}
 		*c = '\0';
 
-		JS_pushnil(L);
-		while (JS_next(L, -2) != 0)
+		duk_enum(ctx, -1, DUK_ENUM_INCLUDE_SYMBOLS | DUK_ENUM_INCLUDE_NONENUMERABLE);
+		while (duk_next(ctx, -1, 0))
 		{
-			const char* name = JS_tostring(L, -2);
+			/* [ ... enum key ] */
+			const char* name = duk_to_string(ctx, -1);
 			if (startsWith(name, item))
 			{
 				if (*next == '.' && next[1] == '\0')
 				{
-					autocompleteSubstep(L, "", data);
+					duk_get_prop_string(ctx, -3, name);
+					autocompleteSubstep(ctx, "", data);
+					duk_pop(ctx);
 				}
 				else if (*next == '\0')
 				{
@@ -610,13 +612,15 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 				}
 				else
 				{
-					autocompleteSubstep(L, next + 1, data);
+					duk_get_prop_string(ctx, -3, name);
+					autocompleteSubstep(ctx, next + 1, data);
+					duk_pop(ctx);
 				}
 			}
-			JS_pop(L, 1);
+			duk_pop(ctx);
 		}
+		duk_pop(ctx);
 	}
-	*/
 
 
 	static bool isWordChar(char c)
@@ -627,11 +631,12 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 
 	static int autocompleteCallback(ImGuiTextEditCallbackData *data)
 	{
-		// TODO
-		/*auto* that = (ConsolePlugin*)data->UserData;
+		auto* that = (ConsolePlugin*)data->UserData;
+		WorldEditor& editor = *that->app.getWorldEditor();
+		auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
 		if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion)
 		{
-			JS_State* L = that->app.getWorldEditor()->getEngine().getState();
+			duk_context* ctx = scene->getGlobalContext();
 
 			int start_word = data->CursorPos;
 			char c = data->Buf[start_word - 1];
@@ -644,9 +649,10 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 			copyNString(tmp, lengthOf(tmp), data->Buf + start_word, data->CursorPos - start_word);
 
 			that->autocomplete.clear();
-			JS_pushglobaltable(L);
-			that->autocompleteSubstep(L, tmp, data);
-			JS_pop(L, 1);
+			
+			duk_push_global_object(ctx);
+			that->autocompleteSubstep(ctx, tmp, data);
+			duk_pop(ctx);
 			if (!that->autocomplete.empty())
 			{
 				that->open_autocomplete = true;
@@ -671,7 +677,7 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 			}
 			data->InsertChars(data->CursorPos, that->insert_value + data->CursorPos - start_word);
 			that->insert_value = nullptr;
-		}*/
+		}
 		return 0;
 	}
 
