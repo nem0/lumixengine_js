@@ -12,7 +12,16 @@ namespace JSWrapper
 {
 
 
-template <typename T> struct ToType;
+template <typename T> struct ToType
+{
+	static const T& value(duk_context* ctx, int index)
+	{
+		void* ptr = duk_to_pointer(ctx, index);
+		if (!ptr)
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
+		return *(T*)ptr;
+	}
+};
 
 template <>
 struct ToType<bool>
@@ -50,6 +59,17 @@ struct ToType<T*>
 	}
 };
 
+template <typename T>
+struct ToType<T&>
+{
+	static T& value(duk_context* ctx, int index)
+	{
+		void* ptr = duk_to_pointer(ctx, index);
+		if (!ptr) duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
+		return *(T*)ptr;
+	}
+};
+
 template <>
 struct ToType<Entity>
 {
@@ -59,12 +79,39 @@ struct ToType<Entity>
 	}
 };
 
-template <typename T>
-struct ToType<T&>
+template <>
+struct ToType<Vec3>
 {
-	static T& value(duk_context* ctx, int index)
+	static Vec3 value(duk_context* ctx, int index)
 	{
-		return *(T*)duk_to_pointer(ctx, index);
+		Vec3 v;
+		duk_get_prop_index(ctx, index, 0);
+		v.x = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 1);
+		v.y = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 2);
+		v.z = ToType<float>::value(ctx, -1);
+		duk_pop_3(ctx);
+		return v;
+	}
+};
+
+template <>
+struct ToType<Quat>
+{
+	static Quat value(duk_context* ctx, int index)
+	{
+		Quat v;
+		duk_get_prop_index(ctx, index, 0);
+		v.x = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 1);
+		v.y = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 2);
+		v.z = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 3);
+		v.w = ToType<float>::value(ctx, -1);
+		duk_pop_n(ctx, 4);
+		return v;
 	}
 };
 
@@ -73,10 +120,9 @@ template <typename T> inline T toType(duk_context* ctx, int index)
 {
 	return ToType<T>::value(ctx, index);
 }
-
 template <typename T> inline const char* typeToString()
 {
-	return "userdata";
+	return "object";
 }
 template <> inline const char* typeToString<int>()
 {
@@ -105,6 +151,14 @@ template <> inline const char* typeToString<bool>()
 template <> inline const char* typeToString<float>()
 {
 	return "float";
+}
+template <> inline const char* typeToString<Vec3>()
+{
+	return "Vec3";
+}
+template <> inline const char* typeToString<Quat>()
+{
+	return "Quat";
 }
 
 
@@ -143,6 +197,14 @@ template <> inline bool isType<const char*>(duk_context* ctx, int index)
 template <> inline bool isType<void*>(duk_context* ctx, int index)
 {
 	return duk_is_pointer(ctx, index) != 0;
+}
+template <> inline bool isType<Vec3>(duk_context* ctx, int index)
+{
+	return duk_is_array(ctx, index) != 0;
+}
+template <> inline bool isType<Quat>(duk_context* ctx, int index)
+{
+	return duk_is_array(ctx, index) != 0;
 }
 
 
@@ -289,14 +351,13 @@ inline const char* jsTypeToString(duk_int_t type)
 
 inline void argError(duk_context* ctx, int index, const char* expected_type)
 {
-	// TODO 
-	/*char buf[128];
+	char buf[128];
 	copyString(buf, "expected ");
 	catString(buf, expected_type);
 	catString(buf, ", got ");
-	int type = lua_type(ctx, index);
-	catString(buf, LuaWrapper::luaTypeToString(type));
-	luaL_argerror(ctx, index, buf);*/
+	int type = duk_get_type(ctx, index);
+	catString(buf, jsTypeToString(type));
+	duk_error(ctx, DUK_ERR_TYPE_ERROR, buf);
 }
 
 
@@ -406,9 +467,9 @@ struct build_indices<offset, 0, T...>
 
 
 template <typename T, int index>
-typename remove_cv<T>::type convert(duk_context* ctx)
+typename remove_cv_reference<T>::type convert(duk_context* ctx)
 {
-	return checkArg<typename remove_cv<T>::type>(ctx, index - 1);
+	return checkArg<typename remove_cv_reference<T>::type>(ctx, index - 1);
 }
 
 

@@ -1801,8 +1801,9 @@ namespace Lumix
 		REGISTER_JS_METHOD(Engine, getLastTimeDelta);
 
 		registerJSObject(m_global_context, "Universe");
-		REGISTER_JS_METHOD(Universe, setScale);
+		REGISTER_JS_METHOD(Universe, createEntity);
 		REGISTER_JS_METHOD(Universe, destroyEntity);
+		REGISTER_JS_METHOD(Universe, setScale);
 
 		#undef REGISTER_JS_FUNCTION
 	}
