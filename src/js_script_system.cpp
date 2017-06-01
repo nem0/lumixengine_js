@@ -62,12 +62,13 @@ namespace Lumix
 		duk_dup(ctx, 1);
 		duk_put_prop_string(ctx, -2, "c_cmphandle");
 
-		duk_dup(ctx, 2);
-		duk_put_prop_string(ctx, -2, "c_cmptype");
+		duk_push_current_function(ctx);
+		duk_get_prop_string(ctx, -1, "c_cmptype");
+		duk_put_prop_string(ctx, -3, "c_cmptype");
+		duk_pop(ctx);
 
 		return 0;
 	}
-
 
 
 	static void registerJSObject(duk_context* ctx, const char* name, duk_c_function constructor)
@@ -76,6 +77,23 @@ namespace Lumix
 
 		duk_push_object(ctx); // prototype
 		duk_put_prop_string(ctx, -2, "prototype");
+
+		duk_put_global_string(ctx, name);
+	}
+
+
+	static void registerJSComponent(duk_context* ctx,
+		ComponentType cmp_type,
+		const char* name,
+		duk_c_function constructor)
+	{
+		duk_push_c_function(ctx, constructor, DUK_VARARGS);
+
+		duk_push_object(ctx); // prototype
+		duk_put_prop_string(ctx, -2, "prototype");
+
+		duk_push_int(ctx, cmp_type.index);
+		duk_put_prop_string(ctx, -2, "c_cmptype");
 
 		duk_put_global_string(ctx, name);
 	}
@@ -2006,9 +2024,8 @@ namespace Lumix
 
 	static void registerComponent(duk_context* ctx, const char* cmp_type_name, const char* js_name)
 	{
-		registerJSObject(ctx, js_name, &componentJSConstructor);
-	
 		auto cmp_type = PropertyRegister::getComponentType(cmp_type_name);
+		registerJSComponent(ctx, cmp_type, js_name, &componentJSConstructor);
 		auto& descs = PropertyRegister::getDescriptors(cmp_type);
 
 		char tmp[50];
@@ -2018,43 +2035,43 @@ namespace Lumix
 		{
 			switch (desc->getType())
 			{
-			case PropertyDescriptorBase::ENUM:
-			case PropertyDescriptorBase::ENTITY:
-			case PropertyDescriptorBase::COLOR:
-			case PropertyDescriptorBase::VEC3:
-			case PropertyDescriptorBase::DECIMAL:
-			case PropertyDescriptorBase::INTEGER:
-			case PropertyDescriptorBase::BOOL:
-			case PropertyDescriptorBase::RESOURCE:
-			case PropertyDescriptorBase::FILE:
-			case PropertyDescriptorBase::STRING:
-			case PropertyDescriptorBase::VEC2:
-			case PropertyDescriptorBase::INT2:
-				convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
-				copyString(setter, "set");
-				copyString(getter, "get");
-				catString(setter, tmp);
-				catString(getter, tmp);
+				case PropertyDescriptorBase::ENUM:
+				case PropertyDescriptorBase::ENTITY:
+				case PropertyDescriptorBase::COLOR:
+				case PropertyDescriptorBase::VEC3:
+				case PropertyDescriptorBase::DECIMAL:
+				case PropertyDescriptorBase::INTEGER:
+				case PropertyDescriptorBase::BOOL:
+				case PropertyDescriptorBase::RESOURCE:
+				case PropertyDescriptorBase::FILE:
+				case PropertyDescriptorBase::STRING:
+				case PropertyDescriptorBase::VEC2:
+				case PropertyDescriptorBase::INT2:
+					convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
+					copyString(setter, "set");
+					copyString(getter, "get");
+					catString(setter, tmp);
+					catString(getter, tmp);
 
-				duk_get_global_string(ctx, js_name);
-				if (duk_get_prop_string(ctx, -1, "prototype") != 1)
-				{
-					ASSERT(false);
-				}
+					duk_get_global_string(ctx, js_name);
+					if (duk_get_prop_string(ctx, -1, "prototype") != 1)
+					{
+						ASSERT(false);
+					}
 
-				duk_push_c_function(ctx, JS_getProperty, 0);
-				JSWrapper::push(ctx, desc);
-				duk_put_prop_string(ctx, -2, "c_desc");
-				duk_put_prop_string(ctx, -2, getter);
+					duk_push_c_function(ctx, JS_getProperty, 0);
+					JSWrapper::push(ctx, desc);
+					duk_put_prop_string(ctx, -2, "c_desc");
+					duk_put_prop_string(ctx, -2, getter);
 
-				duk_push_c_function(ctx, JS_setProperty, 1);
-				JSWrapper::push(ctx, desc);
-				duk_put_prop_string(ctx, -2, "c_desc");
-				duk_put_prop_string(ctx, -2, setter);
+					duk_push_c_function(ctx, JS_setProperty, 1);
+					JSWrapper::push(ctx, desc);
+					duk_put_prop_string(ctx, -2, "c_desc");
+					duk_put_prop_string(ctx, -2, setter);
 
-				duk_pop_2(ctx);
-				break;
-			default: break;
+					duk_pop_2(ctx);
+					break;
+				default: break;
 			}
 		}
 	}
