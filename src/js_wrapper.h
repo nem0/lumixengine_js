@@ -23,59 +23,79 @@ template <typename T> struct ToType
 	}
 };
 
-template <>
-struct ToType<bool>
+template <> struct ToType<bool>
 {
-	static bool value(duk_context* ctx, int index)
-	{
-		return duk_to_boolean(ctx, index) != 0;
-	}
+	static bool value(duk_context* ctx, int index) { return duk_to_boolean(ctx, index) != 0; }
 };
 
-template <>
-struct ToType<float>
+template <> struct ToType<float>
 {
-	static float value(duk_context* ctx, int index)
-	{
-		return (float)duk_to_number(ctx, index);
-	}
+	static float value(duk_context* ctx, int index) { return (float)duk_to_number(ctx, index); }
 };
 
-template <>
-struct ToType<const char*>
+template <> struct ToType<int>
 {
-	static const char* value(duk_context* ctx, int index)
-	{
-		return duk_to_string(ctx, index);
-	}
+	static int value(duk_context* ctx, int index) { return duk_to_int(ctx, index); }
 };
 
-template <typename T>
-struct ToType<T*>
+template <> struct ToType<const char*>
 {
-	static T* value(duk_context* ctx, int index)
-	{
-		return (T*)duk_to_pointer(ctx, index);
-	}
+	static const char* value(duk_context* ctx, int index) { return duk_to_string(ctx, index); }
 };
 
-template <typename T>
-struct ToType<T&>
+template <typename T> struct ToType<T*>
+{
+	static T* value(duk_context* ctx, int index) { return (T*)duk_to_pointer(ctx, index); }
+};
+
+template <typename T> struct ToType<T&>
 {
 	static T& value(duk_context* ctx, int index)
 	{
 		void* ptr = duk_to_pointer(ctx, index);
-		if (!ptr) duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
+		if (!ptr)
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
 		return *(T*)ptr;
 	}
 };
 
-template <>
-struct ToType<Entity>
+template <> struct ToType<Entity>
 {
-	static Entity value(duk_context* ctx, int index)
+	static Entity value(duk_context* ctx, int index) { return {duk_to_int(ctx, index)}; }
+};
+
+template <> struct ToType<ComponentHandle>
+{
+	static ComponentHandle value(duk_context* ctx, int index) { return {duk_to_int(ctx, index)}; }
+};
+
+template <>
+struct ToType<Vec2>
+{
+	static Vec2 value(duk_context* ctx, int index)
 	{
-		return {duk_to_int(ctx, index)};
+		Vec2 v;
+		duk_get_prop_index(ctx, index, 0);
+		v.x = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 1);
+		v.y = ToType<float>::value(ctx, -1);
+		duk_pop_2(ctx);
+		return v;
+	}
+};
+
+template <>
+struct ToType<Int2>
+{
+	static Int2 value(duk_context* ctx, int index)
+	{
+		Int2 v;
+		duk_get_prop_index(ctx, index, 0);
+		v.x = ToType<int>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 1);
+		v.y = ToType<int>::value(ctx, -1);
+		duk_pop_2(ctx);
+		return v;
 	}
 };
 
@@ -95,6 +115,7 @@ struct ToType<Vec3>
 		return v;
 	}
 };
+
 
 template <>
 struct ToType<Quat>
@@ -156,6 +177,14 @@ template <> inline const char* typeToString<Vec3>()
 {
 	return "Vec3";
 }
+template <> inline const char* typeToString<Vec2>()
+{
+	return "Vec2";
+}
+template <> inline const char* typeToString<Int2>()
+{
+	return "Int2";
+}
 template <> inline const char* typeToString<Quat>()
 {
 	return "Quat";
@@ -199,6 +228,14 @@ template <> inline bool isType<void*>(duk_context* ctx, int index)
 	return duk_is_pointer(ctx, index) != 0;
 }
 template <> inline bool isType<Vec3>(duk_context* ctx, int index)
+{
+	return duk_is_array(ctx, index) != 0;
+}
+template <> inline bool isType<Vec2>(duk_context* ctx, int index)
+{
+	return duk_is_array(ctx, index) != 0;
+}
+template <> inline bool isType<Int2>(duk_context* ctx, int index)
 {
 	return duk_is_array(ctx, index) != 0;
 }
@@ -256,78 +293,44 @@ template <> inline void push(duk_context* ctx, void* value)
 {
 	duk_push_pointer(ctx, value);
 }
-
-
-inline void createSystemVariable(duk_context* ctx, const char* system, const char* var_name, void* value)
+inline void push(duk_context* ctx, const Vec3& value)
 {
-	// TODO
-	/*if (lua_getglobal(ctx, system) == LUA_TNIL)
-	{
-		lua_pop(ctx, 1);
-		lua_newtable(ctx);
-		lua_setglobal(ctx, system);
-		lua_getglobal(ctx, system);
-	}
-	lua_pushlightuserdata(ctx, value);
-	lua_setfield(ctx, -2, var_name);
-	lua_pop(ctx, 1);*/
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
+	push(ctx, value.z);
+	duk_put_prop_index(ctx, -2, 2);
 }
-
-
-inline void createSystemVariable(duk_context* ctx, const char* system, const char* var_name, int value)
+inline void push(duk_context* ctx, const Vec2& value)
 {
-	// TODO
-	/*
-	if (lua_getglobal(ctx, system) == LUA_TNIL)
-	{
-		lua_pop(ctx, 1);
-		lua_newtable(ctx);
-		lua_setglobal(ctx, system);
-		lua_getglobal(ctx, system);
-	}
-	lua_pushinteger(ctx, value);
-	lua_setfield(ctx, -2, var_name);
-	lua_pop(ctx, 1);
-	*/
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
 }
-
-
-inline void createSystemFunction(duk_context* ctx, const char* system, const char* var_name, duk_c_function fn)
+inline void push(duk_context* ctx, const Int2& value)
 {
-	// TODO
-	/*
-	if (lua_getglobal(ctx, system) == LUA_TNIL)
-	{
-		lua_pop(ctx, 1);
-		lua_newtable(ctx);
-		lua_setglobal(ctx, system);
-		lua_getglobal(ctx, system);
-	}
-	lua_pushcfunction(ctx, fn);
-	lua_setfield(ctx, -2, var_name);
-	lua_pop(ctx, 1);
-	*/
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
 }
-
-
-inline void createSystemClosure(duk_context* ctx, const char* system, void* system_ptr, const char* var_name, duk_c_function fn)
+inline void push(duk_context* ctx, const Quat& value)
 {
-	// TODO
-	/*
-	if (lua_getglobal(ctx, system) == LUA_TNIL)
-	{
-		lua_pop(ctx, 1);
-		lua_newtable(ctx);
-		lua_setglobal(ctx, system);
-		lua_getglobal(ctx, system);
-	}
-	lua_pushlightuserdata(ctx, system_ptr);
-	lua_pushcclosure(ctx, fn, 1);
-	lua_setfield(ctx, -2, var_name);
-	lua_pop(ctx, 1);
-	*/
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
+	push(ctx, value.z);
+	duk_put_prop_index(ctx, -2, 2);
+	push(ctx, value.w);
+	duk_put_prop_index(ctx, -2, 3);
 }
-
 
 
 inline const char* jsTypeToString(duk_int_t type)
@@ -376,16 +379,6 @@ template <typename T> T checkArg(duk_context* ctx, int index)
 	return toType<T>(ctx, index);
 }
 
-// TODO
-/*
-inline void checkTableArg(duk_context* ctx, int index)
-{
-	if (!lua_istable(ctx, index))
-	{
-		argError(ctx, index, "table");
-	}
-}
-*/
 
 template <typename T>
 inline void getOptionalField(duk_context* ctx, int idx, const char* field_name, T* out)
@@ -621,22 +614,6 @@ template <typename C, typename T, T t> int wrapMethod(duk_context* ctx)
 	duk_pop(ctx);
 	return details::Caller<indices>::callMethod(inst, t, ctx);
 }
-
-
-// TODO
-/*template <typename C, typename T, T t> int wrapMethodClosure(duk_context* ctx)
-{
-	using indices = typename details::build_indices<0, details::arity(t)>::result;
-	int index = lua_upvalueindex(1);
-	if (!isType<T>(ctx, index))
-	{
-		g_log_error.log("Lua") << "Invalid Lua closure";
-		ASSERT(false);
-		return 0;
-	}
-	auto* inst = checkArg<C*>(ctx, index);
-	return details::Caller<indices>::callMethod(inst, t, L);
-}*/
 
 
 } // namespace JSWrapper

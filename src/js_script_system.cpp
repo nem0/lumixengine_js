@@ -22,6 +22,7 @@
 #include "engine/universe/universe.h"
 #include "js_script_manager.h"
 #include "js_wrapper.h"
+#include "renderer/render_scene.h"
 
 
 namespace Lumix
@@ -38,7 +39,7 @@ namespace Lumix
 	};
 
 
-	static int emptyJSConstructor(duk_context* ctx)
+	static int ptrJSConstructor(duk_context* ctx)
 	{
 		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
 
@@ -50,9 +51,28 @@ namespace Lumix
 	}
 
 
-	static void registerJSObject(duk_context* ctx, const char* name)
+	static int componentJSConstructor(duk_context* ctx)
 	{
-		duk_push_c_function(ctx, emptyJSConstructor, 1);
+		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
+
+		duk_push_this(ctx);
+		duk_dup(ctx, 0);
+		duk_put_prop_string(ctx, -2, "c_scene");
+
+		duk_dup(ctx, 1);
+		duk_put_prop_string(ctx, -2, "c_cmphandle");
+
+		duk_dup(ctx, 2);
+		duk_put_prop_string(ctx, -2, "c_cmptype");
+
+		return 0;
+	}
+
+
+
+	static void registerJSObject(duk_context* ctx, const char* name, duk_c_function constructor)
+	{
+		duk_push_c_function(ctx, constructor, DUK_VARARGS);
 
 		duk_push_object(ctx); // prototype
 		duk_put_prop_string(ctx, -2, "prototype");
@@ -94,9 +114,8 @@ namespace Lumix
 	}
 
 
-	class JSScriptSystemImpl LUMIX_FINAL : public IPlugin
+	struct JSScriptSystemImpl LUMIX_FINAL : public IPlugin
 	{
-	public:
 		explicit JSScriptSystemImpl(Engine& engine);
 		virtual ~JSScriptSystemImpl();
 
@@ -105,6 +124,7 @@ namespace Lumix
 		const char* getName() const override { return "js_script"; }
 		JSScriptManager& getScriptManager() { return m_script_manager; }
 		void registerGlobalAPI();
+		void registerRendererAPI();
 
 		Engine& m_engine;
 		Debug::Allocator m_allocator;
@@ -809,29 +829,6 @@ namespace Lumix
 			return 0;
 		}
 
-		
-		static void convertPropertyToJSName(const char* src, char* out, int max_size)
-		{
-			ASSERT(max_size > 0);
-			bool to_upper = true;
-			char* dest = out;
-			while (*src && dest - out < max_size - 1)
-			{
-				if (isLetter(*src))
-				{
-					*dest = to_upper && !isUpperCase(*src) ? *src - 'a' + 'A' : *src;
-					to_upper = false;
-					++dest;
-				}
-				else
-				{
-					to_upper = true;
-				}
-				++src;
-			}
-			*dest = 0;
-		}
-
 
 		void registerProperties()
 		{
@@ -932,9 +929,15 @@ namespace Lumix
 
 			duk_context* ctx = m_system.m_global_context;
 			registerGlobal(ctx, "Universe", "g_universe", &m_universe);
+			IScene* render_scene = m_universe.getScene(crc32("renderer"));
+			if (render_scene)
+			{
+				registerGlobal(ctx, "RenderScene", "g_scene_renderer", render_scene);
+			}
 
 			//TODO
-/*			registerProperties();
+/*			
+			registerProperties();
 			registerPropertyAPI();
 			JSWrapper::createSystemFunction(
 				engine_state, "JSScript", "getEnvironment", &JSScriptSceneImpl::getEnvironment);
@@ -1764,12 +1767,299 @@ namespace Lumix
 
 		m_global_context = duk_create_heap_default();
 		registerGlobalAPI();
+		registerRendererAPI();
 	}
 
 
 	static void logError(const char* msg) { g_log_error.log("JS Script") << msg; }
 	static void logWarning(const char* msg) { g_log_warning.log("JS Script") << msg; }
 	static void logInfo(const char* msg) { g_log_info.log("JS Script") << msg; }
+
+
+	static void convertPropertyToJSName(const char* src, char* out, int max_size)
+	{
+		ASSERT(max_size > 0);
+		bool to_upper = true;
+		char* dest = out;
+		while (*src && dest - out < max_size - 1)
+		{
+			if (isLetter(*src))
+			{
+				*dest = to_upper && !isUpperCase(*src) ? *src - 'a' + 'A' : *src;
+				to_upper = false;
+				++dest;
+			}
+			else
+			{
+				to_upper = true;
+			}
+			++src;
+		}
+		*dest = 0;
+	}
+
+
+	static int JS_getProperty(duk_context* ctx)
+	{
+		duk_push_this(ctx);
+		duk_get_prop_string(ctx, -1, "c_scene");
+		IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
+		duk_get_prop_string(ctx, -1, "c_cmphandle");
+		ComponentHandle cmp_handle = JSWrapper::toType<ComponentHandle>(ctx, -1);
+		duk_get_prop_string(ctx, -1, "c_cmptype");
+		ComponentType cmp_type = { JSWrapper::toType<int>(ctx, -1) };
+		duk_pop(ctx);
+
+		duk_push_current_function(ctx);
+		duk_get_prop_string(ctx, -1, "c_desc");
+		PropertyDescriptorBase* desc = JSWrapper::toType<PropertyDescriptorBase*>(ctx, -1);
+		duk_pop(ctx);
+
+		ComponentUID cmp;
+		cmp.scene = scene;
+		cmp.handle = cmp_handle;
+		cmp.type = cmp_type;
+		cmp.entity = INVALID_ENTITY;
+		switch (desc->getType())
+		{
+			case PropertyDescriptorBase::DECIMAL:
+			{
+				float v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::BOOL:
+			{
+				bool v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::INTEGER:
+			{
+				int v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::COLOR:
+			case PropertyDescriptorBase::VEC3:
+			{
+				Vec3 v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::RESOURCE:
+			case PropertyDescriptorBase::FILE:
+			case PropertyDescriptorBase::STRING:
+			{
+				char buf[1024];
+				OutputBlob blob(buf, sizeof(buf));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, buf);
+			}
+			break;
+			case PropertyDescriptorBase::ENTITY:
+			{
+				Entity v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::ENUM:
+			{
+				int v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::VEC2:
+			{
+				Vec2 v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			case PropertyDescriptorBase::INT2:
+			{
+				Int2 v;
+				OutputBlob blob(&v, sizeof(v));
+				desc->get(cmp, -1, blob);
+				JSWrapper::push(ctx, v);
+			}
+			break;
+			default: duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unsupported property type"); break;
+		}
+		return 1;
+	}
+
+	
+	static int JS_setProperty(duk_context* ctx)
+	{
+		duk_push_this(ctx);
+		duk_get_prop_string(ctx, -1, "c_scene");
+		IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
+		duk_get_prop_string(ctx, -1, "c_cmphandle");
+		ComponentHandle cmp_handle = JSWrapper::toType<ComponentHandle>(ctx, -1);
+		duk_get_prop_string(ctx, -1, "c_cmptype");
+		ComponentType cmp_type = { JSWrapper::toType<int>(ctx, -1) };
+		duk_pop(ctx);
+
+		duk_push_current_function(ctx);
+		duk_get_prop_string(ctx, -1, "c_desc");
+		PropertyDescriptorBase* desc = JSWrapper::toType<PropertyDescriptorBase*>(ctx, -1);
+		duk_pop(ctx);
+
+		ComponentUID cmp;
+		cmp.scene = scene;
+		cmp.handle = cmp_handle;
+		cmp.type = cmp_type;
+		cmp.entity = INVALID_ENTITY;
+		switch (desc->getType())
+		{
+			case PropertyDescriptorBase::DECIMAL:
+			{
+				auto v = JSWrapper::checkArg<float>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::INTEGER:
+			{
+				auto v = JSWrapper::checkArg<int>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::BOOL:
+			{
+				auto v = JSWrapper::checkArg<bool>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::RESOURCE:
+			case PropertyDescriptorBase::FILE:
+			case PropertyDescriptorBase::STRING:
+			{
+				auto* v = JSWrapper::checkArg<const char*>(ctx, 0);
+				InputBlob blob(v, stringLength(v) + 1);
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::COLOR:
+			case PropertyDescriptorBase::VEC3:
+			{
+				auto v = JSWrapper::checkArg<Vec3>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::VEC2:
+			{
+				auto v = JSWrapper::checkArg<Vec2>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::INT2:
+			{
+				auto v = JSWrapper::checkArg<Int2>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::ENTITY:
+			{
+				auto v = JSWrapper::checkArg<Entity>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			case PropertyDescriptorBase::ENUM:
+			{
+				auto v = JSWrapper::checkArg<int>(ctx, 0);
+				InputBlob blob(&v, sizeof(v));
+				desc->set(cmp, -1, blob);
+			}
+			break;
+			default: duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unsupported property type"); break;
+		}
+		return 0;
+	}
+
+
+	#define REGISTER_JS_METHOD(O, F) \
+		do { \
+			auto f = &JSWrapper::wrapMethod<O, decltype(&O::F), &O::F>; \
+			registerMethod(m_global_context, #O, #F, f); \
+		} while(false)
+
+
+	void JSScriptSystemImpl::registerRendererAPI()
+	{
+		registerJSObject(m_global_context, "RenderScene", &ptrJSConstructor);
+		registerJSObject(m_global_context, "Camera", &componentJSConstructor);
+
+		auto cmp_type = PropertyRegister::getComponentType("camera");
+		auto& descs = PropertyRegister::getDescriptors(cmp_type);
+
+		char tmp[50];
+		char setter[50];
+		char getter[50];
+		for (auto* desc : descs)
+		{
+			switch (desc->getType())
+			{
+				case PropertyDescriptorBase::ENUM:
+				case PropertyDescriptorBase::ENTITY:
+				case PropertyDescriptorBase::COLOR:
+				case PropertyDescriptorBase::VEC3:
+				case PropertyDescriptorBase::DECIMAL:
+				case PropertyDescriptorBase::INTEGER:
+				case PropertyDescriptorBase::BOOL:
+				case PropertyDescriptorBase::RESOURCE:
+				case PropertyDescriptorBase::FILE:
+				case PropertyDescriptorBase::STRING:
+				case PropertyDescriptorBase::VEC2:
+				case PropertyDescriptorBase::INT2:
+					convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
+					copyString(setter, "set");
+					copyString(getter, "get");
+					catString(setter, tmp);
+					catString(getter, tmp);
+
+					duk_get_global_string(m_global_context, "Camera");
+					if (duk_get_prop_string(m_global_context, -1, "prototype") != 1)
+					{
+						ASSERT(false);
+					}
+
+					duk_push_c_function(m_global_context, JS_getProperty, 0);
+					JSWrapper::push(m_global_context, desc);
+					duk_put_prop_string(m_global_context, -2, "c_desc");
+					duk_put_prop_string(m_global_context, -2, getter);
+
+					duk_push_c_function(m_global_context, JS_setProperty, 1);
+					JSWrapper::push(m_global_context, desc);
+					duk_put_prop_string(m_global_context, -2, "c_desc");
+					duk_put_prop_string(m_global_context, -2, setter);
+
+					duk_pop_2(m_global_context);
+					break;
+				default: break;
+			}
+		}
+	}
 
 
 	void JSScriptSystemImpl::registerGlobalAPI()
@@ -1779,17 +2069,12 @@ namespace Lumix
 				duk_push_c_function(m_global_context, &JSWrapper::wrap<decltype(F), &F>, DUK_VARARGS); \
 				duk_put_global_string(m_global_context, #F); \
 			} while(false)
-		#define REGISTER_JS_METHOD(O, F) \
-			do { \
-				auto f = &JSWrapper::wrapMethod<O, decltype(&O::F), &O::F>; \
-				registerMethod(m_global_context, #O, #F, f); \
-			} while(false)
 
 		REGISTER_JS_FUNCTION(logError);
 		REGISTER_JS_FUNCTION(logWarning);
 		REGISTER_JS_FUNCTION(logInfo);
 
-		registerJSObject(m_global_context, "Engine");
+		registerJSObject(m_global_context, "Engine", &ptrJSConstructor);
 		registerGlobal(m_global_context, "Engine", "g_engine", &m_engine);
 
 		REGISTER_JS_METHOD(Engine, pause);
@@ -1800,14 +2085,18 @@ namespace Lumix
 		REGISTER_JS_METHOD(Engine, getTime);
 		REGISTER_JS_METHOD(Engine, getLastTimeDelta);
 
-		registerJSObject(m_global_context, "Universe");
+		registerJSObject(m_global_context, "Universe", &ptrJSConstructor);
 		REGISTER_JS_METHOD(Universe, createEntity);
 		REGISTER_JS_METHOD(Universe, destroyEntity);
+		REGISTER_JS_METHOD(Universe, setEntityName);
+		REGISTER_JS_METHOD(Universe, getEntityName);
+		REGISTER_JS_METHOD(Universe, getEntityByName);
 		REGISTER_JS_METHOD(Universe, setScale);
 
 		#undef REGISTER_JS_FUNCTION
 	}
 
+	#undef REGISTER_JS_METHOD
 
 	JSScriptSystemImpl::~JSScriptSystemImpl()
 	{
