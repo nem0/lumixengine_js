@@ -124,7 +124,6 @@ namespace Lumix
 		const char* getName() const override { return "js_script"; }
 		JSScriptManager& getScriptManager() { return m_script_manager; }
 		void registerGlobalAPI();
-		void registerRendererAPI();
 
 		Engine& m_engine;
 		Debug::Allocator m_allocator;
@@ -1767,7 +1766,7 @@ namespace Lumix
 
 		m_global_context = duk_create_heap_default();
 		registerGlobalAPI();
-		registerRendererAPI();
+		registerJSObject(m_global_context, "RenderScene", &ptrJSConstructor);
 	}
 
 
@@ -2005,12 +2004,11 @@ namespace Lumix
 		} while(false)
 
 
-	void JSScriptSystemImpl::registerRendererAPI()
+	static void registerComponent(duk_context* ctx, const char* cmp_type_name, const char* js_name)
 	{
-		registerJSObject(m_global_context, "RenderScene", &ptrJSConstructor);
-		registerJSObject(m_global_context, "Camera", &componentJSConstructor);
-
-		auto cmp_type = PropertyRegister::getComponentType("camera");
+		registerJSObject(ctx, js_name, &componentJSConstructor);
+	
+		auto cmp_type = PropertyRegister::getComponentType(cmp_type_name);
 		auto& descs = PropertyRegister::getDescriptors(cmp_type);
 
 		char tmp[50];
@@ -2020,43 +2018,43 @@ namespace Lumix
 		{
 			switch (desc->getType())
 			{
-				case PropertyDescriptorBase::ENUM:
-				case PropertyDescriptorBase::ENTITY:
-				case PropertyDescriptorBase::COLOR:
-				case PropertyDescriptorBase::VEC3:
-				case PropertyDescriptorBase::DECIMAL:
-				case PropertyDescriptorBase::INTEGER:
-				case PropertyDescriptorBase::BOOL:
-				case PropertyDescriptorBase::RESOURCE:
-				case PropertyDescriptorBase::FILE:
-				case PropertyDescriptorBase::STRING:
-				case PropertyDescriptorBase::VEC2:
-				case PropertyDescriptorBase::INT2:
-					convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
-					copyString(setter, "set");
-					copyString(getter, "get");
-					catString(setter, tmp);
-					catString(getter, tmp);
+			case PropertyDescriptorBase::ENUM:
+			case PropertyDescriptorBase::ENTITY:
+			case PropertyDescriptorBase::COLOR:
+			case PropertyDescriptorBase::VEC3:
+			case PropertyDescriptorBase::DECIMAL:
+			case PropertyDescriptorBase::INTEGER:
+			case PropertyDescriptorBase::BOOL:
+			case PropertyDescriptorBase::RESOURCE:
+			case PropertyDescriptorBase::FILE:
+			case PropertyDescriptorBase::STRING:
+			case PropertyDescriptorBase::VEC2:
+			case PropertyDescriptorBase::INT2:
+				convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
+				copyString(setter, "set");
+				copyString(getter, "get");
+				catString(setter, tmp);
+				catString(getter, tmp);
 
-					duk_get_global_string(m_global_context, "Camera");
-					if (duk_get_prop_string(m_global_context, -1, "prototype") != 1)
-					{
-						ASSERT(false);
-					}
+				duk_get_global_string(ctx, js_name);
+				if (duk_get_prop_string(ctx, -1, "prototype") != 1)
+				{
+					ASSERT(false);
+				}
 
-					duk_push_c_function(m_global_context, JS_getProperty, 0);
-					JSWrapper::push(m_global_context, desc);
-					duk_put_prop_string(m_global_context, -2, "c_desc");
-					duk_put_prop_string(m_global_context, -2, getter);
+				duk_push_c_function(ctx, JS_getProperty, 0);
+				JSWrapper::push(ctx, desc);
+				duk_put_prop_string(ctx, -2, "c_desc");
+				duk_put_prop_string(ctx, -2, getter);
 
-					duk_push_c_function(m_global_context, JS_setProperty, 1);
-					JSWrapper::push(m_global_context, desc);
-					duk_put_prop_string(m_global_context, -2, "c_desc");
-					duk_put_prop_string(m_global_context, -2, setter);
+				duk_push_c_function(ctx, JS_setProperty, 1);
+				JSWrapper::push(ctx, desc);
+				duk_put_prop_string(ctx, -2, "c_desc");
+				duk_put_prop_string(ctx, -2, setter);
 
-					duk_pop_2(m_global_context);
-					break;
-				default: break;
+				duk_pop_2(ctx);
+				break;
+			default: break;
 			}
 		}
 	}
@@ -2094,6 +2092,39 @@ namespace Lumix
 		REGISTER_JS_METHOD(Universe, setScale);
 
 		#undef REGISTER_JS_FUNCTION
+
+		int count = PropertyRegister::getComponentTypesCount();
+		for (int i = 0; i < count; ++i)
+		{
+			const char* cmp_type_id = PropertyRegister::getComponentTypeID(i);
+			char js_name[50];
+			char* out = js_name;
+			const char* in = cmp_type_id;
+			bool to_upper = true;
+			while (*in && (out - js_name) < sizeof(js_name) - 1)
+			{
+				if (*in == '_')
+				{
+					to_upper = true;
+					++in;
+					continue;
+				}
+
+				if (to_upper)
+				{
+					*out = makeUppercase(*in);
+					to_upper = false;
+				}
+				else
+				{
+					*out = *in;
+				}
+				++in;
+				++out;
+			}
+			*out = '\0';
+			registerComponent(m_global_context, cmp_type_id, js_name);
+		}
 	}
 
 	#undef REGISTER_JS_METHOD

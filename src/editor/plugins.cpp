@@ -593,6 +593,8 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 		}
 		*c = '\0';
 
+		if (duk_is_null_or_undefined(ctx, -1)) return;
+
 		duk_enum(ctx, -1, DUK_ENUM_INCLUDE_SYMBOLS | DUK_ENUM_INCLUDE_NONENUMERABLE);
 		while (duk_next(ctx, -1, 0))
 		{
@@ -602,9 +604,12 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 			{
 				if (*next == '.' && next[1] == '\0')
 				{
-					duk_get_prop_string(ctx, -3, name);
-					autocompleteSubstep(ctx, "", data);
-					duk_pop(ctx);
+					if (equalStrings(name, item))
+					{
+						duk_get_prop_string(ctx, -3, name);
+						autocompleteSubstep(ctx, "", data);
+						duk_pop(ctx);
+					}
 				}
 				else if (*next == '\0')
 				{
