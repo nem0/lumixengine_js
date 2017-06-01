@@ -22,7 +22,6 @@
 #include "engine/universe/universe.h"
 #include "js_script_manager.h"
 #include "js_wrapper.h"
-#include "renderer/render_scene.h"
 
 
 namespace Lumix
@@ -54,6 +53,7 @@ namespace Lumix
 	static int componentJSConstructor(duk_context* ctx)
 	{
 		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
+		if (!duk_is_pointer(ctx, 0)) return DUK_RET_TYPE_ERROR;
 
 		duk_push_this(ctx);
 		duk_dup(ctx, 0);
@@ -939,6 +939,38 @@ namespace Lumix
 		}
 		*/
 
+
+		void getTypeName(IScene& scene, char* out_str, int size)
+		{
+			char* out = out_str;
+			const char* in = scene.getPlugin().getName();
+			bool to_upper = true;
+			while (*in && out - out_str < size - 1)
+			{
+				if (isLetter(*in))
+				{
+					*out = to_upper ? makeUppercase(*in) : *in;
+					++out;
+					to_upper = false;
+				}
+				else
+				{
+					to_upper = true;
+				}
+				++in;
+			}
+			*out = '\0';
+			catString(out_str, size, "Scene");
+		}
+
+
+		void getInstanceName(IScene& scene, char* out_str, int size)
+		{
+			copyString(out_str, size, "g_scene_");
+			catString(out_str, size, scene.getPlugin().getName());
+		}
+
+
 		void registerAPI()
 		{
 			if (m_is_api_registered) return;
@@ -946,10 +978,15 @@ namespace Lumix
 
 			duk_context* ctx = m_system.m_global_context;
 			registerGlobal(ctx, "Universe", "g_universe", &m_universe);
-			IScene* render_scene = m_universe.getScene(crc32("renderer"));
-			if (render_scene)
+			Array<IScene*>& scenes = m_universe.getScenes();
+			for (IScene* scene : scenes)
 			{
-				registerGlobal(ctx, "RenderScene", "g_scene_renderer", render_scene);
+				char type_name[50];
+				getTypeName(*scene, type_name, lengthOf(type_name));
+				char inst_name[50];
+				getInstanceName(*scene, inst_name, lengthOf(inst_name));
+				registerJSObject(ctx, type_name, &ptrJSConstructor);
+				registerGlobal(ctx, type_name, inst_name, scene);
 			}
 
 			//TODO
@@ -1784,7 +1821,6 @@ namespace Lumix
 
 		m_global_context = duk_create_heap_default();
 		registerGlobalAPI();
-		registerJSObject(m_global_context, "RenderScene", &ptrJSConstructor);
 	}
 
 
@@ -1806,6 +1842,11 @@ namespace Lumix
 				to_upper = false;
 				++dest;
 			}
+			else if (isNumeric(*src))
+			{
+				*dest = *src;
+				++dest;
+			}
 			else
 			{
 				to_upper = true;
@@ -1819,8 +1860,14 @@ namespace Lumix
 	static int JS_getProperty(duk_context* ctx)
 	{
 		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1))
+		{
+			duk_eval_error(ctx, "this is null or undefined");
+		}
 		duk_get_prop_string(ctx, -1, "c_scene");
 		IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
+		if(!scene) duk_eval_error(ctx, "getting property on invalid object");
+
 		duk_get_prop_string(ctx, -1, "c_cmphandle");
 		ComponentHandle cmp_handle = JSWrapper::toType<ComponentHandle>(ctx, -1);
 		duk_get_prop_string(ctx, -1, "c_cmptype");
@@ -1923,8 +1970,14 @@ namespace Lumix
 	static int JS_setProperty(duk_context* ctx)
 	{
 		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1))
+		{
+			duk_eval_error(ctx, "this is null or undefined");
+		}
 		duk_get_prop_string(ctx, -1, "c_scene");
 		IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
+		if (!scene) duk_eval_error(ctx, "getting property on invalid object");
+
 		duk_get_prop_string(ctx, -1, "c_cmphandle");
 		ComponentHandle cmp_handle = JSWrapper::toType<ComponentHandle>(ctx, -1);
 		duk_get_prop_string(ctx, -1, "c_cmptype");
@@ -2059,7 +2112,19 @@ namespace Lumix
 						ASSERT(false);
 					}
 
+					duk_push_string(ctx, tmp);
+
 					duk_push_c_function(ctx, JS_getProperty, 0);
+					JSWrapper::push(ctx, desc);
+					duk_put_prop_string(ctx, -2, "c_desc");
+
+					duk_push_c_function(ctx, JS_setProperty, 1);
+					JSWrapper::push(ctx, desc);
+					duk_put_prop_string(ctx, -2, "c_desc");
+
+					duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
+
+/*					duk_push_c_function(ctx, JS_getProperty, 0);
 					JSWrapper::push(ctx, desc);
 					duk_put_prop_string(ctx, -2, "c_desc");
 					duk_put_prop_string(ctx, -2, getter);
@@ -2067,7 +2132,7 @@ namespace Lumix
 					duk_push_c_function(ctx, JS_setProperty, 1);
 					JSWrapper::push(ctx, desc);
 					duk_put_prop_string(ctx, -2, "c_desc");
-					duk_put_prop_string(ctx, -2, setter);
+					duk_put_prop_string(ctx, -2, setter);*/
 
 					duk_pop_2(ctx);
 					break;
