@@ -59,10 +59,7 @@ template <typename T> struct ToType<T&>
 	}
 };
 
-template <> struct ToType<Entity>
-{
-	static Entity value(duk_context* ctx, int index) { return {duk_to_int(ctx, index)}; }
-};
+template <> struct ToType<Entity>;
 
 template <> struct ToType<ComponentHandle>
 {

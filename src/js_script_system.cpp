@@ -49,9 +49,65 @@ namespace Lumix
 		return 0;
 	}
 
+	
+	static int entityProxyGetter(duk_context* ctx)
+	{
+		duk_get_prop_string(ctx, 0, "c_universe");
+		Universe* universe = (Universe*)duk_to_pointer(ctx, -1);
+
+		duk_get_prop_string(ctx, 0, "c_entity");
+		Entity entity = {duk_to_int(ctx, -1)};
+
+		duk_pop_2(ctx);
+
+		const char* cmp_type_name = duk_to_string(ctx, 1);
+		ComponentType cmp_type = PropertyRegister::getComponentType(cmp_type_name);
+
+		IScene* scene = universe->getScene(cmp_type);
+		if (!scene) return 0;
+
+		ComponentHandle cmp = scene->getComponent(entity, cmp_type);
+		if (!cmp.isValid()) return 0;
+
+		duk_get_global_string(ctx, cmp_type_name);
+		JSWrapper::push(ctx, scene);
+		JSWrapper::push(ctx, cmp);
+		duk_new(ctx, 2);
+
+		return 1;
+	}
+
+
+	static int entityJSConstructor(duk_context* ctx)
+	{
+		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
+
+		duk_get_global_string(ctx, "Proxy");
+
+		duk_push_this(ctx);
+
+		duk_dup(ctx, 0);
+		duk_put_prop_string(ctx, -2, "c_universe");
+
+		duk_dup(ctx, 1);
+		duk_put_prop_string(ctx, -2, "c_entity");
+
+		duk_push_object(ctx); //proxy handler
+		duk_push_c_function(ctx, entityProxyGetter, 3);
+		duk_put_prop_string(ctx, -2, "get");
+
+		duk_new(ctx, 2);
+
+		return 1;
+	}
+
 
 	static int componentJSConstructor(duk_context* ctx)
 	{
+		duk_get_global_string(ctx, "camera");
+		auto xx = duk_get_type(ctx, -1);
+		duk_pop(ctx);
+
 		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
 		if (!duk_is_pointer(ctx, 0)) return DUK_RET_TYPE_ERROR;
 
@@ -948,57 +1004,10 @@ namespace Lumix
 		*/
 
 
-		static void getTypeName(const char* base, char* out_str, int size)
-		{
-			char* out = out_str;
-			const char* in = base;
-			bool to_upper = true;
-			while (*in && out - out_str < size - 1)
-			{
-				if (isLetter(*in))
-				{
-					*out = to_upper ? makeUppercase(*in) : *in;
-					++out;
-					to_upper = false;
-				}
-				else
-				{
-					to_upper = true;
-				}
-				++in;
-			}
-			*out = '\0';
-		}
-
-
 		void getInstanceName(IScene& scene, char* out_str, int size)
 		{
 			copyString(out_str, size, "g_scene_");
 			catString(out_str, size, scene.getPlugin().getName());
-		}
-
-
-		static int sceneGetComponent(duk_context* ctx)
-		{
-			Entity entity = JSWrapper::checkArg<Entity>(ctx, 0);
-			const char* cmp_name = JSWrapper::checkArg<const char*>(ctx, 1);
-		
-			duk_push_this(ctx);
-			duk_get_prop_string(ctx, -1, "c_ptr");
-			IScene* scene = (IScene*)duk_to_pointer(ctx, -1);
-			duk_pop_2(ctx);
-
-			ComponentHandle cmp = scene->getComponent(entity, PropertyRegister::getComponentType(cmp_name));
-			if (!cmp.isValid()) return 0;
-
-			char type_name[50];
-			getTypeName(cmp_name, type_name, lengthOf(type_name));
-			duk_get_global_string(ctx, type_name);
-			JSWrapper::push(ctx, scene);
-			JSWrapper::push(ctx, cmp);
-			duk_new(ctx, 2);
-
-			return 1;
 		}
 
 
@@ -1011,14 +1020,11 @@ namespace Lumix
 			registerGlobal(ctx, "Universe", "g_universe", &m_universe);
 
 			registerJSObject(ctx, nullptr, "SceneBase", &ptrJSConstructor);
-			registerMethod(ctx, "SceneBase", "getComponent", &sceneGetComponent);
 
 			Array<IScene*>& scenes = m_universe.getScenes();
 			for (IScene* scene : scenes)
 			{
-				char type_name[50];
-				getTypeName(scene->getPlugin().getName(), type_name, lengthOf(type_name));
-				catString(type_name, "Scene");
+				StaticString<50> type_name(scene->getPlugin().getName(), "_scene");
 				char inst_name[50];
 				getInstanceName(*scene, inst_name, lengthOf(inst_name));
 				registerJSObject(ctx, "SceneBase", type_name, &ptrJSConstructor);
@@ -2084,13 +2090,14 @@ namespace Lumix
 				desc->set(cmp, -1, blob);
 			}
 			break;
-			case PropertyDescriptorBase::ENTITY:
+			// TODO
+			/*case PropertyDescriptorBase::ENTITY:
 			{
 				auto v = JSWrapper::checkArg<Entity>(ctx, 0);
 				InputBlob blob(&v, sizeof(v));
 				desc->set(cmp, -1, blob);
 			}
-			break;
+			break;*/
 			case PropertyDescriptorBase::ENUM:
 			{
 				auto v = JSWrapper::checkArg<int>(ctx, 0);
@@ -2111,10 +2118,10 @@ namespace Lumix
 		} while(false)
 
 
-	static void registerComponent(duk_context* ctx, const char* cmp_type_name, const char* js_name)
+	static void registerComponent(duk_context* ctx, const char* cmp_type_name)
 	{
 		auto cmp_type = PropertyRegister::getComponentType(cmp_type_name);
-		registerJSComponent(ctx, cmp_type, js_name, &componentJSConstructor);
+		registerJSComponent(ctx, cmp_type, cmp_type_name, &componentJSConstructor);
 		auto& descs = PropertyRegister::getDescriptors(cmp_type);
 
 		char tmp[50];
@@ -2125,7 +2132,8 @@ namespace Lumix
 			switch (desc->getType())
 			{
 				case PropertyDescriptorBase::ENUM:
-				case PropertyDescriptorBase::ENTITY:
+				// TODO
+				//case PropertyDescriptorBase::ENTITY:
 				case PropertyDescriptorBase::COLOR:
 				case PropertyDescriptorBase::VEC3:
 				case PropertyDescriptorBase::DECIMAL:
@@ -2142,7 +2150,7 @@ namespace Lumix
 					catString(setter, tmp);
 					catString(getter, tmp);
 
-					duk_get_global_string(ctx, js_name);
+					duk_get_global_string(ctx, cmp_type_name);
 					if (duk_get_prop_string(ctx, -1, "prototype") != 1)
 					{
 						ASSERT(false);
@@ -2159,16 +2167,6 @@ namespace Lumix
 					duk_put_prop_string(ctx, -2, "c_desc");
 
 					duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-
-/*					duk_push_c_function(ctx, JS_getProperty, 0);
-					JSWrapper::push(ctx, desc);
-					duk_put_prop_string(ctx, -2, "c_desc");
-					duk_put_prop_string(ctx, -2, getter);
-
-					duk_push_c_function(ctx, JS_setProperty, 1);
-					JSWrapper::push(ctx, desc);
-					duk_put_prop_string(ctx, -2, "c_desc");
-					duk_put_prop_string(ctx, -2, setter);*/
 
 					duk_pop_2(ctx);
 					break;
@@ -2202,12 +2200,14 @@ namespace Lumix
 		REGISTER_JS_METHOD(Engine, getLastTimeDelta);
 
 		registerJSObject(m_global_context, nullptr, "Universe", &ptrJSConstructor);
-		REGISTER_JS_METHOD(Universe, createEntity);
-		REGISTER_JS_METHOD(Universe, destroyEntity);
-		REGISTER_JS_METHOD(Universe, setEntityName);
-		REGISTER_JS_METHOD(Universe, getEntityName);
-		REGISTER_JS_METHOD(Universe, getEntityByName);
-		REGISTER_JS_METHOD(Universe, setScale);
+//		REGISTER_JS_METHOD(Universe, createEntity);
+//		REGISTER_JS_METHOD(Universe, destroyEntity);
+//		REGISTER_JS_METHOD(Universe, setEntityName);
+//		REGISTER_JS_METHOD(Universe, getEntityName);
+		//REGISTER_JS_METHOD(Universe, getEntityByName);
+		//REGISTER_JS_METHOD(Universe, setScale);
+
+		registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
 
 		#undef REGISTER_JS_FUNCTION
 
@@ -2215,33 +2215,7 @@ namespace Lumix
 		for (int i = 0; i < count; ++i)
 		{
 			const char* cmp_type_id = PropertyRegister::getComponentTypeID(i);
-			char js_name[50];
-			char* out = js_name;
-			const char* in = cmp_type_id;
-			bool to_upper = true;
-			while (*in && (out - js_name) < sizeof(js_name) - 1)
-			{
-				if (*in == '_')
-				{
-					to_upper = true;
-					++in;
-					continue;
-				}
-
-				if (to_upper)
-				{
-					*out = makeUppercase(*in);
-					to_upper = false;
-				}
-				else
-				{
-					*out = *in;
-				}
-				++in;
-				++out;
-			}
-			*out = '\0';
-			registerComponent(m_global_context, cmp_type_id, js_name);
+			registerComponent(m_global_context, cmp_type_id);
 		}
 	}
 
