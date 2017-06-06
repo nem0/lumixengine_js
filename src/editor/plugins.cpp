@@ -498,7 +498,7 @@ struct AssetBrowserPlugin : AssetBrowser::IPlugin
 
 	bool acceptExtension(const char* ext, ResourceType type) const override
 	{
-		return type == JS_SCRIPT_RESOURCE_TYPE && equalStrings(".JS", ext);
+		return type == JS_SCRIPT_RESOURCE_TYPE && equalStrings(".js", ext);
 	}
 
 
@@ -538,7 +538,7 @@ struct AssetBrowserPlugin : AssetBrowser::IPlugin
 
 	ResourceType getResourceType(const char* ext) override
 	{
-		if (equalStrings(ext, "JS")) return JS_SCRIPT_RESOURCE_TYPE;
+		if (equalStrings(ext, "js")) return JS_SCRIPT_RESOURCE_TYPE;
 		return INVALID_RESOURCE_TYPE;
 	}
 

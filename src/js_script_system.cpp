@@ -225,9 +225,8 @@ namespace Lumix
 
 		struct UpdateData
 		{
-			JSScript* script;
 			duk_context* context;
-			int environment;
+			uintptr id;
 		};
 
 
@@ -236,16 +235,12 @@ namespace Lumix
 			explicit ScriptInstance(IAllocator& allocator)
 				: m_properties(allocator)
 				, m_script(nullptr)
-				, m_environment(-1)
-				, m_thread_ref(-1)
 			{
 			}
 
 			JSScript* m_script;
-			duk_context* m_context;
-			int m_environment;
-			int m_thread_ref;
 			Array<Property> m_properties;
+			uintptr m_id;
 		};
 
 
@@ -271,7 +266,7 @@ namespace Lumix
 
 			void detectProperties(ScriptInstance& inst)
 			{
-				// TODO
+				ASSERT(false); // TODO
 				/*static const u32 INDEX_HASH = crc32("__index");
 				static const u32 THIS_HASH = crc32("this");
 				JS_State* L = inst.m_state;
@@ -340,13 +335,17 @@ namespace Lumix
 
 			void onScriptLoaded(Resource::State, Resource::State, Resource& resource)
 			{
-				/*JS_State* L = m_scene.m_system.m_engine.getState();
+				duk_context* ctx = m_scene.m_system.m_global_context;
 				for (auto& script : m_scripts)
 				{
 					if (!script.m_script) continue;
 					if (!script.m_script->isReady()) continue;
 					if (script.m_script != &resource) continue;
 
+					m_scene.startScript(script, false);
+
+					// TODO
+					/*
 					bool is_reload = true;
 					if (!script.m_state)
 					{
@@ -402,8 +401,8 @@ namespace Lumix
 
 					detectProperties(script);
 
-					if (m_scene.m_is_game_running) m_scene.startScript(script, is_reload);
-				}*/
+					if (m_scene.m_is_game_running) m_scene.startScript(script, is_reload);*/
+				}
 				// TODO
 			}
 
@@ -418,7 +417,7 @@ namespace Lumix
 		{
 			void add(int parameter) override
 			{
-				// TODO
+				ASSERT(false); // TODO
 				// JS_pushinteger(state, parameter);
 				++parameter_count;
 			}
@@ -426,7 +425,7 @@ namespace Lumix
 
 			void add(float parameter) override
 			{
-				// TODO
+				ASSERT(false); // TODO
 				// JS_pushnumber(state, parameter);
 				++parameter_count;
 			}
@@ -434,7 +433,7 @@ namespace Lumix
 
 			void add(void* parameter) override
 			{
-				// TODO
+				ASSERT(false); // TODO
 				// JS_pushlightuserdata(state, parameter);
 				++parameter_count;
 			}
@@ -442,7 +441,7 @@ namespace Lumix
 
 			void addEnvironment(int env) override
 			{
-				// TODO
+				ASSERT(false); // TODO
 				// bool is_valid = JS_rawgeti(state, JS_REGISTRYINDEX, env) == JS_TTABLE;
 				//ASSERT(is_valid);
 				++parameter_count;
@@ -487,49 +486,49 @@ namespace Lumix
 
 		IFunctionCall* beginFunctionCall(ComponentHandle cmp, int scr_index, const char* function) override
 		{
-			// TODO
-			// 
-/*			ASSERT(!m_function_call.is_in_progress);
+			ASSERT(!m_function_call.is_in_progress);
 
 			auto* script_cmp = m_scripts[{cmp.index}];
 			auto& script = script_cmp->m_scripts[scr_index];
-			if (!script.m_state) return nullptr;
 
-			bool is_env_valid = JS_rawgeti(script.m_state, JS_REGISTRYINDEX, script.m_environment) == JS_TTABLE;
-			ASSERT(is_env_valid);
-			if (JS_getfield(script.m_state, -1, function) != JS_TFUNCTION)
+			duk_context* ctx = m_system.m_global_context;
+
+			duk_push_global_stash(ctx);
+			duk_push_pointer(ctx, (void*)script.m_id);
+			duk_get_prop(ctx, -2);
+			if (duk_is_undefined(ctx, -1))
 			{
-				JS_pop(script.m_state, 2);
+				duk_pop_2(ctx);
 				return nullptr;
 			}
+			duk_get_prop_string(ctx, -1, function);
+			if (!duk_is_callable(ctx, -1))
+			{
+				duk_pop_3(ctx);
+				return nullptr;
+			}
+			duk_dup(ctx, -2); // [this, func] -> [this, func, this]
 
-			m_function_call.state = script.m_state;
+			m_function_call.context = ctx;
 			m_function_call.cmp = script_cmp;
 			m_function_call.is_in_progress = true;
 			m_function_call.parameter_count = 0;
 			m_function_call.scr_index = scr_index;
 
-			return &m_function_call;*/
-			return nullptr;
+			return &m_function_call;
 		}
 
 
 		void endFunctionCall() override
 		{
-			// TODO
-			/*ASSERT(m_function_call.is_in_progress);
+			ASSERT(m_function_call.is_in_progress);
 
 			m_function_call.is_in_progress = false;
 
 			auto& script = m_function_call.cmp->m_scripts[m_function_call.scr_index];
-			if (!script.m_state) return;
 
-			if (JS_pcall(script.m_state, m_function_call.parameter_count, 0, 0) != JS_OK)
-			{
-				g_log_warning.log("JS Script") << JS_tostring(script.m_state, -1);
-				JS_pop(script.m_state, 1);
-			}
-			JS_pop(script.m_state, 1);*/
+			duk_call_method(m_function_call.context, m_function_call.parameter_count);
+			duk_pop_2(m_function_call.context);
 		}
 
 
@@ -588,7 +587,7 @@ namespace Lumix
 
 		void setScriptData(ComponentHandle cmp, InputBlob& blob) override
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*
 			auto* scr = m_scripts[{cmp.index}];
 			int count;
@@ -643,12 +642,6 @@ namespace Lumix
 		}
 
 
-		duk_context* getContext(ComponentHandle cmp, int scr_index) override
-		{
-			return m_scripts[{cmp.index}]->m_scripts[scr_index].m_context;
-		}
-
-
 		Universe& getUniverse() override { return m_universe; }
 
 		// TODO
@@ -691,7 +684,7 @@ namespace Lumix
 
 		void registerPropertyAPI()
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*JS_State* L = m_system.m_engine.getState();
 			auto f = &JSWrapper::wrap<decltype(&setPropertyType), &setPropertyType>;
 			JSWrapper::createSystemFunction(L, "Editor", "setPropertyType", f);
@@ -1057,12 +1050,6 @@ namespace Lumix
 		}
 
 		
-		int getEnvironment(ComponentHandle cmp, int scr_index) override
-		{
-			return m_scripts[{cmp.index}]->m_scripts[scr_index].m_environment;
-		}
-
-
 		const char* getPropertyName(u32 name_hash) const
 		{
 			int idx = m_property_names.find(name_hash);
@@ -1132,7 +1119,7 @@ namespace Lumix
 			const char* name,
 			const char* value) override
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*auto* script_cmp = m_scripts[{cmp.index}];
 			if (!script_cmp) return;
 			Property& prop = getScriptProperty(cmp, scr_index, name);
@@ -1181,7 +1168,7 @@ namespace Lumix
 
 		void destroyInstance(ScriptComponent& scr,  ScriptInstance& inst)
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*
 			bool is_env_valid = JS_rawgeti(inst.m_state, JS_REGISTRYINDEX, inst.m_environment) == JS_TTABLE;
 			ASSERT(is_env_valid);
@@ -1226,12 +1213,8 @@ namespace Lumix
 
 		void setScriptPath(ScriptComponent& cmp, ScriptInstance& inst, const Path& path)
 		{
-			// TODO
-			//registerAPI();
-
 			if (inst.m_script)
 			{
-				if (inst.m_context) destroyInstance(cmp, inst);
 				inst.m_properties.clear();
 				auto& cb = inst.m_script->getObserverCb();
 				cb.unbind<ScriptComponent, &ScriptComponent::onScriptLoaded>(&cmp);
@@ -1247,50 +1230,53 @@ namespace Lumix
 
 		void startScript(ScriptInstance& instance, bool is_restart)
 		{
-			// TODO
-			/*
-			if (is_restart)
-			{
-				for (int i = 0; i < m_updates.size(); ++i)
-				{
-					if (m_updates[i].state == instance.m_state)
-					{
-						m_updates.eraseFast(i);
-						break;
-					}
-				}
-			}
+			duk_context* ctx = m_system.m_global_context;
+			duk_push_global_stash(ctx);
 
-			if (JS_rawgeti(instance.m_state, JS_REGISTRYINDEX, instance.m_environment) != JS_TTABLE)
+			duk_push_pointer(ctx, (void*)instance.m_id);
+			duk_eval_string(ctx, instance.m_script->getSourceCode());
+
+			if (!duk_is_object(ctx, -1))
 			{
-				ASSERT(false);
-				JS_pop(instance.m_state, 1);
+				duk_pop_3(ctx);
 				return;
 			}
-			if (JS_getfield(instance.m_state, -1, "update") == JS_TFUNCTION)
-			{
-				auto& update_data = m_updates.emplace();
-				update_data.script = instance.m_script;
-				update_data.state = instance.m_state;
-				update_data.environment = instance.m_environment;
-			}
-			JS_pop(instance.m_state, 1);
 
-			if (!is_restart)
-			{
-				if (JS_getfield(instance.m_state, -1, "init") != JS_TFUNCTION)
-				{
-					JS_pop(instance.m_state, 2);
-					return;
-				}
+			duk_put_prop(ctx, -3); // stash[instance.id] = obj
 
-				if (JS_pcall(instance.m_state, 0, 0, 0) != JS_OK)
-				{
-					g_log_error.log("JS Script") << JS_tostring(instance.m_state, -1);
-					JS_pop(instance.m_state, 1);
-				}
+			duk_push_pointer(ctx, (void*)instance.m_id); // [stash, id]
+			duk_get_prop(ctx, -2); // [stash, obj]
+			if (duk_is_undefined(ctx, -1))
+			{
+				duk_pop_2(ctx);
+				return;
 			}
-			JS_pop(instance.m_state, 1);*/
+
+			duk_get_prop_string(ctx, -1, "update");
+			if (duk_is_callable(ctx, -1))
+			{
+				UpdateData& update = m_updates.emplace();
+				update.context = ctx;
+				update.id = instance.m_id;
+			}
+			duk_pop(ctx);
+
+			if (!m_scripts_init_called)
+			{
+				duk_pop_2(ctx); // stash
+				return;
+			}
+
+			duk_get_prop_string(ctx, -1, "onStartGame");
+			if (!duk_is_callable(ctx, -1))
+			{
+				duk_pop_3(ctx);
+				return;
+			}
+			duk_dup(ctx, -2); // [this, func] -> [this, func, this]
+
+			duk_call_method(ctx, 0);
+			duk_pop_2(ctx);
 		}
 
 
@@ -1327,7 +1313,7 @@ namespace Lumix
 		void destroyComponent(ComponentHandle component, ComponentType type) override
 		{
 			if (type != JS_SCRIPT_TYPE) return;
-
+			/*
 			Entity entity = {component.index};
 			auto* script = m_scripts[entity];
 			for (auto& scr : script->m_scripts)
@@ -1342,7 +1328,8 @@ namespace Lumix
 			}
 			LUMIX_DELETE(m_system.m_allocator, script);
 			m_scripts.erase(entity);
-			m_universe.destroyComponent(entity, type, this, component);
+			m_universe.destroyComponent(entity, type, this, component);*/
+			ASSERT(false); // TODO
 		}
 
 
@@ -1373,7 +1360,7 @@ namespace Lumix
 
 		void getProperty(Property& prop, const char* prop_name, ScriptInstance& scr, char* out, int max_size)
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*
 			if(max_size <= 0) return;
 			if (!scr.m_state)
@@ -1431,7 +1418,7 @@ namespace Lumix
 
 		void serializeJSScript(ISerializer& serializer, ComponentHandle cmp)
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*
 			ScriptComponent* script = m_scripts[{cmp.index}];
 			serializer.write("count", script->m_scripts.size());
@@ -1568,7 +1555,7 @@ namespace Lumix
 
 		void deserialize(InputBlob& serializer) override
 		{
-			int len = serializer.read<int>();
+/*			int len = serializer.read<int>();
 			m_scripts.rehash(len);
 			for (int i = 0; i < len; ++i)
 			{
@@ -1603,7 +1590,8 @@ namespace Lumix
 				}
 				ComponentHandle cmp = {script->m_entity.index};
 				m_universe.addComponent(script->m_entity, JS_SCRIPT_TYPE, this, cmp);
-			}
+			}*/
+			ASSERT(false); // TODO
 		}
 
 
@@ -1626,7 +1614,8 @@ namespace Lumix
 					if (!instance.m_script) continue;
 					if (!instance.m_script->isReady()) continue;
 
-					startScript(instance, false);
+					auto* call = beginFunctionCall({ scr->m_entity.index }, j, "onStartGame");
+					if (call) endFunctionCall();
 				}
 			}
 			m_scripts_init_called = true;
@@ -1635,7 +1624,7 @@ namespace Lumix
 
 		void updateTimers(float time_delta)
 		{
-			// TODO
+			ASSERT(false); // TODO
 			/*
 			int timers_to_remove[1024];
 			int timers_to_remove_count = 0;
@@ -1675,38 +1664,27 @@ namespace Lumix
 
 		void update(float time_delta, bool paused) override
 		{
-			// TODO
-			/*
 			PROFILE_FUNCTION();
 
 			if (m_is_game_running && !m_scripts_init_called) initScripts();
 
-			if (paused) return;
-
-			updateTimers(time_delta);
+			if (paused || !m_is_game_running) return;
 
 			for (int i = 0; i < m_updates.size(); ++i)
 			{
 				UpdateData update_item = m_updates[i];
-				if (JS_rawgeti(update_item.state, JS_REGISTRYINDEX, update_item.environment) != JS_TTABLE)
-				{
-					ASSERT(false);
-				}
-				if (JS_getfield(update_item.state, -1, "update") != JS_TFUNCTION)
-				{
-					JS_pop(update_item.state, 2);
-					continue;
-				}
-
-				JS_pushnumber(update_item.state, time_delta);
-				if (JS_pcall(update_item.state, 1, 0, 0) != JS_OK)
-				{
-					g_log_error.log("JS Script") << JS_tostring(update_item.state, -1);
-					JS_pop(update_item.state, 1);
-				}
-				JS_pop(update_item.state, 1);
+				duk_push_global_stash(update_item.context);
+				duk_push_pointer(update_item.context, (void*)update_item.id);
+				duk_get_prop(update_item.context, -2); //[stash, this]
+				duk_get_prop_string(update_item.context, -1, "update"); //[stash, this, func]
+				duk_dup(update_item.context, -2); //[stash, this, func, this]
+				duk_push_number(update_item.context, time_delta);
+				duk_call_method(update_item.context, 1); //[stash, this, func, this, arg] -> [stash, this, retval]
+				duk_pop_3(update_item.context);
 			}
-			*/
+
+			// TODO
+			// updateTimers(time_delta);
 		}
 
 
@@ -1766,7 +1744,8 @@ namespace Lumix
 		int addScript(ComponentHandle cmp) override
 		{
 			ScriptComponent* script_cmp = m_scripts[{cmp.index}];
-			script_cmp->m_scripts.emplace(m_system.m_allocator);
+			ScriptInstance& inst = script_cmp->m_scripts.emplace(m_system.m_allocator);
+			inst.m_id = ++m_id_generator;
 			return script_cmp->m_scripts.size() - 1;
 		}
 
@@ -1820,7 +1799,6 @@ namespace Lumix
 			char path[MAX_PATH_LENGTH];
 			blob.readString(path, lengthOf(path));
 			blob.read(count);
-			scr.m_environment = -1;
 			scr.m_properties.clear();
 			char buf[256];
 			for (int i = 0; i < count; ++i)
@@ -1846,6 +1824,7 @@ namespace Lumix
 		bool m_scripts_init_called = false;
 		bool m_is_api_registered = false;
 		bool m_is_game_running = false;
+		uintptr m_id_generator = 0;
 	};
 
 
@@ -2090,7 +2069,7 @@ namespace Lumix
 				desc->set(cmp, -1, blob);
 			}
 			break;
-			// TODO
+			ASSERT(false); // TODO
 			/*case PropertyDescriptorBase::ENTITY:
 			{
 				auto v = JSWrapper::checkArg<Entity>(ctx, 0);
@@ -2131,8 +2110,8 @@ namespace Lumix
 		{
 			switch (desc->getType())
 			{
-				case PropertyDescriptorBase::ENUM:
-				// TODO
+				//case PropertyDescriptorBase::ENUM:
+				//ASSERT(false); // TODO
 				//case PropertyDescriptorBase::ENTITY:
 				case PropertyDescriptorBase::COLOR:
 				case PropertyDescriptorBase::VEC3:
