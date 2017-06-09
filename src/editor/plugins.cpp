@@ -574,27 +574,30 @@ struct ConsolePlugin LUMIX_FINAL : public StudioApp::IPlugin
 		while (duk_next(ctx, -1, 0))
 		{
 			/* [ ... enum key ] */
-			const char* name = duk_to_string(ctx, -1);
-			if (startsWith(name, item))
+			if (duk_is_string(ctx, -1) && !duk_is_symbol(ctx, -1))
 			{
-				if (*next == '.' && next[1] == '\0')
+				const char* name = duk_to_string(ctx, -1);
+				if (startsWith(name, item))
 				{
-					if (equalStrings(name, item))
+					if (*next == '.' && next[1] == '\0')
+					{
+						if (equalStrings(name, item))
+						{
+							duk_get_prop_string(ctx, -3, name);
+							autocompleteSubstep(ctx, "", data);
+							duk_pop(ctx);
+						}
+					}
+					else if (*next == '\0')
+					{
+						autocomplete.push(string(name, app.getWorldEditor()->getAllocator()));
+					}
+					else
 					{
 						duk_get_prop_string(ctx, -3, name);
-						autocompleteSubstep(ctx, "", data);
+						autocompleteSubstep(ctx, next + 1, data);
 						duk_pop(ctx);
 					}
-				}
-				else if (*next == '\0')
-				{
-					autocomplete.push(string(name, app.getWorldEditor()->getAllocator()));
-				}
-				else
-				{
-					duk_get_prop_string(ctx, -3, name);
-					autocompleteSubstep(ctx, next + 1, data);
-					duk_pop(ctx);
 				}
 			}
 			duk_pop(ctx);

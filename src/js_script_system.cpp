@@ -104,9 +104,6 @@ namespace Lumix
 
 	static int componentJSConstructor(duk_context* ctx)
 	{
-		duk_get_global_string(ctx, "camera");
-		duk_pop(ctx);
-
 		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
 		if (!duk_is_pointer(ctx, 0)) return DUK_RET_TYPE_ERROR;
 
@@ -671,7 +668,7 @@ namespace Lumix
 				valid_properties.resize(inst.m_properties.size());
 				valid_properties.setAllZeros();
 
-				if (duk_is_function(ctx, -1))
+				if (duk_is_function(ctx, -1) || duk_is_object(ctx, -1))
 				{
 					duk_pop_2(ctx);
 					continue;
@@ -1419,11 +1416,11 @@ namespace Lumix
 		IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
 		if (!scene) duk_eval_error(ctx, "getting property on invalid object");
 
-		duk_get_prop_string(ctx, -1, "c_cmphandle");
+		duk_get_prop_string(ctx, -2, "c_cmphandle");
 		ComponentHandle cmp_handle = JSWrapper::toType<ComponentHandle>(ctx, -1);
-		duk_get_prop_string(ctx, -1, "c_cmptype");
+		duk_get_prop_string(ctx, -3, "c_cmptype");
 		ComponentType cmp_type = { JSWrapper::toType<int>(ctx, -1) };
-		duk_pop(ctx);
+		duk_pop_3(ctx);
 
 		duk_push_current_function(ctx);
 		duk_get_prop_string(ctx, -1, "c_desc");
