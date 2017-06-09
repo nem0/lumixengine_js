@@ -21,9 +21,7 @@ public:
 		enum Type : int
 		{
 			BOOLEAN,
-			FLOAT,
-			ENTITY,
-			RESOURCE,
+			NUMBER,
 			STRING,
 			ANY
 		};
@@ -45,11 +43,7 @@ public:
 		virtual void add(int parameter) = 0;
 		virtual void add(float parameter) = 0;
 		virtual void add(void* parameter) = 0;
-		virtual void addEnvironment(int env) = 0;
 	};
-
-	// TODO
-	//typedef int (*JS_CFunction) (JS_State *L);
 
 public:
 	virtual Path getScriptPath(ComponentHandle cmp, int scr_index) = 0;	

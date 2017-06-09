@@ -53,14 +53,14 @@ namespace Lumix
 	static int entityProxyGetter(duk_context* ctx)
 	{
 		duk_get_prop_string(ctx, 0, "c_universe");
-		Universe* universe = (Universe*)duk_to_pointer(ctx, -1);
+		Universe* universe = (Universe*)duk_get_pointer(ctx, -1);
 
 		duk_get_prop_string(ctx, 0, "c_entity");
-		Entity entity = {duk_to_int(ctx, -1)};
+		Entity entity = {duk_get_int(ctx, -1)};
 
 		duk_pop_2(ctx);
 
-		const char* cmp_type_name = duk_to_string(ctx, 1);
+		const char* cmp_type_name = duk_get_string(ctx, 1);
 		ComponentType cmp_type = PropertyRegister::getComponentType(cmp_type_name);
 
 		IScene* scene = universe->getScene(cmp_type);
@@ -182,7 +182,7 @@ namespace Lumix
 	}
 
 
-	static void registerGlobal(duk_context* ctx, const char* type_name, const char* var_name, void* ptr)
+	static void registerGlobalVariable(duk_context* ctx, const char* type_name, const char* var_name, void* ptr)
 	{
 		if (duk_get_global_string(ctx, type_name) != 1)
 		{
@@ -256,75 +256,6 @@ namespace Lumix
 			}
 
 
-			void detectProperties(ScriptInstance& inst)
-			{
-				ASSERT(false); // TODO
-				/*static const u32 INDEX_HASH = crc32("__index");
-				static const u32 THIS_HASH = crc32("this");
-				JS_State* L = inst.m_state;
-				bool is_env_valid = JS_rawgeti(L, JS_REGISTRYINDEX, inst.m_environment) == JS_TTABLE;
-				ASSERT(is_env_valid);
-				JS_pushnil(L);
-				auto& allocator = m_scene.m_system.m_allocator;
-				BinaryArray valid_properties(m_scene.m_system.m_engine.getLIFOAllocator());
-				valid_properties.resize(inst.m_properties.size());
-				setMemory(valid_properties.getRaw(), 0, valid_properties.size() >> 3);
-
-				while (JS_next(L, -2))
-				{
-					if (JS_type(L, -1) != JS_TFUNCTION)
-					{
-						const char* name = JS_tostring(L, -2);
-						if(name[0] != '_')
-						{
-							u32 hash = crc32(name);
-							if (m_scene.m_property_names.find(hash) < 0)
-							{
-								m_scene.m_property_names.emplace(hash, name, allocator);
-							}
-							if (hash != INDEX_HASH && hash != THIS_HASH)
-							{
-								int prop_index = getProperty(inst, hash);
-								if (prop_index >= 0)
-								{
-									valid_properties[prop_index] = true;
-									Property& existing_prop = inst.m_properties[prop_index];
-									if (existing_prop.type == Property::ANY)
-									{
-										switch (JS_type(inst.m_state, -1))
-										{
-										case JS_TSTRING: existing_prop.type = Property::STRING; break;
-										case JS_TBOOLEAN: existing_prop.type = Property::BOOLEAN; break;
-										default: existing_prop.type = Property::FLOAT;
-										}
-									}
-									m_scene.applyProperty(inst, existing_prop, existing_prop.stored_value.c_str());
-								}
-								else
-								{
-									auto& prop = inst.m_properties.emplace(allocator);
-									valid_properties.push(true);
-									switch (JS_type(inst.m_state, -1))
-									{
-									case JS_TBOOLEAN: prop.type = Property::BOOLEAN; break;
-									case JS_TSTRING: prop.type = Property::STRING; break;
-									default: prop.type = Property::FLOAT;
-									}
-									prop.name_hash = hash;
-								}
-							}
-						}
-					}
-					JS_pop(L, 1);
-				}
-				for (int i = inst.m_properties.size() - 1; i >= 0; --i)
-				{
-					if (valid_properties[i]) continue;
-					inst.m_properties.eraseFast(i);
-				}*/
-			}
-
-
 			void onScriptLoaded(Resource::State, Resource::State, Resource& resource)
 			{
 				duk_context* ctx = m_scene.m_system.m_global_context;
@@ -335,8 +266,6 @@ namespace Lumix
 					if (script.m_script != &resource) continue;
 
 					m_scene.startScript(m_entity, script, false);
-					// TODO
-					//detectProperties(script);
 				}
 			}
 
@@ -367,15 +296,6 @@ namespace Lumix
 			void add(void* parameter) override
 			{
 				JSWrapper::push(context, parameter);
-				++parameter_count;
-			}
-
-
-			void addEnvironment(int env) override
-			{
-				ASSERT(false); // TODO
-				// bool is_valid = JS_rawgeti(state, JS_REGISTRYINDEX, env) == JS_TTABLE;
-				//ASSERT(is_valid);
 				++parameter_count;
 			}
 
@@ -579,326 +499,6 @@ namespace Lumix
 
 		Universe& getUniverse() override { return m_universe; }
 
-		// TODO
-		/*
-		static int setPropertyType(JS_State* L)
-		{
-			const char* prop_name = JSWrapper::checkArg<const char*>(L, 1);
-			int type = JSWrapper::checkArg<int>(L, 2);
-			ResourceType resource_type;
-			if (type == Property::Type::RESOURCE)
-			{
-				resource_type = ResourceType(JSWrapper::checkArg<const char*>(L, 3));
-			}
-			int tmp = JS_getglobal(L, "g_scene_JS_script");
-			ASSERT(tmp == JS_TLIGHTUSERDATA);
-			auto* scene = JSWrapper::toType<JSScriptSceneImpl*>(L, -1);
-			u32 prop_name_hash = crc32(prop_name);
-			for (auto& prop : scene->m_current_script_instance->m_properties)
-			{
-				if (prop.name_hash == prop_name_hash)
-				{
-					prop.type = (Property::Type)type;
-					prop.resource_type = resource_type;
-					JS_pop(L, -1);
-					return 0;
-				}
-			}
-
-			auto& prop = scene->m_current_script_instance->m_properties.emplace(scene->m_system.m_allocator);
-			prop.name_hash = prop_name_hash;
-			prop.type = (Property::Type)type;
-			prop.resource_type = resource_type;
-			if (scene->m_property_names.find(prop_name_hash) < 0)
-			{
-				scene->m_property_names.emplace(prop_name_hash, prop_name, scene->m_system.m_allocator);
-			}
-			return 0;
-		}
-
-
-		void registerPropertyAPI()
-		{
-			JS_State* L = m_system.m_engine.getState();
-			auto f = &JSWrapper::wrap<decltype(&setPropertyType), &setPropertyType>;
-			JSWrapper::createSystemFunction(L, "Editor", "setPropertyType", f);
-			JSWrapper::createSystemVariable(L, "Editor", "BOOLEAN_PROPERTY", Property::BOOLEAN);
-			JSWrapper::createSystemVariable(L, "Editor", "FLOAT_PROPERTY", Property::FLOAT);
-			JSWrapper::createSystemVariable(L, "Editor", "ENTITY_PROPERTY", Property::ENTITY);
-			JSWrapper::createSystemVariable(L, "Editor", "RESOURCE_PROPERTY", Property::RESOURCE);
-		}
-
-
-		static int getEnvironment(JS_State* L)
-		{
-			auto* scene = JSWrapper::checkArg<JSScriptScene*>(L, 1);
-			Entity entity = JSWrapper::checkArg<Entity>(L, 2);
-			int scr_index = JSWrapper::checkArg<int>(L, 3);
-
-			ComponentHandle cmp = scene->getComponent(entity);
-			if (cmp == INVALID_COMPONENT)
-			{
-				JS_pushnil(L);
-				return 1;
-			}
-			int count = scene->getScriptCount(cmp);
-			if (scr_index >= count)
-			{
-				JS_pushnil(L);
-				return 1;
-			}
-
-			int env = scene->getEnvironment(cmp, scr_index);
-			if (env < 0)
-			{
-				JS_pushnil(L);
-			}
-			else
-			{
-				bool is_valid = JS_rawgeti(L, JS_REGISTRYINDEX, env) == JS_TTABLE;
-				ASSERT(is_valid);
-			}
-			return 1;
-		}
-
-
-		static int JS_getProperty(JS_State* L)
-		{
-			auto* desc = JSWrapper::toType<PropertyDescriptorBase*>(L, JS_upvalueindex(1));
-			ComponentType type = { JSWrapper::toType<int>(L, JS_upvalueindex(2)) };
-			ComponentUID cmp;
-			cmp.scene = JSWrapper::checkArg<IScene*>(L, 1);
-			cmp.handle = JSWrapper::checkArg<ComponentHandle>(L, 2);
-			cmp.type = type;
-			cmp.entity = INVALID_ENTITY;
-			switch (desc->getType())
-			{
-				case PropertyDescriptorBase::DECIMAL:
-				{
-					float v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::BOOL:
-				{
-					bool v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::INTEGER:
-				{
-					int v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::RESOURCE:
-				case PropertyDescriptorBase::FILE:
-				case PropertyDescriptorBase::STRING:
-				{
-					char buf[1024];
-					OutputBlob blob(buf, sizeof(buf));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, buf);
-				}
-				break;
-				case PropertyDescriptorBase::COLOR:
-				case PropertyDescriptorBase::VEC3:
-				{
-					Vec3 v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::VEC2:
-				{
-					Vec2 v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::INT2:
-				{
-					Int2 v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::ENTITY:
-				{
-					Entity v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				case PropertyDescriptorBase::ENUM:
-				{
-					int v;
-					OutputBlob blob(&v, sizeof(v));
-					desc->get(cmp, -1, blob);
-					JSWrapper::push(L, v);
-				}
-				break;
-				default: JSL_argerror(L, 1, "Unsupported property type"); break;
-			}
-			return 1;
-		}
-
-
-		static int JS_setProperty(JS_State* L)
-		{
-			auto* desc = JSWrapper::toType<PropertyDescriptorBase*>(L, JS_upvalueindex(1));
-			ComponentType type = { JSWrapper::toType<int>(L, JS_upvalueindex(2)) };
-			ComponentUID cmp;
-			cmp.scene = JSWrapper::checkArg<IScene*>(L, 1);
-			cmp.handle = JSWrapper::checkArg<ComponentHandle>(L, 2);
-			cmp.type = type;
-			cmp.entity = INVALID_ENTITY;
-			switch(desc->getType())
-			{
-				case PropertyDescriptorBase::DECIMAL:
-				{
-					auto v = JSWrapper::checkArg<float>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::INTEGER:
-				{
-					auto v = JSWrapper::checkArg<int>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::BOOL:
-				{
-					auto v = JSWrapper::checkArg<bool>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::RESOURCE:
-				case PropertyDescriptorBase::FILE:
-				case PropertyDescriptorBase::STRING:
-				{
-					auto* v = JSWrapper::checkArg<const char*>(L, 3);
-					InputBlob blob(v, stringLength(v) + 1);
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::COLOR:
-				case PropertyDescriptorBase::VEC3:
-				{
-					auto v = JSWrapper::checkArg<Vec3>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::VEC2:
-				{
-					auto v = JSWrapper::checkArg<Vec2>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::INT2:
-				{
-					auto v = JSWrapper::checkArg<Int2>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::ENTITY:
-				{
-					auto v = JSWrapper::checkArg<Entity>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				case PropertyDescriptorBase::ENUM:
-				{
-					auto v = JSWrapper::checkArg<int>(L, 3);
-					InputBlob blob(&v, sizeof(v));
-					desc->set(cmp, -1, blob);
-				}
-				break;
-				default: JSL_argerror(L, 1, "Unsupported property type"); break;
-			}
-			return 0;
-		}
-
-
-		void registerProperties()
-		{
-			int cmps_count = PropertyRegister::getComponentTypesCount();
-			JS_State* L = m_system.m_engine.getState();
-			for (int i = 0; i < cmps_count; ++i)
-			{
-				const char* cmp_name = PropertyRegister::getComponentTypeID(i);
-				JS_newtable(L);
-				JS_pushvalue(L, -1);
-				char tmp[50];
-				convertPropertyToJSName(cmp_name, tmp, lengthOf(tmp));
-				JS_setglobal(L, tmp);
-
-				ComponentType cmp_type = PropertyRegister::getComponentType(cmp_name);
-				auto& descs = PropertyRegister::getDescriptors(cmp_type);
-				char setter[50];
-				char getter[50];
-				for (auto* desc : descs)
-				{
-					switch (desc->getType())
-					{
-						case PropertyDescriptorBase::ENTITY:
-						case PropertyDescriptorBase::ENUM:
-						case PropertyDescriptorBase::DECIMAL:
-						case PropertyDescriptorBase::INTEGER:
-						case PropertyDescriptorBase::BOOL:
-						case PropertyDescriptorBase::VEC3:
-						case PropertyDescriptorBase::VEC2:
-						case PropertyDescriptorBase::INT2:
-						case PropertyDescriptorBase::COLOR:
-						case PropertyDescriptorBase::RESOURCE:
-						case PropertyDescriptorBase::FILE:
-						case PropertyDescriptorBase::STRING:
-							convertPropertyToJSName(desc->getName(), tmp, lengthOf(tmp));
-							copyString(setter, "set");
-							copyString(getter, "get");
-							catString(setter, tmp);
-							catString(getter, tmp);
-							JS_pushlightuserdata(L, desc);
-							JS_pushinteger(L, cmp_type.index);
-							JS_pushcclosure(L, &JS_setProperty, 2);
-							JS_setfield(L, -2, setter);
-
-							JS_pushlightuserdata(L, desc);
-							JS_pushinteger(L, cmp_type.index);
-							JS_pushcclosure(L, &JS_getProperty, 2);
-							JS_setfield(L, -2, getter);
-							break;
-						default: break;
-					}
-				}
-				JS_pop(L, 1);
-			}
-		}
-
-
-		void setScriptSource(ComponentHandle cmp, int scr_index, const char* path)
-		{
-			setScriptPath(cmp, scr_index, Path(path));
-		}
-		*/
-
 
 		void getInstanceName(IScene& scene, char* out_str, int size)
 		{
@@ -913,9 +513,7 @@ namespace Lumix
 			m_is_api_registered = true;
 
 			duk_context* ctx = m_system.m_global_context;
-			registerGlobal(ctx, "Universe", "g_universe", &m_universe);
-
-			registerJSObject(ctx, nullptr, "SceneBase", &ptrJSConstructor);
+			registerGlobalVariable(ctx, "Universe", "g_universe", &m_universe);
 
 			Array<IScene*>& scenes = m_universe.getScenes();
 			for (IScene* scene : scenes)
@@ -924,29 +522,8 @@ namespace Lumix
 				char inst_name[50];
 				getInstanceName(*scene, inst_name, lengthOf(inst_name));
 				registerJSObject(ctx, "SceneBase", type_name, &ptrJSConstructor);
-				registerGlobal(ctx, type_name, inst_name, scene);
+				registerGlobalVariable(ctx, type_name, inst_name, scene);
 			}
-
-			//TODO
-/*			
-			registerProperties();
-			registerPropertyAPI();
-			JSWrapper::createSystemFunction(
-				engine_state, "JSScript", "getEnvironment", &JSScriptSceneImpl::getEnvironment);
-			
-			#define REGISTER_FUNCTION(F) \
-				do { \
-					auto f = &JSWrapper::wrapMethod<JSScriptSceneImpl, \
-						decltype(&JSScriptSceneImpl::F), \
-						&JSScriptSceneImpl::F>; \
-					JSWrapper::createSystemFunction(engine_state, "JSScript", #F, f); \
-				} while(false)
-
-			REGISTER_FUNCTION(addScript);
-			REGISTER_FUNCTION(getScriptCount);
-			REGISTER_FUNCTION(setScriptSource);
-
-			#undef REGISTER_FUNCTION*/
 		}
 
 
@@ -958,81 +535,44 @@ namespace Lumix
 		}
 
 
-		// TODO
-		/*
-		void applyResourceProperty(ScriptInstance& script, const char* name, Property& prop, const char* value)
-		{
-			bool is_env_valid = JS_rawgeti(script.m_state, JS_REGISTRYINDEX, script.m_environment) == JS_TTABLE;
-			ASSERT(is_env_valid);
-			JS_getfield(script.m_state, -1, name);
-			int res_idx = JSWrapper::toType<int>(script.m_state, -1);
-			m_system.m_engine.unloadJSResource(res_idx);
-			JS_pop(script.m_state, 1);
-
-			int new_res = m_system.m_engine.addJSResource(Path(value), prop.resource_type);
-			JS_pushinteger(script.m_state, new_res);
-			JS_setfield(script.m_state, -2, name);
-			JS_pop(script.m_state, 1);
-		}
-
-
-		void applyProperty(ScriptInstance& script, Property& prop, const char* value)
+		void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, const char* value)
 		{
 			if (!value) return;
-			JS_State* state = script.m_state;
 			const char* name = getPropertyName(prop.name_hash);
 			if (!name) return;
 
-			if (prop.type == Property::RESOURCE)
+			duk_push_global_stash(ctx);
+			duk_push_pointer(ctx, (void*)script.m_id);
+			duk_get_prop(ctx, -2);
+
+			if (duk_peval_string(ctx, value) != 0)
 			{
-				applyResourceProperty(script, name, prop, value);
+				const char* error = duk_safe_to_string(ctx, -1);
+				g_log_error.log("JS Script") << error;
+				duk_pop_3(ctx);
 				return;
 			}
-
-			StaticString<1024> tmp(name, " = ");
-			if (prop.type == Property::STRING) tmp << "\"" << value << "\"";
-			else tmp << value;
-
-			bool errors = JSL_loadbuffer(state, tmp, stringLength(tmp), nullptr) != JS_OK;
-			if (errors)
-			{
-				g_log_error.log("JS Script") << script.m_script->getPath() << ": " << JS_tostring(state, -1);
-				JS_pop(state, 1);
-				return;
-			}
-
-			bool is_env_valid = JS_rawgeti(script.m_state, JS_REGISTRYINDEX, script.m_environment) == JS_TTABLE;
-			ASSERT(is_env_valid);
-			JS_setupvalue(script.m_state, -2, 1);
-
-			errors = errors || JS_pcall(state, 0, 0, 0) != JS_OK;
-
-			if (errors)
-			{
-				g_log_error.log("JS Script") << script.m_script->getPath() << ": " << JS_tostring(state, -1);
-				JS_pop(state, 1);
-			}
+			duk_put_prop_string(ctx, -2, name);
+			duk_pop_2(ctx);
 		}
-		*/
+
 
 		void setPropertyValue(ComponentHandle cmp,
 			int scr_index,
 			const char* name,
 			const char* value) override
 		{
-			ASSERT(false); // TODO
-			/*auto* script_cmp = m_scripts[{cmp.index}];
+			ScriptComponent* script_cmp = m_scripts[{cmp.index}];
 			if (!script_cmp) return;
 			Property& prop = getScriptProperty(cmp, scr_index, name);
-			if (!script_cmp->m_scripts[scr_index].m_state)
+			if (!script_cmp->m_scripts[scr_index].m_script->isReady())
 			{
 				prop.stored_value = value;
 				return;
 			}
 
-			applyProperty(script_cmp->m_scripts[scr_index], prop, value);*/
+			applyProperty(m_system.m_global_context, script_cmp->m_scripts[scr_index], prop, value);
 		}
-
 
 		const char* getPropertyName(ComponentHandle cmp, int scr_index, int index) const
 		{
@@ -1116,6 +656,68 @@ namespace Lumix
 		}
 
 
+		void detectProperties(ScriptInstance& inst)
+		{
+			duk_context* ctx = m_system.m_global_context;
+			duk_push_global_stash(ctx);
+			duk_push_pointer(ctx, (void*)inst.m_id);
+			duk_get_prop(ctx, -2); //[stash, id] -> [stash, obj]
+
+			duk_enum(ctx, -1, 0);
+			while (duk_next(ctx, -1, 1))
+			{
+				// [... enum key value]
+				BinaryArray valid_properties(m_system.m_engine.getLIFOAllocator());
+				valid_properties.resize(inst.m_properties.size());
+				valid_properties.setAllZeros();
+
+				if (duk_is_function(ctx, -1))
+				{
+					duk_pop_2(ctx);
+					continue;
+				}
+
+				auto& allocator = m_system.m_allocator;
+				const char* prop_name = duk_get_string(ctx, -2);
+				u32 hash = crc32(prop_name);
+				if (m_property_names.find(hash) < 0)
+				{
+					m_property_names.emplace(hash, prop_name, allocator);
+				}
+				int prop_index = ScriptComponent::getProperty(inst, hash);
+				if (prop_index >= 0)
+				{
+					valid_properties[prop_index] = true;
+					Property& existing_prop = inst.m_properties[prop_index];
+					if (existing_prop.type == Property::ANY)
+					{
+						switch (duk_get_type(ctx, -1))
+						{
+							case DUK_TYPE_STRING: existing_prop.type = Property::STRING; break;
+							case DUK_TYPE_BOOLEAN: existing_prop.type = Property::BOOLEAN; break;
+							default: existing_prop.type = Property::NUMBER;
+						}
+					}
+					applyProperty(ctx, inst, existing_prop, existing_prop.stored_value.c_str());
+				}
+				else
+				{
+					auto& prop = inst.m_properties.emplace(allocator);
+					valid_properties.push(true);
+					switch (duk_get_type(ctx, -1))
+					{
+						case DUK_TYPE_BOOLEAN: prop.type = Property::BOOLEAN; break;
+						case DUK_TYPE_STRING: prop.type = Property::STRING; break;
+						default: prop.type = Property::NUMBER;
+					}
+					prop.name_hash = hash;
+				}
+				duk_pop_2(ctx);
+			}
+			duk_pop_3(ctx); // [stash obj enum] -> []
+		}
+
+
 		void startScript(Entity entity, ScriptInstance& instance, bool is_restart)
 		{
 			duk_context* ctx = m_system.m_global_context;
@@ -1129,7 +731,13 @@ namespace Lumix
 			duk_new(ctx, 2);
 			duk_put_global_string(ctx, "_entity");
 			
-			duk_eval_string(ctx, instance.m_script->getSourceCode());
+			if (duk_peval_string(ctx, instance.m_script->getSourceCode()) != 0)
+			{
+				const char* error = duk_safe_to_string(ctx, -1);
+				g_log_error.log("JS Script") << error;
+				duk_pop_3(ctx);
+				return;
+			}
 
 			if (!duk_is_object(ctx, -1))
 			{
@@ -1155,6 +763,8 @@ namespace Lumix
 				update.id = instance.m_id;
 			}
 			duk_pop(ctx);
+
+			detectProperties(instance);
 
 			if (!m_scripts_init_called)
 			{
@@ -1257,66 +867,44 @@ namespace Lumix
 
 		void getProperty(Property& prop, const char* prop_name, ScriptInstance& scr, char* out, int max_size)
 		{
-			ASSERT(false); // TODO
-			/*
-			if(max_size <= 0) return;
-			if (!scr.m_state)
+			duk_context* ctx = m_system.m_global_context;
+			duk_push_global_stash(ctx);
+			duk_push_pointer(ctx, (void*)scr.m_id);
+			duk_get_prop(ctx, -2); // -> [stash obj]
+			duk_get_prop_string(ctx, -1, prop_name); // -> [stash obj prop]
+			if (duk_is_null_or_undefined(ctx, -1))
 			{
 				copyString(out, max_size, prop.stored_value.c_str());
-				return;
-			}
-
-			*out = '\0';
-			JS_rawgeti(scr.m_state, JS_REGISTRYINDEX, scr.m_environment);
-			if (JS_getfield(scr.m_state, -1, prop_name) == JS_TNIL)
-			{
-				copyString(out, max_size, prop.stored_value.c_str());
-				JS_pop(scr.m_state, 2);
+				duk_pop_3(ctx);
 				return;
 			}
 			switch (prop.type)
 			{
 				case Property::BOOLEAN:
 				{
-					bool b = JS_toboolean(scr.m_state, -1) != 0;
+					bool b = duk_get_boolean(ctx, -1) != 0;
 					copyString(out, max_size, b ? "true" : "false");
 				}
 				break;
-				case Property::FLOAT:
+				case Property::NUMBER:
 				{
-					float val = (float)JS_tonumber(scr.m_state, -1);
+					float val = (float)duk_get_number(ctx, -1);
 					toCString(val, out, max_size, 8);
 				}
 				break;
-				case Property::ENTITY:
-				{
-					Entity val = { (int)JS_tointeger(scr.m_state, -1) };
-					toCString(val.index, out, max_size);
-				}
-				break;
-				case Property::STRING:
-				{
-					copyString(out, max_size, JS_tostring(scr.m_state, -1));
-				}
-				break;
-				case Property::RESOURCE:
-				{
-					int res_idx = JSWrapper::toType<int>(scr.m_state, -1);
-					Resource* res = m_system.m_engine.getJSResource(res_idx);
-					copyString(out, max_size, res ? res->getPath().c_str() : "");
+				case Property::STRING: 
+				{ 
+					copyString(out, max_size, duk_get_string(ctx, -1));
 				}
 				break;
 				default: ASSERT(false); break;
 			}
-			JS_pop(scr.m_state, 2);
-			*/
+			duk_pop_3(ctx);
 		}
 
 
 		void serializeJSScript(ISerializer& serializer, ComponentHandle cmp)
 		{
-			ASSERT(false); // TODO
-			/*
 			ScriptComponent* script = m_scripts[{cmp.index}];
 			serializer.write("count", script->m_scripts.size());
 			for (ScriptInstance& inst : script->m_scripts)
@@ -1332,28 +920,9 @@ namespace Lumix
 					{
 						const char* name = m_property_names.at(idx).c_str();
 						serializer.write("prop_type", (int)prop.type);
-						if (prop.type == Property::ENTITY)
-						{
-							JS_rawgeti(inst.m_state, JS_REGISTRYINDEX, inst.m_environment);
-							if (JS_getfield(inst.m_state, -1, name) == JS_TNIL)
-							{
-								serializer.write("prop_value", prop.stored_value.c_str());
-							}
-							else
-							{
-								Entity val = {(int)JS_tointeger(inst.m_state, -1)};
-								EntityGUID guid = serializer.getGUID(val);
-								char tmp[128];
-								toCString(guid.value, tmp, lengthOf(tmp));
-								serializer.write("prop_value", tmp);
-							}
-						}
-						else
-						{
-							char tmp[1024];
-							getProperty(prop, name, inst, tmp, lengthOf(tmp));
-							serializer.write("prop_value", tmp);
-						}
+						char tmp[1024];
+						getProperty(prop, name, inst, tmp, lengthOf(tmp));
+						serializer.write("prop_value", tmp);
 					}
 					else
 					{
@@ -1362,7 +931,6 @@ namespace Lumix
 					}
 				}
 			}
-			*/
 		}
 
 
@@ -1402,13 +970,6 @@ namespace Lumix
 					if (scene_version > (int)JSSceneVersion::PROPERTY_TYPE) serializer.read((int*)&prop.type);
 					serializer.read(tmp, lengthOf(tmp));
 					
-					if (prop.type == Property::ENTITY)
-					{
-						u64 guid;
-						fromCString(tmp, lengthOf(tmp), &guid);
-						Entity entity = serializer.getEntity({guid});
-						toCString(entity.index, tmp, lengthOf(tmp));
-					}
 					prop.stored_value = tmp;
 				}
 			}
@@ -1928,14 +1489,6 @@ namespace Lumix
 				desc->set(cmp, -1, blob);
 			}
 			break;
-			ASSERT(false); // TODO
-			/*case PropertyDescriptorBase::ENTITY:
-			{
-				auto v = JSWrapper::checkArg<Entity>(ctx, 0);
-				InputBlob blob(&v, sizeof(v));
-				desc->set(cmp, -1, blob);
-			}
-			break;*/
 			case PropertyDescriptorBase::ENUM:
 			{
 				auto v = JSWrapper::checkArg<int>(ctx, 0);
@@ -1969,15 +1522,11 @@ namespace Lumix
 		{
 			switch (desc->getType())
 			{
-				//case PropertyDescriptorBase::ENUM:
-				//ASSERT(false); // TODO
-				//case PropertyDescriptorBase::ENTITY:
 				case PropertyDescriptorBase::COLOR:
 				case PropertyDescriptorBase::VEC3:
 				case PropertyDescriptorBase::DECIMAL:
 				case PropertyDescriptorBase::INTEGER:
 				case PropertyDescriptorBase::BOOL:
-				case PropertyDescriptorBase::RESOURCE:
 				case PropertyDescriptorBase::FILE:
 				case PropertyDescriptorBase::STRING:
 				case PropertyDescriptorBase::VEC2:
@@ -2027,7 +1576,7 @@ namespace Lumix
 		REGISTER_JS_FUNCTION(logInfo);
 
 		registerJSObject(m_global_context, nullptr, "Engine", &ptrJSConstructor);
-		registerGlobal(m_global_context, "Engine", "g_engine", &m_engine);
+		registerGlobalVariable(m_global_context, "Engine", "g_engine", &m_engine);
 
 		REGISTER_JS_METHOD(Engine, pause);
 		REGISTER_JS_METHOD(Engine, nextFrame);
@@ -2038,6 +1587,7 @@ namespace Lumix
 		REGISTER_JS_METHOD(Engine, getLastTimeDelta);
 
 		registerJSObject(m_global_context, nullptr, "Universe", &ptrJSConstructor);
+
 //		REGISTER_JS_METHOD(Universe, createEntity);
 //		REGISTER_JS_METHOD(Universe, destroyEntity);
 //		REGISTER_JS_METHOD(Universe, setEntityName);
@@ -2045,6 +1595,7 @@ namespace Lumix
 		//REGISTER_JS_METHOD(Universe, getEntityByName);
 		//REGISTER_JS_METHOD(Universe, setScale);
 
+		registerJSObject(m_global_context, nullptr, "SceneBase", &ptrJSConstructor);
 		registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
 
 		#undef REGISTER_JS_FUNCTION

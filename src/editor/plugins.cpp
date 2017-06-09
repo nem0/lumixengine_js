@@ -425,25 +425,12 @@ struct PropertyGridPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 							}
 						}
 						break;
-						case JSScriptScene::Property::FLOAT:
+						case JSScriptScene::Property::NUMBER:
 						{
 							float f = (float)atof(buf);
 							if (ImGui::DragFloat(property_name, &f))
 							{
 								toCString(f, buf, sizeof(buf), 5);
-								auto* cmd = LUMIX_NEW(allocator, SetPropertyCommand)(
-									editor, cmp.handle, j, property_name, buf, allocator);
-								editor.executeCommand(cmd);
-							}
-						}
-						break;
-						case JSScriptScene::Property::ENTITY:
-						{
-							Entity e;
-							fromCString(buf, sizeof(buf), &e.index);
-							if (grid.entityInput(property_name, StaticString<50>(property_name, cmp.handle.index), e))
-							{
-								toCString(e.index, buf, sizeof(buf));
 								auto* cmd = LUMIX_NEW(allocator, SetPropertyCommand)(
 									editor, cmp.handle, j, property_name, buf, allocator);
 								editor.executeCommand(cmd);
@@ -459,18 +446,6 @@ struct PropertyGridPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 								editor.executeCommand(cmd);
 							}
 							break;
-						case JSScriptScene::Property::RESOURCE:
-						{
-							ResourceType res_type = scene->getPropertyResourceType(cmp.handle, j, k);
-							if (m_app.getAssetBrowser()->resourceInput(
-									property_name, property_name, buf, lengthOf(buf), res_type))
-							{
-								auto* cmd = LUMIX_NEW(allocator, SetPropertyCommand)(
-									editor, cmp.handle, j, property_name, buf, allocator);
-								editor.executeCommand(cmd);
-							}
-						}
-						break;
 						default: ASSERT(false); break;
 					}
 				}
