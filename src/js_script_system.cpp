@@ -38,6 +38,45 @@ namespace Lumix
 	};
 
 
+	static int createEntity(duk_context* ctx)
+	{
+		Vec3 position = JSWrapper::checkArg<Vec3>(ctx, 0);
+		Quat rotation = JSWrapper::checkArg<Quat>(ctx, 1);
+
+		duk_push_this(ctx);
+		duk_get_prop_string(ctx, -1, "c_ptr");
+		auto* universe = (Universe*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx);
+
+		Entity e = universe->createEntity(position, rotation);
+
+		duk_get_global_string(ctx, "Entity");
+		duk_push_pointer(ctx, universe);
+		JSWrapper::push(ctx, e);
+		duk_new(ctx, 2);
+		return 1;
+	}
+
+
+	static int getEntityByName(duk_context* ctx)
+	{
+		auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+
+		duk_push_this(ctx);
+		duk_get_prop_string(ctx, -1, "c_ptr");
+		auto* universe = (Universe*)duk_to_pointer(ctx, -1);
+		duk_pop_2(ctx);
+
+		Entity e = universe->getEntityByName(name);
+
+		duk_get_global_string(ctx, "Entity");
+		duk_push_pointer(ctx, universe);
+		JSWrapper::push(ctx, e);
+		duk_new(ctx, 2);
+		return 1;
+	}
+
+
 	static int ptrJSConstructor(duk_context* ctx)
 	{
 		if (!duk_is_constructor_call(ctx)) return DUK_RET_TYPE_ERROR;
@@ -1585,12 +1624,8 @@ namespace Lumix
 
 		registerJSObject(m_global_context, nullptr, "Universe", &ptrJSConstructor);
 
-//		REGISTER_JS_METHOD(Universe, createEntity);
-//		REGISTER_JS_METHOD(Universe, destroyEntity);
-//		REGISTER_JS_METHOD(Universe, setEntityName);
-//		REGISTER_JS_METHOD(Universe, getEntityName);
-		//REGISTER_JS_METHOD(Universe, getEntityByName);
-		//REGISTER_JS_METHOD(Universe, setScale);
+		registerMethod(m_global_context, "Universe", "createEntity", &createEntity);
+		registerMethod(m_global_context, "Universe", "getEntityByName", &getEntityByName);
 
 		registerJSObject(m_global_context, nullptr, "SceneBase", &ptrJSConstructor);
 		registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
