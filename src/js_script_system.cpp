@@ -20,6 +20,7 @@
 #include "engine/serializer.h"
 #include "engine/string.h"
 #include "engine/universe/universe.h"
+#include "imgui/imgui.h"
 #include "js_script_manager.h"
 #include "js_wrapper.h"
 
@@ -29,6 +30,124 @@ namespace Lumix
 	static const ComponentType JS_SCRIPT_TYPE = PropertyRegister::getComponentType("js_script");
 	static const ResourceType JS_SCRIPT_RESOURCE_TYPE("js_script");
 
+	namespace JSImGui
+	{
+		int Text(duk_context* ctx)
+		{
+			auto* text = JSWrapper::checkArg<const char*>(ctx, 0);
+			ImGui::Text("%s", text);
+			return 0;
+		}
+
+
+		int Button(duk_context* ctx)
+		{
+			auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool ret = ImGui::Button(label);
+			JSWrapper::push(ctx, ret);
+			return 1;
+		}
+
+
+		int Begin(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool ret = ImGui::Begin(name);
+			JSWrapper::push(ctx, ret);
+			return 1;
+		}
+
+
+		int Checkbox(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool value = JSWrapper::checkArg<bool>(ctx, 1);
+			ImGui::Checkbox(name, &value);
+			JSWrapper::push(ctx, value);
+			return 1;
+		}
+
+
+		int CollapsingHeader(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool ret = ImGui::CollapsingHeader(name);
+			JSWrapper::push(ctx, ret);
+			return 1;
+		}
+
+
+		int Selectable(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool selected = JSWrapper::checkArg<bool>(ctx, 1);
+			ImGui::Selectable(name, &selected);
+			JSWrapper::push(ctx, selected);
+			return 1;
+		}
+
+
+		int BeginChildFrame(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			ImVec2 size(0, 0);
+			if (duk_get_top(ctx) > 1)
+			{
+				size.x = JSWrapper::checkArg<float>(ctx, 1);
+				size.y = JSWrapper::checkArg<float>(ctx, 2);
+			}
+			bool ret = ImGui::BeginChildFrame(ImGui::GetID(name), size);
+			JSWrapper::push(ctx, ret);
+			return 1;
+		}
+
+
+		int BeginDock(duk_context* ctx)
+		{
+			auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+			bool ret = ImGui::BeginDock(name);
+			JSWrapper::push(ctx, ret);
+			return 1;
+		}
+
+
+		int SliderFloat(duk_context* ctx)
+		{
+			auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
+			float value = JSWrapper::checkArg<float>(ctx, 1);
+			float v_min = JSWrapper::checkArg<float>(ctx, 2);
+			float v_max = JSWrapper::checkArg<float>(ctx, 3);
+			ImGui::SliderFloat(label, &value, v_min, v_max);
+			JSWrapper::push(ctx, value);
+			return 1;
+		}
+
+
+		int DragFloat(duk_context* ctx)
+		{
+			auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
+			float value = JSWrapper::checkArg<float>(ctx, 1);
+			ImGui::DragFloat(label, &value);
+			JSWrapper::push(ctx, value);
+			return 1;
+		}
+
+
+		int SameLine(duk_context* ctx)
+		{
+			ImGui::SameLine();
+			return 0;
+		}
+
+
+		int LabelText(duk_context* ctx)
+		{
+			auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
+			auto* text = JSWrapper::checkArg<const char*>(ctx, 1);
+			ImGui::LabelText(label, "%s", text);
+			return 0;
+		}
+	} // namespace JSImGui
 
 	enum class JSSceneVersion : int
 	{
@@ -241,6 +360,7 @@ namespace Lumix
 		const char* getName() const override { return "js_script"; }
 		JSScriptManager& getScriptManager() { return m_script_manager; }
 		void registerGlobalAPI();
+		void registerImGuiAPI();
 
 		Engine& m_engine;
 		Debug::Allocator m_allocator;
@@ -1599,6 +1719,59 @@ namespace Lumix
 	}
 
 
+	void JSScriptSystemImpl::registerImGuiAPI()
+	{
+		duk_context* ctx = m_global_context;
+		duk_push_object(ctx);
+		duk_dup(ctx, -1);
+		duk_put_global_string(ctx, "ImGui");
+
+		#define REGISTER_JS_FUNCTION(F) \
+			duk_push_c_function(ctx, &JSWrapper::wrap<decltype(ImGui::F), &ImGui::F>, DUK_VARARGS); \
+			duk_put_prop_string(ctx, -2, #F); \
+
+		#define REGISTER_JS_RAW_FUNCTION(F) \
+			duk_push_c_function(ctx, &JSImGui::F, DUK_VARARGS); \
+			duk_put_prop_string(ctx, -2, #F); \
+
+		REGISTER_JS_RAW_FUNCTION(Begin);
+		REGISTER_JS_RAW_FUNCTION(BeginChildFrame);
+		REGISTER_JS_RAW_FUNCTION(BeginDock);
+		REGISTER_JS_FUNCTION(BeginPopup);
+		REGISTER_JS_RAW_FUNCTION(Button);
+		REGISTER_JS_RAW_FUNCTION(Checkbox);
+		REGISTER_JS_RAW_FUNCTION(CollapsingHeader);
+		REGISTER_JS_FUNCTION(Columns);
+		REGISTER_JS_RAW_FUNCTION(DragFloat);
+		REGISTER_JS_FUNCTION(Dummy);
+		REGISTER_JS_FUNCTION(End);
+		REGISTER_JS_FUNCTION(EndChildFrame);
+		REGISTER_JS_FUNCTION(EndDock);
+		REGISTER_JS_FUNCTION(EndPopup);
+		REGISTER_JS_FUNCTION(GetColumnWidth);
+		REGISTER_JS_FUNCTION(Image);
+		REGISTER_JS_FUNCTION(Indent);
+		REGISTER_JS_RAW_FUNCTION(LabelText);
+		REGISTER_JS_FUNCTION(NewLine);
+		REGISTER_JS_FUNCTION(NextColumn);
+		REGISTER_JS_FUNCTION(OpenPopup);
+		REGISTER_JS_FUNCTION(PopItemWidth);
+		REGISTER_JS_FUNCTION(PopID);
+		REGISTER_JS_FUNCTION(PopStyleColor);
+		REGISTER_JS_FUNCTION(PopStyleVar);
+		REGISTER_JS_FUNCTION(PushItemWidth);
+		REGISTER_JS_RAW_FUNCTION(SameLine);
+		REGISTER_JS_RAW_FUNCTION(Selectable);
+		REGISTER_JS_FUNCTION(Separator);
+		REGISTER_JS_RAW_FUNCTION(SliderFloat);
+		REGISTER_JS_RAW_FUNCTION(Text);
+		REGISTER_JS_FUNCTION(Unindent);
+
+		#undef REGISTER_JS_RAW_FUNCTION
+		#undef REGISTER_JS_FUNCTION
+	}
+
+
 	void JSScriptSystemImpl::registerGlobalAPI()
 	{
 		#define REGISTER_JS_FUNCTION(F) \
@@ -1610,6 +1783,8 @@ namespace Lumix
 		REGISTER_JS_FUNCTION(logError);
 		REGISTER_JS_FUNCTION(logWarning);
 		REGISTER_JS_FUNCTION(logInfo);
+
+		registerImGuiAPI();
 
 		registerJSObject(m_global_context, nullptr, "Engine", &ptrJSConstructor);
 		registerGlobalVariable(m_global_context, "Engine", "g_engine", &m_engine);
