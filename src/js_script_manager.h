@@ -3,41 +3,26 @@
 
 #include "engine/array.h"
 #include "engine/resource.h"
-#include "engine/resource_manager_base.h"
+#include "engine/resource_manager.h"
 #include "engine/string.h"
 
 
-namespace Lumix
-{
+namespace Lumix {
 
 
-class JSScript LUMIX_FINAL : public Resource
-{
-public:
-	JSScript(const Path& path, ResourceManagerBase& resource_manager, IAllocator& allocator);
+struct JSScript final : public Resource {
+	static ResourceType TYPE;
+
+	JSScript(const Path& path, ResourceManager& resource_manager, IAllocator& allocator);
 	virtual ~JSScript();
 
+	ResourceType getType() const override { return TYPE; }
 	void unload() override;
-	bool load(FS::IFile& file) override;
+	bool load(u64 size, const u8* mem) override;
 	const char* getSourceCode() const { return m_source_code.c_str(); }
 
 private:
-	string m_source_code;
-};
-
-
-class JSScriptManager LUMIX_FINAL : public ResourceManagerBase
-{
-public:
-	explicit JSScriptManager(IAllocator& allocator);
-	~JSScriptManager();
-
-protected:
-	Resource* createResource(const Path& path) override;
-	void destroyResource(Resource& resource) override;
-
-private:
-	IAllocator& m_allocator;
+	String m_source_code;
 };
 
 

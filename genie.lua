@@ -1,4 +1,4 @@
-project "lumixengine_js"
+project "js"
 	libType()
 	files { 
 		"src/**.c",
@@ -6,7 +6,7 @@ project "lumixengine_js"
 		"src/**.h",
 		"genie.lua"
 	}
-	includedirs { "../../lumixengine_js/src", }
+	includedirs { "../../js/src", }
 	defines { "BUILDING_JS" }
 	links { "engine" }
 	useLua()

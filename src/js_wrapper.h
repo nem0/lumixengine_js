@@ -2,7 +2,7 @@
 
 
 #include "engine/log.h"
-#include "engine/matrix.h"
+#include "engine/math.h"
 #include "duktape/duktape.h"
 
 
@@ -59,12 +59,7 @@ template <typename T> struct ToType<T&>
 	}
 };
 
-template <> struct ToType<Entity>;
-
-template <> struct ToType<ComponentHandle>
-{
-	static ComponentHandle value(duk_context* ctx, int index) { return {duk_to_int(ctx, index)}; }
-};
+template <> struct ToType<EntityPtr>;
 
 template <>
 struct ToType<Vec2>
@@ -82,11 +77,11 @@ struct ToType<Vec2>
 };
 
 template <>
-struct ToType<Int2>
+struct ToType<IVec2>
 {
-	static Int2 value(duk_context* ctx, int index)
+	static IVec2 value(duk_context* ctx, int index)
 	{
-		Int2 v;
+		IVec2 v;
 		duk_get_prop_index(ctx, index, 0);
 		v.x = ToType<int>::value(ctx, -1);
 		duk_get_prop_index(ctx, index, 1);
@@ -146,13 +141,9 @@ template <> inline const char* typeToString<int>()
 {
 	return "integer";
 }
-template <> inline const char* typeToString<Entity>()
+template <> inline const char* typeToString<EntityPtr>()
 {
 	return "entity";
-}
-template <> inline const char* typeToString<ComponentHandle>()
-{
-	return "component";
 }
 template <> inline const char* typeToString<u32>()
 {
@@ -178,9 +169,9 @@ template <> inline const char* typeToString<Vec2>()
 {
 	return "Vec2";
 }
-template <> inline const char* typeToString<Int2>()
+template <> inline const char* typeToString<IVec2>()
 {
-	return "Int2";
+	return "IVec2";
 }
 template <> inline const char* typeToString<Quat>()
 {
@@ -196,13 +187,9 @@ template <> inline bool isType<int>(duk_context* ctx, int index)
 {
 	return duk_is_number(ctx, index) != 0;
 }
-template <> inline bool isType<Entity>(duk_context* ctx, int index)
+template <> inline bool isType<EntityPtr>(duk_context* ctx, int index)
 {
-	return duk_is_number(ctx, index) != 0;
-}
-template <> inline bool isType<ComponentHandle>(duk_context* ctx, int index)
-{
-	return duk_is_number(ctx, index) != 0;
+	return duk_is_object(ctx, index) != 0;
 }
 template <> inline bool isType<u32>(duk_context* ctx, int index)
 {
@@ -232,7 +219,7 @@ template <> inline bool isType<Vec2>(duk_context* ctx, int index)
 {
 	return duk_is_array(ctx, index) != 0;
 }
-template <> inline bool isType<Int2>(duk_context* ctx, int index)
+template <> inline bool isType<IVec2>(duk_context* ctx, int index)
 {
 	return duk_is_array(ctx, index) != 0;
 }
@@ -242,15 +229,34 @@ template <> inline bool isType<Quat>(duk_context* ctx, int index)
 }
 
 
-template <typename T> inline void push(duk_context* ctx, T value)
+template <typename T> inline void push(duk_context* ctx, T* value)
 {
 	duk_push_pointer(ctx, value);
 }
-template <> inline void push(duk_context* ctx, float value)
+inline void pushEntity(duk_context* ctx, EntityPtr value, Universe* u) {
+	if (!value.isValid()) {
+		duk_push_object(ctx);
+		return;
+	}
+
+	ASSERT(false);
+	// TODO
+	/*lua_getglobal(L, "Lumix"); // [Lumix]
+	lua_getfield(L, -1, "Entity"); // [Lumix, Lumix.Entity]
+	lua_remove(L, -2); // [Lumix.Entity]
+	lua_getfield(L, -1, "new"); // [Lumix.Entity, Entity.new]
+	lua_pushvalue(L, -2); // [Lumix.Entity, Entity.new, Lumix.Entity]
+	lua_remove(L, -3); // [Entity.new, Lumix.Entity]
+	lua_pushlightuserdata(L, universe); // [Entity.new, Lumix.Entity, universe]
+	lua_pushnumber(L, value.index); // [Entity.new, Lumix.Entity, universe, entity_index]
+	const bool error = !LuaWrapper::pcall(L, 3, 1); // [entity]
+	ASSERT(!error);	*/
+}
+inline void push(duk_context* ctx, float value)
 {
 	duk_push_number(ctx, value);
 }
-template <> inline void push(duk_context* ctx, double value)
+inline void push(duk_context* ctx, double value)
 {
 	duk_push_number(ctx, value);
 }
@@ -258,35 +264,31 @@ template <typename T> inline void push(duk_context* ctx, const T* value)
 {
 	duk_push_pointer(ctx, (T*)value);
 }
-template <> inline void push(duk_context* ctx, Entity value)
-{
-	duk_push_int(ctx, value.index);
-}
-template <> inline void push(duk_context* ctx, ComponentHandle value)
-{
-	duk_push_int(ctx, value.index);
-}
-template <> inline void push(duk_context* ctx, bool value)
+inline void push(duk_context* ctx, bool value)
 {
 	duk_push_boolean(ctx, value);
 }
-template <> inline void push(duk_context* ctx, const char* value)
+inline void push(duk_context* ctx, const char* value)
 {
 	duk_push_string(ctx, value);
 }
-template <> inline void push(duk_context* ctx, char* value)
+inline void push(duk_context* ctx, const Path& value)
+{
+	duk_push_string(ctx, value.c_str());
+}
+inline void push(duk_context* ctx, char* value)
 {
 	duk_push_string(ctx, value);
 }
-template <> inline void push(duk_context* ctx, int value)
+inline void push(duk_context* ctx, int value)
 {
 	duk_push_int(ctx, value);
 }
-template <> inline void push(duk_context* ctx, unsigned int value)
+inline void push(duk_context* ctx, unsigned int value)
 {
 	duk_push_uint(ctx, value);
 }
-template <> inline void push(duk_context* ctx, void* value)
+inline void push(duk_context* ctx, void* value)
 {
 	duk_push_pointer(ctx, value);
 }
@@ -300,6 +302,18 @@ inline void push(duk_context* ctx, const Vec3& value)
 	push(ctx, value.z);
 	duk_put_prop_index(ctx, -2, 2);
 }
+inline void push(duk_context* ctx, const Vec4& value)
+{
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
+	push(ctx, value.z);
+	duk_put_prop_index(ctx, -2, 2);
+	push(ctx, value.w);
+	duk_put_prop_index(ctx, -2, 3);
+}
 inline void push(duk_context* ctx, const Vec2& value)
 {
 	duk_push_array(ctx);
@@ -308,13 +322,23 @@ inline void push(duk_context* ctx, const Vec2& value)
 	push(ctx, value.y);
 	duk_put_prop_index(ctx, -2, 1);
 }
-inline void push(duk_context* ctx, const Int2& value)
+inline void push(duk_context* ctx, const IVec2& value)
 {
 	duk_push_array(ctx);
 	push(ctx, value.x);
 	duk_put_prop_index(ctx, -2, 0);
 	push(ctx, value.y);
 	duk_put_prop_index(ctx, -2, 1);
+}
+inline void push(duk_context* ctx, const IVec3& value)
+{
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
+	push(ctx, value.z);
+	duk_put_prop_index(ctx, -2, 2);
 }
 inline void push(duk_context* ctx, const Quat& value)
 {
