@@ -222,7 +222,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			char buf[LUMIX_MAX_PATH];
 			copyString(buf, scene->getScriptPath(entity, j).c_str());
 			StaticString<LUMIX_MAX_PATH + 20> header;
-			Path::getBasename(Span(header.data), buf);
+			copyString(Span(header.data), Path::getBasename(buf));
 			if (header.empty()) header << j;
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header)) {
