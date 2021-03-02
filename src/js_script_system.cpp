@@ -653,7 +653,7 @@ public:
 			inst.m_script->decRefCount();
 		}
 		ResourceManagerHub& rm = m_system.m_engine.getResourceManager();
-		inst.m_script = path.isValid() ? rm.load<JSScript>(path) : nullptr;
+		inst.m_script = path.isEmpty() ? nullptr : rm.load<JSScript>(path);
 		if (inst.m_script) {
 			inst.m_script->onLoaded<&ScriptComponent::onScriptLoaded>(&cmp);
 		}
