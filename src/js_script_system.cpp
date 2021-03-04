@@ -1222,9 +1222,9 @@ struct RegisterPropertyVisitor : reflection::IPropertyVisitor {
 	void visit(const reflection::Property<Path>& prop) override { reg(prop); }
 	void visit(const reflection::Property<bool>& prop) override { reg(prop); }
 	void visit(const reflection::Property<const char*>& prop) override { reg(prop); }
-	void visit(const reflection::IDynamicProperties& prop) override {}
-	void visit(const reflection::IArrayProperty& prop) override {}
-	void visit(const reflection::IBlobProperty& prop) override {}
+	void visit(const reflection::DynamicProperties& prop) override {}
+	void visit(const reflection::ArrayProperty& prop) override {}
+	void visit(const reflection::BlobProperty& prop) override {}
 
 	const char* cmp_type_name;
 	duk_context* ctx;
