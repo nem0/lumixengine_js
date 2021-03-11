@@ -12,6 +12,7 @@
 #include "engine/profiler.h"
 #include "engine/reflection.h"
 #include "engine/resource_manager.h"
+#include "engine/stream.h"
 #include "engine/string.h"
 #include "engine/universe.h"
 #include "imgui/imgui.h"
