@@ -203,12 +203,11 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		: m_app(app) {}
 
 
-	void onGUI(PropertyGrid& grid, ComponentUID cmp) override {
+	void onGUI(PropertyGrid& grid, ComponentUID cmp, WorldEditor& editor) override {
 		if (cmp.type != JS_SCRIPT_TYPE) return;
 
 		const EntityRef entity = (EntityRef)cmp.entity;
 		auto* scene = static_cast<JSScriptScene*>(cmp.scene);
-		WorldEditor& editor = m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) {
@@ -560,7 +559,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		: app(_app) {}
 
 
-	void onGUI(bool create_entity, bool) override {
+	void onGUI(bool create_entity, bool, WorldEditor& editor) override {
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
 		char buf[LUMIX_MAX_PATH];
@@ -570,7 +569,6 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 			char full_path[LUMIX_MAX_PATH];
 			if (os::getSaveFilename(Span(full_path), "JS script\0*.js\0", "js")) {
 				os::OutputFile file;
-				WorldEditor& editor = app.getWorldEditor();
 				IAllocator& allocator = editor.getAllocator();
 				if (file.open(full_path)) {
 					new_created = editor.getEngine().getFileSystem().makeRelative(Span(buf), full_path);
@@ -584,7 +582,6 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 
 		static u32 selected_res_hash = 0;
 		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, 0, false) || create_empty || new_created) {
-			WorldEditor& editor = app.getWorldEditor();
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();
 				editor.selectEntities(Span(&entity, 1), false);
