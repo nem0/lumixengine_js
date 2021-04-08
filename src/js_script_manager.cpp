@@ -20,7 +20,6 @@ void JSScript::unload() {
 bool JSScript::load(u64 size, const u8* mem) {
 	m_source_code.resize((u32)size);
 	memcpy(m_source_code.getData(), mem, size);
-	m_size = size;
 	return true;
 }
 
