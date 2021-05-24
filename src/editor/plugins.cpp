@@ -36,7 +36,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 	struct AddScriptCommand final : public IEditorCommand {
 		AddScriptCommand() {}
 
-		explicit AddScriptCommand(WorldEditor& editor) { scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script"))); }
+		explicit AddScriptCommand(WorldEditor& editor) { scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script")); }
 
 		bool execute() override {
 			scr_index = scene->addScript(cmp);
@@ -59,7 +59,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			, scr_index(-1)
 			, cmp(INVALID_ENTITY)
 			, up(true) {
-			scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+			scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 		}
 
 		explicit MoveScriptCommand(IAllocator& allocator)
@@ -91,7 +91,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			: blob(editor.getAllocator())
 			, scr_index(-1)
 			, cmp(INVALID_ENTITY) {
-			scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+			scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 		}
 
 		explicit RemoveScriptCommand(IAllocator& allocator)
@@ -141,7 +141,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			, component(cmp)
 			, script_index(scr_index)
 			, editor(_editor) {
-			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 			if (property_name[0] == '-') {
 				old_value = scene->getScriptPath(component, script_index).c_str();
 			} else {
@@ -156,7 +156,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 
 
 		bool execute() override {
-			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 			if (property_name.length() > 0 && property_name[0] == '-') {
 				scene->setScriptPath(component, script_index, Path(value.c_str()));
 			} else {
@@ -167,7 +167,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 
 
 		void undo() override {
-			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+			auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 			if (property_name.length() > 0 && property_name[0] == '-') {
 				scene->setScriptPath(component, script_index, Path(old_value.c_str()));
 			} else {
@@ -420,7 +420,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	static int autocompleteCallback(ImGuiInputTextCallbackData* data) {
 		auto* that = (ConsolePlugin*)data->UserData;
 		WorldEditor& editor = that->app.getWorldEditor();
-		auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(crc32("js_script")));
+		auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene("js_script"));
 		if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion) {
 			duk_context* ctx = scene->getGlobalContext();
 
