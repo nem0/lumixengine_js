@@ -32,6 +32,13 @@ int Text(duk_context* ctx) {
 }
 
 
+int OpenPopup(duk_context* ctx) {
+	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+	ImGui::OpenPopup(name);
+	return 0;
+}
+
+
 int Button(duk_context* ctx) {
 	auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
 	bool ret = ImGui::Button(label);
@@ -1276,7 +1283,7 @@ void JSScriptSystemImpl::registerImGuiAPI() {
 		REGISTER_JS_RAW_FUNCTION(LabelText);
 		REGISTER_JS_FUNCTION(NewLine);
 		REGISTER_JS_FUNCTION(NextColumn);
-		REGISTER_JS_FUNCTION(OpenPopup);
+		REGISTER_JS_RAW_FUNCTION(OpenPopup);
 		REGISTER_JS_FUNCTION(PopItemWidth);
 		REGISTER_JS_FUNCTION(PopID);
 		REGISTER_JS_FUNCTION(PopStyleColor);
