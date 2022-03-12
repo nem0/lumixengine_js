@@ -1,6 +1,5 @@
 #include "JS_script_manager.h"
 
-#include "engine/crc32.h"
 #include "engine/file_system.h"
 #include "engine/log.h"
 

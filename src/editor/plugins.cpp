@@ -9,7 +9,6 @@
 #include "editor/world_editor.h"
 #include "engine/allocators.h"
 #include "engine/array.h"
-#include "engine/crc32.h"
 #include "engine/engine.h"
 #include "engine/file_system.h"
 #include "engine/log.h"
@@ -147,7 +146,6 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			} else {
 				char tmp[1024];
 				tmp[0] = '\0';
-				u32 prop_name_hash = crc32(property_name);
 				scene->getPropertyValue(cmp, scr_index, property_name, tmp, lengthOf(tmp));
 				old_value = tmp;
 				return;
@@ -580,7 +578,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		}
 		bool create_empty = ImGui::Selectable("Empty", false);
 
-		static u32 selected_res_hash = 0;
+		static StableHash32 selected_res_hash;
 		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, 0, false) || create_empty || new_created) {
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();

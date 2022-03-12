@@ -3,9 +3,9 @@
 #include "engine/allocators.h"
 #include "engine/array.h"
 #include "engine/associative_array.h"
-#include "engine/crc32.h"
 #include "engine/engine.h"
 #include "engine/file_system.h"
+#include "engine/hash.h"
 #include "engine/log.h"
 #include "engine/path.h"
 #include "engine/plugin.h"
@@ -326,7 +326,7 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 			, m_entity(INVALID_ENTITY) {}
 
 
-		static int getProperty(ScriptInstance& inst, u32 hash) {
+		static int getProperty(ScriptInstance& inst, StableHash32 hash) {
 			for (int i = 0, c = inst.m_properties.size(); i < c; ++i) {
 				if (inst.m_properties[i].name_hash == hash) return i;
 			}
@@ -560,7 +560,7 @@ public:
 	}
 
 
-	const char* getPropertyName(u32 name_hash) const {
+	const char* getPropertyName(StableHash32 name_hash) const {
 		int idx = m_property_names.find(name_hash);
 		if (idx >= 0) return m_property_names.at(idx).c_str();
 		return nullptr;
@@ -694,7 +694,7 @@ public:
 
 			auto& allocator = m_system.m_allocator;
 			const char* prop_name = duk_get_string(ctx, -2);
-			u32 hash = crc32(prop_name);
+			const StableHash32 hash(prop_name);
 			if (m_property_names.find(hash) < 0)
 			{
 				m_property_names.emplace(hash, prop_name, allocator);
@@ -850,7 +850,7 @@ public:
 	void getPropertyValue(EntityRef entity, int scr_index, const char* property_name, char* out, int max_size) override {
 		ASSERT(max_size > 0);
 
-		u32 hash = crc32(property_name);
+		const StableHash32 hash(property_name);
 		auto& inst = m_scripts[entity]->m_scripts[scr_index];
 		for (auto& prop : inst.m_properties) {
 			if (prop.name_hash == hash) {
@@ -1013,7 +1013,7 @@ public:
 
 
 	Property& getScriptProperty(EntityRef entity, int scr_index, const char* name) {
-		u32 name_hash = crc32(name);
+		const StableHash32 name_hash(name);
 		ScriptComponent* script_cmp = m_scripts[entity];
 		for (auto& prop : script_cmp->m_scripts[scr_index].m_properties) {
 			if (prop.name_hash == name_hash) {
@@ -1074,7 +1074,7 @@ public:
 
 	JSScriptSystemImpl& m_system;
 	HashMap<EntityRef, ScriptComponent*> m_scripts;
-	AssociativeArray<u32, String> m_property_names;
+	AssociativeArray<StableHash32, String> m_property_names;
 	Universe& m_universe;
 	Array<UpdateData> m_updates;
 	FunctionCall m_function_call;

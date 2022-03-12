@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "engine/hash.h"
 #include "engine/plugin.h"
 #include "engine/path.h"
 #include "engine/resource.h"
@@ -31,7 +32,7 @@ public:
 		{
 		}
 
-		u32 name_hash;
+		StableHash32 name_hash;
 		Type type;
 		ResourceType resource_type;
 		String stored_value;
