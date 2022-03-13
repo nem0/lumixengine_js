@@ -578,7 +578,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		}
 		bool create_empty = ImGui::Selectable("Empty", false);
 
-		static StableHash32 selected_res_hash;
+		static StableHash selected_res_hash;
 		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, 0, false) || create_empty || new_created) {
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();
