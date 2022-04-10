@@ -201,11 +201,11 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		: m_app(app) {}
 
 
-	void onGUI(PropertyGrid& grid, ComponentUID cmp, WorldEditor& editor) override {
-		if (cmp.type != JS_SCRIPT_TYPE) return;
+	void onGUI(PropertyGrid& grid, Span<const EntityRef> entities, ComponentType cmp_type, WorldEditor& editor) override {
+		if (cmp_type != JS_SCRIPT_TYPE) return;
 
-		const EntityRef entity = (EntityRef)cmp.entity;
-		auto* scene = static_cast<JSScriptScene*>(cmp.scene);
+		const EntityRef entity = entities[0];
+		auto* scene = static_cast<JSScriptScene*>(editor.getUniverse()->getScene(cmp_type));
 		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) {
