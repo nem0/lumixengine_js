@@ -6,6 +6,9 @@
 
 namespace Lumix {
 
+const ResourceType JSScript::TYPE("js_script");
+
+
 JSScript::JSScript(const Path& path, ResourceManager& resource_manager, IAllocator& allocator)
 	: Resource(path, resource_manager, allocator)
 	, m_source_code(allocator) {}

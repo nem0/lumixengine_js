@@ -283,6 +283,7 @@ struct JSScriptManager final : public ResourceManager {
 struct JSScriptSystemImpl final : public IPlugin {
 	explicit JSScriptSystemImpl(Engine& engine);
 	virtual ~JSScriptSystemImpl();
+	void init() override;
 
 	void serialize(OutputMemoryStream& serializer) const override {}
 	bool deserialize(u32 version, InputMemoryStream& serializer) override { return true; }
@@ -320,10 +321,10 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 
 
 	struct ScriptComponent {
-		ScriptComponent(JSScriptSceneImpl& scene, IAllocator& allocator)
+		ScriptComponent(JSScriptSceneImpl& scene, EntityRef entity, IAllocator& allocator)
 			: m_scripts(allocator)
 			, m_scene(scene)
-			, m_entity(INVALID_ENTITY) {}
+			, m_entity(entity) {}
 
 
 		static int getProperty(ScriptInstance& inst, StableHash32 hash) {
@@ -824,8 +825,7 @@ public:
 
 	void createScript(EntityRef entity) {
 		auto& allocator = m_system.m_allocator;
-		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, allocator);
-		script->m_entity = entity;
+		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, entity, allocator);
 		m_scripts.insert(entity, script);
 		m_universe.onComponentCreated(entity, JS_SCRIPT_TYPE, this);
 	}
@@ -1093,14 +1093,14 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	m_script_manager.create(JSScript::TYPE, engine.getResourceManager());
 
 	m_global_context = duk_create_heap_default();
-	registerGlobalAPI();
 
-	LUMIX_SCENE(JSScriptSceneImpl, "js_script"
-
-	);
+	LUMIX_SCENE(JSScriptSceneImpl, "js_script")
+		.LUMIX_CMP(Script, "js_script", "JS Script");
 }
 
-void JSScriptSystemImpl::reflect() {}
+void JSScriptSystemImpl::init() {
+	registerGlobalAPI();
+}
 
 static void convertPropertyToJSName(const char* src, char* out, int max_size) {
 	ASSERT(max_size > 0);

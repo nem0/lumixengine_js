@@ -11,3 +11,5 @@ project "js"
 	links { "engine" }
 	useLua()
 	defaultConfigurations()
+
+linkPlugin("js")

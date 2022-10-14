@@ -497,7 +497,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 				}
 			}
 			if (insert_value) ImGui::SetKeyboardFocusHere();
-			ImGui::InputTextMultiline("", buf, lengthOf(buf), ImVec2(-1, -1), ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_CallbackCompletion, autocompleteCallback, this);
+			ImGui::InputTextMultiline("##buf", buf, lengthOf(buf), ImVec2(-1, -1), ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_CallbackCompletion, autocompleteCallback, this);
 
 			if (open_autocomplete) {
 				ImGui::OpenPopup("autocomplete");

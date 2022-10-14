@@ -11,7 +11,7 @@ namespace Lumix {
 
 
 struct JSScript final : public Resource {
-	static ResourceType TYPE;
+	static const ResourceType TYPE;
 
 	JSScript(const Path& path, ResourceManager& resource_manager, IAllocator& allocator);
 	virtual ~JSScript();
