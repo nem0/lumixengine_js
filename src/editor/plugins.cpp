@@ -265,18 +265,21 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 					char buf[256];
 					const char* property_name = scene->getPropertyName(entity, j, k);
 					if (!property_name) continue;
+
 					scene->getPropertyValue(entity, j, property_name, buf, lengthOf(buf));
+					ImGuiEx::Label(property_name);
+					const StaticString<32> id("##prop", k);
 					switch (scene->getPropertyType(entity, j, k)) {
 						case JSScriptScene::Property::BOOLEAN: {
 							bool b = equalStrings(buf, "true");
-							if (ImGui::Checkbox(property_name, &b)) {
+							if (ImGui::Checkbox(id, &b)) {
 								UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, property_name, b ? "true" : "false", allocator);
 								editor.executeCommand(cmd.move());
 							}
 						} break;
 						case JSScriptScene::Property::NUMBER: {
 							float f = (float)atof(buf);
-							if (ImGui::DragFloat(property_name, &f)) {
+							if (ImGui::DragFloat(id, &f)) {
 								toCString(f, Span(buf), 5);
 								UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, property_name, buf, allocator);
 								editor.executeCommand(cmd.move());
@@ -284,7 +287,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 						} break;
 						case JSScriptScene::Property::STRING:
 						case JSScriptScene::Property::ANY:
-							if (ImGui::InputText(property_name, buf, sizeof(buf))) {
+							if (ImGui::InputText(id, buf, sizeof(buf))) {
 								UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, property_name, buf, allocator);
 								editor.executeCommand(cmd.move());
 							}
@@ -304,12 +307,17 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 };
 
 
-struct AssetBrowserPlugin : AssetBrowser::IPlugin {
-	explicit AssetBrowserPlugin(StudioApp& app)
+struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
+	explicit AssetPlugin(StudioApp& app)
 		: m_app(app) {
 		m_text_buffer[0] = 0;
 		app.getAssetCompiler().registerExtension("js", JSScript::TYPE);
 	}
+
+	bool compile(const Path& src) override {
+		return m_app.getAssetCompiler().copyCompile(src);
+	}
+
 
 	ResourceType getResourceType() const override { return JSScript::TYPE; }
 
@@ -321,6 +329,7 @@ struct AssetBrowserPlugin : AssetBrowser::IPlugin {
 		if (m_text_buffer[0] == '\0') {
 			copyString(m_text_buffer, script->getSourceCode());
 		}
+		ImGui::SetNextItemWidth(-1);
 		ImGui::InputTextMultiline("Code", m_text_buffer, sizeof(m_text_buffer), ImVec2(0, 300));
 		if (ImGui::Button("Save")) {
 			auto& fs = m_app.getWorldEditor().getEngine().getFileSystem();
@@ -615,22 +624,44 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 	StudioApp& app;
 };
 
+
+struct StudioAppPlugin : StudioApp::IPlugin {
+	StudioAppPlugin(StudioApp& app)
+		: m_app(app)
+		, m_propert_grid_plugin(app)
+		, m_asset_plugin(app)
+		, m_console_plugin(app)
+	{}
+
+	~StudioAppPlugin() override {
+
+	}
+
+	void init() override {
+		WorldEditor& editor = m_app.getWorldEditor();
+		auto* cmp_plugin = LUMIX_NEW(editor.getAllocator(), AddComponentPlugin)(m_app);
+		m_app.registerComponent("", "js_script", *cmp_plugin);
+
+		const char* exts[] = {"js", nullptr};
+		m_app.getPropertyGrid().addPlugin(m_propert_grid_plugin);
+		m_app.getAssetCompiler().addPlugin(m_asset_plugin, exts);
+		m_app.getAssetBrowser().addPlugin(m_asset_plugin);
+		m_app.addPlugin(m_console_plugin);
+	}
+
+	const char* getName() const override { return "js"; }
+
+	bool showGizmo(struct UniverseView& view, struct ComponentUID cmp) override { return false; }
+
+	StudioApp& m_app;
+	PropertyGridPlugin m_propert_grid_plugin;
+	AssetPlugin m_asset_plugin;
+	ConsolePlugin m_console_plugin;
+};
+
 } // namespace
 
-
 LUMIX_STUDIO_ENTRY(js) {
-	WorldEditor& editor = app.getWorldEditor();
-	auto* cmp_plugin = LUMIX_NEW(editor.getAllocator(), AddComponentPlugin)(app);
-	app.registerComponent("", "js_script", *cmp_plugin);
-
-	auto* plugin = LUMIX_NEW(editor.getAllocator(), PropertyGridPlugin)(app);
-	app.getPropertyGrid().addPlugin(*plugin);
-
-	auto* asset_browser_plugin = LUMIX_NEW(editor.getAllocator(), AssetBrowserPlugin)(app);
-	app.getAssetBrowser().addPlugin(*asset_browser_plugin);
-
-	auto* console_plugin = LUMIX_NEW(editor.getAllocator(), ConsolePlugin)(app);
-	app.addPlugin(*console_plugin);
-
-	return nullptr;
+	IAllocator& allocator = app.getAllocator();
+	return LUMIX_NEW(allocator, StudioAppPlugin)(app);
 }

@@ -742,20 +742,20 @@ public:
 
 
 	void startScript(EntityRef entity, ScriptInstance& instance, bool is_restart) {
-		/*duk_context* ctx = m_system.m_global_context;
+		duk_context* ctx = m_system.m_global_context;
 		duk_push_global_stash(ctx);
 
 		duk_push_pointer(ctx, (void*)instance.m_id);
 
 		duk_get_global_string(ctx, "Entity");
 		duk_push_pointer(ctx, &m_universe);
-		JSWrapper::push(ctx, entity);
+		JSWrapper::push(ctx, entity.index);
 		duk_new(ctx, 2);
 		duk_put_global_string(ctx, "_entity");
 
 		if (duk_peval_string(ctx, instance.m_script->getSourceCode()) != 0)
 		{
-			const char* error = duk_safe_to_string(ctx, -1);
+			const char* error = duk_safe_to_stacktrace(ctx, -1);
 			logError(error);
 			duk_pop_3(ctx);
 			return;
@@ -807,9 +807,7 @@ public:
 			const char* error = duk_safe_to_string(ctx, -1);
 			logError(error);
 		}
-		duk_pop_2(ctx);*/
-		ASSERT(false);
-		// TODO
+		duk_pop_2(ctx);
 	}
 
 
