@@ -8,14 +8,16 @@ Example JS code:
 
 ```js
 function foo() {
+	ImGui.Text("Hello world")
 }
 
 ({
-name : "Test",
-update : function() {
-ImGui.Begin("xoxo")
-ImGui.Text("foo " + this.name)
-ImGui.End()
-}
+	name : "Test",
+	update : function() {
+		ImGui.Begin("xoxo")
+		ImGui.Text("foo " + this.name)
+		foo();
+		ImGui.End()
+	}
 })
 ```
