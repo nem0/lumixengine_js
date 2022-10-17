@@ -141,28 +141,24 @@ static int ptrJSConstructor(duk_context* ctx) {
 
 
 static int entityProxyGetter(duk_context* ctx) {
-	/*duk_get_prop_string(ctx, 0, "c_universe");
+	duk_get_prop_string(ctx, 0, "c_universe");
 	Universe* universe = (Universe*)duk_get_pointer(ctx, -1);
 
 	duk_get_prop_string(ctx, 0, "c_entity");
-	Entity entity = {duk_get_int(ctx, -1)};
+	EntityRef entity = {duk_get_int(ctx, -1)};
 
 	duk_pop_2(ctx);
 
 	const char* cmp_type_name = duk_get_string(ctx, 1);
-	ComponentType cmp_type = PropertyRegister::getComponentType(cmp_type_name);
+	ComponentType cmp_type = reflection::getComponentType(cmp_type_name);
 
 	IScene* scene = universe->getScene(cmp_type);
 	if (!scene) return 0;
 
-	EntityRef entity = scene->getComponent(entity, cmp_type);
-	if (!cmp.isValid()) return 0;
-
 	duk_get_global_string(ctx, cmp_type_name);
 	JSWrapper::push(ctx, scene);
-	JSWrapper::push(ctx, cmp);
-	duk_new(ctx, 2);*/
-	// TODO
+	JSWrapper::push(ctx, entity.index);
+	duk_new(ctx, 2);
 
 	return 1;
 }
@@ -577,7 +573,10 @@ public:
 		duk_push_pointer(ctx, (void*)script.m_id);
 		duk_get_prop(ctx, -2);
 
-		if (duk_peval_string(ctx, value) != 0) {
+		if (prop.type == Property::STRING) {
+			duk_push_string(ctx, value);
+		}
+		else if (duk_peval_string(ctx, value) != 0) {
 			const char* error = duk_safe_to_string(ctx, -1);
 			logError(error);
 			duk_pop_3(ctx);
@@ -919,15 +918,16 @@ public:
 	}
 
 
-	void deserialize(InputMemoryStream& serialize, const EntityMap& entity_map, i32 version) override {
-		/*int len = serializer.read<int>();
-		m_scripts.rehash(len);
-		for (int i = 0; i < len; ++i)
-		{
-			auto& allocator = m_system.m_allocator;
-			ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, allocator);
+	void deserialize(InputMemoryStream& serializer, const EntityMap& entity_map, i32 version) override {
+		const i32 len = serializer.read<i32>();
+		m_scripts.reserve(len + m_scripts.size());
+		for (int i = 0; i < len; ++i) {
+			IAllocator& allocator = m_system.m_allocator;
+			
+			EntityRef entity;
+			serializer.read(entity);
+			ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, entity, allocator);
 
-			serializer.read(script->m_entity);
 			m_scripts.insert(script->m_entity, script);
 			int scr_count;
 			serializer.read(scr_count);
@@ -935,8 +935,7 @@ public:
 			{
 				auto& scr = script->m_scripts.emplace(allocator);
 
-				char tmp[MAX_PATH_LENGTH];
-				serializer.readString(tmp, MAX_PATH_LENGTH);
+				const char* path = serializer.readString();
 				serializer.read(scr.m_id);
 				int prop_count;
 				serializer.read(prop_count);
@@ -946,18 +945,12 @@ public:
 					Property& prop = scr.m_properties.emplace(allocator);
 					prop.type = Property::ANY;
 					serializer.read(prop.name_hash);
-					char tmp[1024];
-					tmp[0] = 0;
-					serializer.readString(tmp, sizeof(tmp));
-					prop.stored_value = tmp;
+					prop.stored_value = serializer.readString();
 				}
-				setScriptPath(*script, scr, Path(tmp));
+				setScriptPath(*script, scr, Path(path));
 			}
-			EntityRef entity = { script->m_entity.index };
-			m_universe.addComponent(script->m_entity, JS_SCRIPT_TYPE, this, cmp);
-		}*/
-		// TODO
-		ASSERT(false);
+			m_universe.onComponentCreated(script->m_entity, JS_SCRIPT_TYPE, this);
+		}
 	}
 
 
