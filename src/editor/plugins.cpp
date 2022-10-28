@@ -468,9 +468,10 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 
 	void onWindowGUI() override {
+		if (!opened) return;
+
 		auto* scene = (JSScriptScene*)app.getWorldEditor().getUniverse()->getScene(JS_SCRIPT_TYPE);
 		duk_context* context = scene->getGlobalContext();
-
 		if (ImGui::Begin("JS Script console", &opened)) {
 			if (ImGui::Button("Execute")) {
 				duk_push_string(context, buf);
