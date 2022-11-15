@@ -931,7 +931,7 @@ public:
 			m_scripts.insert(script->m_entity, script);
 			int scr_count;
 			serializer.read(scr_count);
-			for (int j = 0; j < scr_count; ++j)
+			for (int scr_idx = 0; scr_idx < scr_count; ++scr_idx)
 			{
 				auto& scr = script->m_scripts.emplace(allocator);
 

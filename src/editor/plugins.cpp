@@ -216,10 +216,10 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		}
 
 		for (int j = 0; j < scene->getScriptCount(entity); ++j) {
-			char buf[LUMIX_MAX_PATH];
-			copyString(buf, scene->getScriptPath(entity, j).c_str());
+			char path_buf[LUMIX_MAX_PATH];
+			copyString(path_buf, scene->getScriptPath(entity, j).c_str());
 			StaticString<LUMIX_MAX_PATH + 20> header;
-			copyString(Span(header.data), Path::getBasename(buf));
+			copyString(Span(header.data), Path::getBasename(path_buf));
 			if (header.empty()) header << j;
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header)) {
@@ -257,8 +257,8 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 				}
 
 				ImGuiEx::Label("Source");
-				if (m_app.getAssetBrowser().resourceInput("src", Span(buf), JSScript::TYPE)) {
-					UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, "-source", buf, allocator);
+				if (m_app.getAssetBrowser().resourceInput("src", Span(path_buf), JSScript::TYPE)) {
+					UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, "-source", path_buf, allocator);
 					editor.executeCommand(cmd.move());
 				}
 				for (int k = 0, kc = scene->getPropertyCount(entity, j); k < kc; ++k) {
