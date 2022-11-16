@@ -635,7 +635,10 @@ struct StudioAppPlugin : StudioApp::IPlugin {
 	{}
 
 	~StudioAppPlugin() override {
-
+		m_app.removePlugin(m_console_plugin);
+		m_app.getPropertyGrid().removePlugin(m_propert_grid_plugin);
+		m_app.getAssetCompiler().removePlugin(m_asset_plugin);
+		m_app.getAssetBrowser().removePlugin(m_asset_plugin);
 	}
 
 	void init() override {
