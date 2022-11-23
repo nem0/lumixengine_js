@@ -563,33 +563,38 @@ IEditorCommand* createRemoveScriptCommand(WorldEditor& editor) {
 
 
 struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
-	AddComponentPlugin(StudioApp& _app)
-		: app(_app) {}
+	AddComponentPlugin(StudioApp& app)
+		: app(app)
+		, file_selector("js", app)
+	{}
 
 
-	void onGUI(bool create_entity, bool, WorldEditor& editor) override {
+	void onGUI(bool create_entity, bool, EntityPtr parent, WorldEditor& editor) override {
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
 		char buf[LUMIX_MAX_PATH];
 		AssetBrowser& asset_browser = app.getAssetBrowser();
 		bool new_created = false;
-		if (ImGui::Selectable("New")) {
-			char full_path[LUMIX_MAX_PATH];
-			if (os::getSaveFilename(Span(full_path), "JS script\0*.js\0", "js")) {
+		if (ImGui::BeginMenu("New")) {
+			file_selector.gui(false);
+			if (file_selector.getPath()[0] && ImGui::Selectable("Create")) {
 				os::OutputFile file;
-				IAllocator& allocator = editor.getAllocator();
-				if (file.open(full_path)) {
-					new_created = editor.getEngine().getFileSystem().makeRelative(Span(buf), full_path);
+				FileSystem& fs = app.getEngine().getFileSystem();
+				if (fs.open(file_selector.getPath(), file)) {
 					file.close();
+					new_created = true;
 				} else {
 					logError("Failed to create ", buf);
 				}
+				copyString(Span(buf), file_selector.getPath());
 			}
+			ImGui::EndMenu();
 		}
 		bool create_empty = ImGui::Selectable("Empty", false);
 
 		static StableHash selected_res_hash;
 		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, 0, false) || create_empty || new_created) {
+			editor.beginCommandGroup("createEntityWithComponent");
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();
 				editor.selectEntities(Span(&entity, 1), false);
@@ -614,6 +619,9 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 				auto set_source_cmd = UniquePtr<PropertyGridPlugin::SetPropertyCommand>::create(allocator, editor, entity, scr_count - 1, "-source", buf, allocator);
 				editor.executeCommand(set_source_cmd.move());
 			}
+			if (parent.isValid()) editor.makeParent(parent, entity);
+			editor.endCommandGroup();
+			editor.lockGroupCommand();
 
 			ImGui::CloseCurrentPopup();
 		}
@@ -623,6 +631,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 	const char* getLabel() const override { return "JS Script"; }
 
 	StudioApp& app;
+	FileSelector file_selector;
 };
 
 
