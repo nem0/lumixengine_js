@@ -97,7 +97,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			: blob(allocator)
 			, scene(nullptr)
 			, scr_index(-1)
-			, cmp(INVALID_ENTITY) {}
+		{}
 
 		bool execute() override {
 			// TODO
@@ -365,7 +365,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		: app(_app)
 		, opened(false)
 		, autocomplete(_app.getWorldEditor().getAllocator()) {
-		open_action.init("JS console", "JS script console", "script_console", "", true);
+		open_action.init("JS console", "JavaScript console", "script_console", "", true);
 		open_action.func.bind<&ConsolePlugin::toggleOpened>(this);
 		open_action.is_selected.bind<&ConsolePlugin::isOpened>(this);
 		app.addWindowAction(&open_action);
@@ -472,7 +472,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 		auto* scene = (JSScriptScene*)app.getWorldEditor().getUniverse()->getScene(JS_SCRIPT_TYPE);
 		duk_context* context = scene->getGlobalContext();
-		if (ImGui::Begin("JS Script console", &opened)) {
+		if (ImGui::Begin("JavaScript console", &opened)) {
 			if (ImGui::Button("Execute")) {
 				duk_push_string(context, buf);
 				if (duk_peval(context) != 0) {

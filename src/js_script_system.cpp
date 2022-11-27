@@ -331,14 +331,16 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 		}
 
 
-		void onScriptLoaded(Resource::State, Resource::State, Resource& resource) {
+		void onScriptLoaded(Resource::State old_state, Resource::State new_state, Resource& resource) {
 			duk_context* ctx = m_scene.m_system.m_global_context;
 			for (auto& script : m_scripts) {
 				if (!script.m_script) continue;
 				if (!script.m_script->isReady()) continue;
 				if (script.m_script != &resource) continue;
 
-				m_scene.startScript(m_entity, script, false);
+				if (new_state == Resource::State::READY) {
+					m_scene.onScriptLoaded(m_entity, script, false);
+				}
 			}
 		}
 
@@ -739,6 +741,9 @@ public:
 		duk_pop_3(ctx); // [stash obj enum] -> []
 	}
 
+	void onScriptLoaded(EntityRef entity, ScriptInstance& instance, bool is_restart) {
+		startScript(entity, instance, is_restart);
+	}
 
 	void startScript(EntityRef entity, ScriptInstance& instance, bool is_restart) {
 		duk_context* ctx = m_system.m_global_context;
@@ -793,7 +798,7 @@ public:
 			return;
 		}
 
-		duk_get_prop_string(ctx, -1, "onStartGame");
+		duk_get_prop_string(ctx, -1, "start");
 		if (!duk_is_callable(ctx, -1))
 		{
 			duk_pop_3(ctx);
@@ -1291,6 +1296,15 @@ void JSScriptSystemImpl::registerImGuiAPI() {
 	#undef REGISTER_JS_FUNCTION
 }
 
+namespace JSAPI {
+
+int logError(duk_context* ctx) {
+	auto* msg = JSWrapper::checkArg<const char*>(ctx, 0);
+	Lumix::logError(msg);
+	return 0;
+}
+
+} // namespace JSAPI
 
 void JSScriptSystemImpl::registerGlobalAPI() {
 	registerImGuiAPI();
@@ -1308,6 +1322,19 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 		const char* cmp_type_id = reflection::getComponents()[i].cmp->name;
 		registerComponent(m_global_context, cmp_type_id);
 	}
+
+	duk_context* ctx = m_global_context;
+	duk_push_object(ctx);
+	duk_dup(ctx, -1);
+	duk_put_global_string(ctx, "LumixAPI");
+	
+	#define REGISTER_JS_RAW_FUNCTION(F)                     \
+		duk_push_c_function(ctx, &JSAPI::F, DUK_VARARGS); \
+		duk_put_prop_string(ctx, -2, #F);
+	
+	REGISTER_JS_RAW_FUNCTION(logError);
+
+	#undef REGISTER_JS_RAW_FUNCTION
 }
 
 JSScriptSystemImpl::~JSScriptSystemImpl() {
