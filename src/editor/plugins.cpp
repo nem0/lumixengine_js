@@ -307,9 +307,11 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 };
 
 
-struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
+struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 	explicit AssetPlugin(StudioApp& app)
-		: m_app(app) {
+		: m_app(app)
+		, AssetBrowser::Plugin(app.getAllocator())
+	{
 		m_text_buffer[0] = 0;
 		app.getAssetCompiler().registerExtension("js", JSScript::TYPE);
 	}
@@ -318,11 +320,13 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 		return m_app.getAssetCompiler().copyCompile(src);
 	}
 
+	void deserialize(InputMemoryStream& blob) override { ASSERT(false); }
+	void serialize(OutputMemoryStream& blob) override {}
 
 	ResourceType getResourceType() const override { return JSScript::TYPE; }
 
-	void onGUI(Span<Resource*> resources) override {
-		if (resources.length() > 1) return;
+	bool onGUI(Span<Resource*> resources) override {
+		if (resources.length() > 1) return false;
 
 		auto* script = static_cast<JSScript*>(resources[0]);
 
@@ -336,7 +340,7 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 			os::OutputFile file;
 			if (!fs.open(script->getPath().c_str(), file)) {
 				logWarning("Could not save ", script->getPath());
-				return;
+				return false;
 			}
 
 			if (!file.write(m_text_buffer, stringLength(m_text_buffer))) {
@@ -348,6 +352,7 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 		if (ImGui::Button(ICON_FA_EXTERNAL_LINK_ALT "Open externally")) {
 			m_app.getAssetBrowser().openInExternalEditor(script->getPath().c_str());
 		}
+		return false;
 	}
 
 
