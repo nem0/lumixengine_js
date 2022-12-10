@@ -575,7 +575,6 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 
 
 	void onGUI(bool create_entity, bool, EntityPtr parent, WorldEditor& editor) override {
-		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
 		char buf[LUMIX_MAX_PATH];
 		AssetBrowser& asset_browser = app.getAssetBrowser();
@@ -598,7 +597,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		bool create_empty = ImGui::Selectable("Empty", false);
 
 		static StableHash selected_res_hash;
-		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, 0, false) || create_empty || new_created) {
+		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, false) || create_empty || new_created) {
 			editor.beginCommandGroup("createEntityWithComponent");
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();
