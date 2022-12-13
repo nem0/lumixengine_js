@@ -552,21 +552,6 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 };
 
 
-IEditorCommand* createAddScriptCommand(WorldEditor& editor) {
-	return LUMIX_NEW(editor.getAllocator(), PropertyGridPlugin::AddScriptCommand)(editor);
-}
-
-
-IEditorCommand* createSetPropertyCommand(WorldEditor& editor) {
-	return LUMIX_NEW(editor.getAllocator(), PropertyGridPlugin::SetPropertyCommand)(editor);
-}
-
-
-IEditorCommand* createRemoveScriptCommand(WorldEditor& editor) {
-	return LUMIX_NEW(editor.getAllocator(), PropertyGridPlugin::RemoveScriptCommand)(editor);
-}
-
-
 struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 	AddComponentPlugin(StudioApp& app)
 		: app(app)
