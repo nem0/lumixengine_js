@@ -14,7 +14,7 @@
 #include "engine/resource_manager.h"
 #include "engine/stream.h"
 #include "engine/string.h"
-#include "engine/universe.h"
+#include "engine/world.h"
 #include "imgui/imgui.h"
 #include "js_script_manager.h"
 #include "js_wrapper.h"
@@ -141,8 +141,8 @@ static int ptrJSConstructor(duk_context* ctx) {
 
 
 static int entityProxyGetter(duk_context* ctx) {
-	duk_get_prop_string(ctx, 0, "c_universe");
-	Universe* universe = (Universe*)duk_get_pointer(ctx, -1);
+	duk_get_prop_string(ctx, 0, "c_world");
+	World* world= (World*)duk_get_pointer(ctx, -1);
 
 	duk_get_prop_string(ctx, 0, "c_entity");
 	EntityRef entity = {duk_get_int(ctx, -1)};
@@ -152,7 +152,7 @@ static int entityProxyGetter(duk_context* ctx) {
 	const char* cmp_type_name = duk_get_string(ctx, 1);
 	ComponentType cmp_type = reflection::getComponentType(cmp_type_name);
 
-	IScene* scene = universe->getScene(cmp_type);
+	IScene* scene = world->getScene(cmp_type);
 	if (!scene) return 0;
 
 	duk_get_global_string(ctx, cmp_type_name);
@@ -172,7 +172,7 @@ static int entityJSConstructor(duk_context* ctx) {
 	duk_push_this(ctx);
 
 	duk_dup(ctx, 0);
-	duk_put_prop_string(ctx, -2, "c_universe");
+	duk_put_prop_string(ctx, -2, "c_world");
 
 	duk_dup(ctx, 1);
 	duk_put_prop_string(ctx, -2, "c_entity");
@@ -284,7 +284,7 @@ struct JSScriptSystemImpl final : public IPlugin {
 	void serialize(OutputMemoryStream& serializer) const override {}
 	bool deserialize(u32 version, InputMemoryStream& serializer) override { return true; }
 	u32 getVersion() const override { return 0; }
-	void createScenes(Universe& universe) override;
+	void createScenes(World& world) override;
 	const char* getName() const override { return "js_script"; }
 	JSScriptManager& getScriptManager() { return m_script_manager; }
 	void registerGlobalAPI();
@@ -380,9 +380,9 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 
 
 public:
-	JSScriptSceneImpl(JSScriptSystemImpl& system, Universe& ctx)
+	JSScriptSceneImpl(JSScriptSystemImpl& system, World& ctx)
 		: m_system(system)
-		, m_universe(ctx)
+		, m_world(ctx)
 		, m_scripts(system.m_allocator)
 		, m_updates(system.m_allocator)
 		, m_property_names(system.m_allocator)
@@ -532,7 +532,7 @@ public:
 	}
 
 
-	Universe& getUniverse() override { return m_universe; }
+	World& getWorld() override { return m_world; }
 
 
 	void getInstanceName(IScene& scene, char* out_str, int size) {
@@ -546,9 +546,9 @@ public:
 		m_is_api_registered = true;
 
 		duk_context* ctx = m_system.m_global_context;
-		registerGlobalVariable(ctx, "Universe", "g_universe", &m_universe);
+		registerGlobalVariable(ctx, "World", "g_world", &m_world);
 
-		Array<UniquePtr<IScene>>& scenes = m_universe.getScenes();
+		Array<UniquePtr<IScene>>& scenes = m_world.getScenes();
 		for (UniquePtr<IScene>& scene : scenes) {
 			StaticString<50> type_name(scene->getPlugin().getName(), "_scene");
 			char inst_name[50];
@@ -752,7 +752,7 @@ public:
 		duk_push_pointer(ctx, (void*)instance.m_id);
 
 		duk_get_global_string(ctx, "Entity");
-		duk_push_pointer(ctx, &m_universe);
+		duk_push_pointer(ctx, &m_world);
 		JSWrapper::push(ctx, entity.index);
 		duk_new(ctx, 2);
 		duk_put_global_string(ctx, "_entity");
@@ -829,7 +829,7 @@ public:
 		auto& allocator = m_system.m_allocator;
 		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, entity, allocator);
 		m_scripts.insert(entity, script);
-		m_universe.onComponentCreated(entity, JS_SCRIPT_TYPE, this);
+		m_world.onComponentCreated(entity, JS_SCRIPT_TYPE, this);
 	}
 
 
@@ -845,7 +845,7 @@ public:
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
-		m_universe.onComponentDestroyed(entity, JS_SCRIPT_TYPE, this);
+		m_world.onComponentDestroyed(entity, JS_SCRIPT_TYPE, this);
 	}
 
 
@@ -954,7 +954,7 @@ public:
 				}
 				setScriptPath(*script, scr, Path(path));
 			}
-			m_universe.onComponentCreated(script->m_entity, JS_SCRIPT_TYPE, this);
+			m_world.onComponentCreated(script->m_entity, JS_SCRIPT_TYPE, this);
 		}
 	}
 
@@ -1071,7 +1071,7 @@ public:
 	JSScriptSystemImpl& m_system;
 	HashMap<EntityRef, ScriptComponent*> m_scripts;
 	AssociativeArray<StableHash32, String> m_property_names;
-	Universe& m_universe;
+	World& m_world;
 	Array<UpdateData> m_updates;
 	FunctionCall m_function_call;
 	ScriptInstance* m_current_script_instance;
@@ -1312,7 +1312,7 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	registerJSObject(m_global_context, nullptr, "Engine", &ptrJSConstructor);
 	registerGlobalVariable(m_global_context, "Engine", "g_engine", &m_engine);
 
-	registerJSObject(m_global_context, nullptr, "Universe", &ptrJSConstructor);
+	registerJSObject(m_global_context, nullptr, "World", &ptrJSConstructor);
 
 	registerJSObject(m_global_context, nullptr, "SceneBase", &ptrJSConstructor);
 	registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
@@ -1343,7 +1343,7 @@ JSScriptSystemImpl::~JSScriptSystemImpl() {
 }
 
 
-void JSScriptSystemImpl::createScenes(Universe& ctx) {
+void JSScriptSystemImpl::createScenes(World& ctx) {
 	UniquePtr<JSScriptSceneImpl> scene = UniquePtr<JSScriptSceneImpl>::create(m_allocator, *this, ctx);
 	ctx.addScene(scene.move());
 }

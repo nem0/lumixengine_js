@@ -233,7 +233,7 @@ template <typename T> inline void push(duk_context* ctx, T* value)
 {
 	duk_push_pointer(ctx, value);
 }
-inline void pushEntity(duk_context* ctx, EntityPtr value, Universe* u) {
+inline void pushEntity(duk_context* ctx, EntityPtr value, World* u) {
 	if (!value.isValid()) {
 		duk_push_object(ctx);
 		return;
