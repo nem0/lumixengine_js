@@ -220,8 +220,8 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			copyString(path_buf, scene->getScriptPath(entity, j).c_str());
 			StaticString<LUMIX_MAX_PATH + 20> header;
 			copyString(Span(header.data), Path::getBasename(path_buf));
-			if (header.empty()) header << j;
-			header << "###" << j;
+			if (header.empty()) header.add(j);
+			header.append("###", j);
 			if (ImGui::CollapsingHeader(header)) {
 				ImGui::PushID(j);
 				if (ImGui::Button("Remove script")) {
