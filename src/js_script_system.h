@@ -13,7 +13,7 @@ namespace Lumix
 {
 
 
-class JSScriptScene : public IScene
+class JSScriptModule : public IModule
 {
 public:
 

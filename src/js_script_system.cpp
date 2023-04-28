@@ -152,11 +152,11 @@ static int entityProxyGetter(duk_context* ctx) {
 	const char* cmp_type_name = duk_get_string(ctx, 1);
 	ComponentType cmp_type = reflection::getComponentType(cmp_type_name);
 
-	IScene* scene = world->getScene(cmp_type);
-	if (!scene) return 0;
+	IModule* module = world->getModule(cmp_type);
+	if (!module) return 0;
 
 	duk_get_global_string(ctx, cmp_type_name);
-	JSWrapper::push(ctx, scene);
+	JSWrapper::push(ctx, module);
 	JSWrapper::push(ctx, entity.index);
 	duk_new(ctx, 2);
 
@@ -193,7 +193,7 @@ static int componentJSConstructor(duk_context* ctx) {
 
 	duk_push_this(ctx);
 	duk_dup(ctx, 0);
-	duk_put_prop_string(ctx, -2, "c_scene");
+	duk_put_prop_string(ctx, -2, "c_module");
 
 	duk_dup(ctx, 1);
 	duk_put_prop_string(ctx, -2, "c_entity");
@@ -276,15 +276,14 @@ struct JSScriptManager final : public ResourceManager {
 	IAllocator& m_allocator;
 };
 
-struct JSScriptSystemImpl final : public IPlugin {
+struct JSScriptSystemImpl final : ISystem {
 	explicit JSScriptSystemImpl(Engine& engine);
 	virtual ~JSScriptSystemImpl();
 	void init() override;
 
 	void serialize(OutputMemoryStream& serializer) const override {}
-	bool deserialize(u32 version, InputMemoryStream& serializer) override { return true; }
-	u32 getVersion() const override { return 0; }
-	void createScenes(World& world) override;
+	bool deserialize(i32 version, InputMemoryStream& serializer) override { return version == 0; }
+	void createModules(World& world) override;
 	const char* getName() const override { return "js_script"; }
 	JSScriptManager& getScriptManager() { return m_script_manager; }
 	void registerGlobalAPI();
@@ -298,7 +297,7 @@ struct JSScriptSystemImpl final : public IPlugin {
 };
 
 
-struct JSScriptSceneImpl final : public JSScriptScene {
+struct JSScriptModuleImpl final : public JSScriptModule{
 	struct UpdateData {
 		duk_context* context;
 		uintptr id;
@@ -317,9 +316,9 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 
 
 	struct ScriptComponent {
-		ScriptComponent(JSScriptSceneImpl& scene, EntityRef entity, IAllocator& allocator)
+		ScriptComponent(JSScriptModuleImpl& module, EntityRef entity, IAllocator& allocator)
 			: m_scripts(allocator)
-			, m_scene(scene)
+			, m_module(module)
 			, m_entity(entity) {}
 
 
@@ -332,21 +331,21 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 
 
 		void onScriptLoaded(Resource::State old_state, Resource::State new_state, Resource& resource) {
-			duk_context* ctx = m_scene.m_system.m_global_context;
+			duk_context* ctx = m_module.m_system.m_global_context;
 			for (auto& script : m_scripts) {
 				if (!script.m_script) continue;
 				if (!script.m_script->isReady()) continue;
 				if (script.m_script != &resource) continue;
 
 				if (new_state == Resource::State::READY) {
-					m_scene.onScriptLoaded(m_entity, script, false);
+					m_module.onScriptLoaded(m_entity, script, false);
 				}
 			}
 		}
 
 
 		Array<ScriptInstance> m_scripts;
-		JSScriptSceneImpl& m_scene;
+		JSScriptModuleImpl& m_module;
 		EntityRef m_entity;
 	};
 
@@ -380,7 +379,19 @@ struct JSScriptSceneImpl final : public JSScriptScene {
 
 
 public:
-	JSScriptSceneImpl(JSScriptSystemImpl& system, World& ctx)
+	~JSScriptModuleImpl() {
+		Path invalid_path;
+		for (auto* script_cmp : m_scripts) {
+			if (!script_cmp) continue;
+
+			for (auto& script : script_cmp->m_scripts) {
+				setScriptPath(*script_cmp, script, invalid_path);
+			}
+			LUMIX_DELETE(m_system.m_allocator, script_cmp);
+		}
+	}
+
+	JSScriptModuleImpl(JSScriptSystemImpl& system, World& ctx)
 		: m_system(system)
 		, m_world(ctx)
 		, m_scripts(system.m_allocator)
@@ -518,26 +529,13 @@ public:
 	}
 
 
-	void clear() override {
-		Path invalid_path;
-		for (auto* script_cmp : m_scripts) {
-			if (!script_cmp) continue;
-
-			for (auto& script : script_cmp->m_scripts) {
-				setScriptPath(*script_cmp, script, invalid_path);
-			}
-			LUMIX_DELETE(m_system.m_allocator, script_cmp);
-		}
-		m_scripts.clear();
-	}
-
 
 	World& getWorld() override { return m_world; }
 
 
-	void getInstanceName(IScene& scene, char* out_str, int size) {
-		copyString(Span(out_str, size), "g_scene_");
-		catString(Span(out_str, size), scene.getPlugin().getName());
+	void getInstanceName(IModule& module, char* out_str, int size) {
+		copyString(Span(out_str, size), "g_module_");
+		catString(Span(out_str, size), module.getSystem().getName());
 	}
 
 
@@ -548,13 +546,13 @@ public:
 		duk_context* ctx = m_system.m_global_context;
 		registerGlobalVariable(ctx, "World", "g_world", &m_world);
 
-		Array<UniquePtr<IScene>>& scenes = m_world.getScenes();
-		for (UniquePtr<IScene>& scene : scenes) {
-			StaticString<50> type_name(scene->getPlugin().getName(), "_scene");
+		Array<UniquePtr<IModule>>& modules = m_world.getModules();
+		for (UniquePtr<IModule>& module : modules) {
+			StaticString<50> type_name(module->getSystem().getName(), "_module");
 			char inst_name[50];
-			getInstanceName(*scene, inst_name, lengthOf(inst_name));
-			registerJSObject(ctx, "SceneBase", type_name, &ptrJSConstructor);
-			registerGlobalVariable(ctx, type_name, inst_name, scene.get());
+			getInstanceName(*module, inst_name, lengthOf(inst_name));
+			registerJSObject(ctx, "ModuleBase", type_name, &ptrJSConstructor);
+			registerGlobalVariable(ctx, type_name, inst_name, module.get());
 		}
 	}
 
@@ -959,7 +957,7 @@ public:
 	}
 
 
-	IPlugin& getPlugin() const override { return m_system; }
+	ISystem& getSystem() const override { return m_system; }
 
 
 	void initScripts() {
@@ -1089,7 +1087,7 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 
 	m_global_context = duk_create_heap_default();
 
-	LUMIX_SCENE(JSScriptSceneImpl, "js_script")
+	LUMIX_MODULE(JSScriptModuleImpl, "js_script")
 		.LUMIX_CMP(Script, "js_script", "JS Script");
 }
 
@@ -1123,9 +1121,9 @@ static int JS_getProperty(duk_context* ctx) {
 	if (duk_is_null_or_undefined(ctx, -1)) {
 		duk_eval_error(ctx, "this is null or undefined");
 	}
-	duk_get_prop_string(ctx, -1, "c_scene");
-	IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
-	if(!scene) duk_eval_error(ctx, "getting property on invalid object");
+	duk_get_prop_string(ctx, -1, "c_module");
+	IModule* module = JSWrapper::toType<IModule*>(ctx, -1);
+	if(!module) duk_eval_error(ctx, "getting property on invalid object");
 
 	duk_get_prop_string(ctx, -1, "c_entity");
 	EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
@@ -1139,7 +1137,7 @@ static int JS_getProperty(duk_context* ctx) {
 	duk_pop(ctx);
 	
 	ComponentUID cmp;
-	cmp.scene = scene;
+	cmp.module = module;
 	cmp.type = cmp_type;
 	cmp.entity = entity;
 	const T val = desc->get(cmp, -1);
@@ -1155,9 +1153,9 @@ static int JS_setProperty(duk_context* ctx) {
 	{
 		duk_eval_error(ctx, "this is null or undefined");
 	}
-	duk_get_prop_string(ctx, -1, "c_scene");
-	IScene* scene = JSWrapper::toType<IScene*>(ctx, -1);
-	if (!scene) duk_eval_error(ctx, "getting property on invalid object");
+	duk_get_prop_string(ctx, -1, "c_module");
+	IModule* module = JSWrapper::toType<IModule*>(ctx, -1);
+	if (!module) duk_eval_error(ctx, "getting property on invalid object");
 
 	duk_get_prop_string(ctx, -2, "c_entity");
 	EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
@@ -1171,7 +1169,7 @@ static int JS_setProperty(duk_context* ctx) {
 	duk_pop(ctx);
 
 	ComponentUID cmp;
-	cmp.scene = scene;
+	cmp.module = module;
 	cmp.type = cmp_type;
 	cmp.entity = entity;
 	const T v = JSWrapper::checkArg<T>(ctx, 0);
@@ -1313,7 +1311,7 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 
 	registerJSObject(m_global_context, nullptr, "World", &ptrJSConstructor);
 
-	registerJSObject(m_global_context, nullptr, "SceneBase", &ptrJSConstructor);
+	registerJSObject(m_global_context, nullptr, "ModuleBase", &ptrJSConstructor);
 	registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
 
 	const u32 count = reflection::getComponents().length();
@@ -1342,9 +1340,9 @@ JSScriptSystemImpl::~JSScriptSystemImpl() {
 }
 
 
-void JSScriptSystemImpl::createScenes(World& ctx) {
-	UniquePtr<JSScriptSceneImpl> scene = UniquePtr<JSScriptSceneImpl>::create(m_allocator, *this, ctx);
-	ctx.addScene(scene.move());
+void JSScriptSystemImpl::createModules(World& world) {
+	UniquePtr<JSScriptModuleImpl> module = UniquePtr<JSScriptModuleImpl>::create(m_allocator, *this, world);
+	world.addModule(module.move());
 }
 
 
