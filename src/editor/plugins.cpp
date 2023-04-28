@@ -35,18 +35,18 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 	struct AddScriptCommand final : public IEditorCommand {
 		AddScriptCommand() {}
 
-		explicit AddScriptCommand(WorldEditor& editor) { scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script")); }
+		explicit AddScriptCommand(WorldEditor& editor) { module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script")); }
 
 		bool execute() override {
-			scr_index = scene->addScript(cmp);
+			scr_index = module->addScript(cmp);
 			return true;
 		}
 
-		void undo() override { scene->removeScript(cmp, scr_index); }
+		void undo() override { module->removeScript(cmp, scr_index); }
 		const char* getType() override { return "add_js_script"; }
 		bool merge(IEditorCommand& command) override { return false; }
 
-		JSScriptScene* scene;
+		JSScriptModule* module;
 		EntityRef cmp;
 		int scr_index;
 	};
@@ -58,27 +58,27 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			, scr_index(-1)
 			, cmp(INVALID_ENTITY)
 			, up(true) {
-			scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+			module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 		}
 
 		explicit MoveScriptCommand(IAllocator& allocator)
 			: blob(allocator)
-			, scene(nullptr)
+			, module(nullptr)
 			, scr_index(-1)
 			, cmp(INVALID_ENTITY)
 			, up(true) {}
 
 		bool execute() override {
-			scene->moveScript((EntityRef)cmp, scr_index, up);
+			module->moveScript((EntityRef)cmp, scr_index, up);
 			return true;
 		}
 
-		void undo() override { scene->moveScript((EntityRef)cmp, up ? scr_index - 1 : scr_index + 1, !up); }
+		void undo() override { module->moveScript((EntityRef)cmp, up ? scr_index - 1 : scr_index + 1, !up); }
 		const char* getType() override { return "move_js_script"; }
 		bool merge(IEditorCommand& command) override { return false; }
 
 		OutputMemoryStream blob;
-		JSScriptScene* scene;
+		JSScriptModule* module;
 		EntityPtr cmp;
 		int scr_index;
 		bool up;
@@ -90,36 +90,36 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			: blob(editor.getAllocator())
 			, scr_index(-1)
 			, cmp(INVALID_ENTITY) {
-			scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+			module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 		}
 
 		explicit RemoveScriptCommand(IAllocator& allocator)
 			: blob(allocator)
-			, scene(nullptr)
+			, module(nullptr)
 			, scr_index(-1)
 		{}
 
 		bool execute() override {
 			// TODO
 			ASSERT(false);
-			// scene->serializeScript(cmp, scr_index, blob);
-			scene->removeScript(cmp, scr_index);
+			// module->serializeScript(cmp, scr_index, blob);
+			module->removeScript(cmp, scr_index);
 			return true;
 		}
 
 		void undo() override {
-			scene->insertScript(cmp, scr_index);
+			module->insertScript(cmp, scr_index);
 			InputMemoryStream input(blob);
 			// TODO
 			ASSERT(false);
-			// scene->deserializeScript(cmp, scr_index, input);
+			// module->deserializeScript(cmp, scr_index, input);
 		}
 
 		const char* getType() override { return "remove_js_script"; }
 		bool merge(IEditorCommand& command) override { return false; }
 
 		OutputMemoryStream blob;
-		JSScriptScene* scene;
+		JSScriptModule* module;
 		EntityRef cmp;
 		int scr_index;
 	};
@@ -140,13 +140,13 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 			, component(cmp)
 			, script_index(scr_index)
 			, editor(_editor) {
-			auto* scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+			auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 			if (property_name[0] == '-') {
-				old_value = scene->getScriptPath(component, script_index).c_str();
+				old_value = module->getScriptPath(component, script_index).c_str();
 			} else {
 				char tmp[1024];
 				tmp[0] = '\0';
-				scene->getPropertyValue(cmp, scr_index, property_name, tmp, lengthOf(tmp));
+				module->getPropertyValue(cmp, scr_index, property_name, tmp, lengthOf(tmp));
 				old_value = tmp;
 				return;
 			}
@@ -154,22 +154,22 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 
 
 		bool execute() override {
-			auto* scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+			auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 			if (property_name.length() > 0 && property_name[0] == '-') {
-				scene->setScriptPath(component, script_index, Path(value.c_str()));
+				module->setScriptPath(component, script_index, Path(value.c_str()));
 			} else {
-				scene->setPropertyValue(component, script_index, property_name.c_str(), value.c_str());
+				module->setPropertyValue(component, script_index, property_name.c_str(), value.c_str());
 			}
 			return true;
 		}
 
 
 		void undo() override {
-			auto* scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+			auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 			if (property_name.length() > 0 && property_name[0] == '-') {
-				scene->setScriptPath(component, script_index, Path(old_value.c_str()));
+				module->setScriptPath(component, script_index, Path(old_value.c_str()));
 			} else {
-				scene->setPropertyValue(component, script_index, property_name.c_str(), old_value.c_str());
+				module->setPropertyValue(component, script_index, property_name.c_str(), old_value.c_str());
 			}
 		}
 
@@ -180,7 +180,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		bool merge(IEditorCommand& command) override {
 			auto& cmd = static_cast<SetPropertyCommand&>(command);
 			if (cmd.script_index == script_index && cmd.property_name == property_name) {
-				// cmd.scene = scene;
+				// cmd.module = module;
 				cmd.value = value;
 				return true;
 			}
@@ -205,19 +205,19 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		if (cmp_type != JS_SCRIPT_TYPE) return;
 
 		const EntityRef entity = entities[0];
-		auto* scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule(cmp_type));
+		auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule(cmp_type));
 		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) {
 			UniquePtr<AddScriptCommand> cmd = UniquePtr<AddScriptCommand>::create(allocator);
-			cmd->scene = scene;
+			cmd->module = module;
 			cmd->cmp = entity;
 			editor.executeCommand(cmd.move());
 		}
 
-		for (int j = 0; j < scene->getScriptCount(entity); ++j) {
+		for (int j = 0; j < module->getScriptCount(entity); ++j) {
 			char path_buf[LUMIX_MAX_PATH];
-			copyString(path_buf, scene->getScriptPath(entity, j).c_str());
+			copyString(path_buf, module->getScriptPath(entity, j).c_str());
 			StaticString<LUMIX_MAX_PATH + 20> header;
 			copyString(Span(header.data), Path::getBasename(path_buf));
 			if (header.empty()) header.add(j);
@@ -228,7 +228,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 					UniquePtr<RemoveScriptCommand> cmd = UniquePtr<RemoveScriptCommand>::create(allocator, allocator);
 					cmd->cmp = entity;
 					cmd->scr_index = j;
-					cmd->scene = scene;
+					cmd->module = module;
 					editor.executeCommand(cmd.move());
 					ImGui::PopID();
 					break;
@@ -238,7 +238,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 					UniquePtr<MoveScriptCommand> cmd = UniquePtr<MoveScriptCommand>::create(allocator, allocator);
 					cmd->cmp = entity;
 					cmd->scr_index = j;
-					cmd->scene = scene;
+					cmd->module = module;
 					cmd->up = true;
 					editor.executeCommand(cmd.move());
 					ImGui::PopID();
@@ -249,7 +249,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 					UniquePtr<MoveScriptCommand> cmd = UniquePtr<MoveScriptCommand>::create(allocator, allocator);
 					cmd->cmp = entity;
 					cmd->scr_index = j;
-					cmd->scene = scene;
+					cmd->module = module;
 					cmd->up = false;
 					editor.executeCommand(cmd.move());
 					ImGui::PopID();
@@ -261,23 +261,23 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 					UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, "-source", path_buf, allocator);
 					editor.executeCommand(cmd.move());
 				}
-				for (int k = 0, kc = scene->getPropertyCount(entity, j); k < kc; ++k) {
+				for (int k = 0, kc = module->getPropertyCount(entity, j); k < kc; ++k) {
 					char buf[256];
-					const char* property_name = scene->getPropertyName(entity, j, k);
+					const char* property_name = module->getPropertyName(entity, j, k);
 					if (!property_name) continue;
 
-					scene->getPropertyValue(entity, j, property_name, buf, lengthOf(buf));
+					module->getPropertyValue(entity, j, property_name, buf, lengthOf(buf));
 					ImGuiEx::Label(property_name);
 					const StaticString<32> id("##prop", k);
-					switch (scene->getPropertyType(entity, j, k)) {
-						case JSScriptScene::Property::BOOLEAN: {
+					switch (module->getPropertyType(entity, j, k)) {
+						case JSScriptModule::Property::BOOLEAN: {
 							bool b = equalStrings(buf, "true");
 							if (ImGui::Checkbox(id, &b)) {
 								UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, property_name, b ? "true" : "false", allocator);
 								editor.executeCommand(cmd.move());
 							}
 						} break;
-						case JSScriptScene::Property::NUMBER: {
+						case JSScriptModule::Property::NUMBER: {
 							float f = (float)atof(buf);
 							if (ImGui::DragFloat(id, &f)) {
 								toCString(f, Span(buf), 5);
@@ -285,8 +285,8 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 								editor.executeCommand(cmd.move());
 							}
 						} break;
-						case JSScriptScene::Property::STRING:
-						case JSScriptScene::Property::ANY:
+						case JSScriptModule::Property::STRING:
+						case JSScriptModule::Property::ANY:
 							if (ImGui::InputText(id, buf, sizeof(buf))) {
 								UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, property_name, buf, allocator);
 								editor.executeCommand(cmd.move());
@@ -295,8 +295,8 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 						default: ASSERT(false); break;
 					}
 				}
-				if (auto* call = scene->beginFunctionCall(entity, j, "onGUI")) {
-					scene->endFunctionCall();
+				if (auto* call = module->beginFunctionCall(entity, j, "onGUI")) {
+					module->endFunctionCall();
 				}
 				ImGui::PopID();
 			}
@@ -432,9 +432,9 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	static int autocompleteCallback(ImGuiInputTextCallbackData* data) {
 		auto* that = (ConsolePlugin*)data->UserData;
 		WorldEditor& editor = that->app.getWorldEditor();
-		auto* scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule("js_script"));
+		auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 		if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion) {
-			duk_context* ctx = scene->getGlobalContext();
+			duk_context* ctx = module->getGlobalContext();
 
 			int start_word = data->CursorPos;
 			char c = data->Buf[start_word - 1];
@@ -475,8 +475,8 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	void onWindowGUI() override {
 		if (!opened) return;
 
-		auto* scene = (JSScriptScene*)app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
-		duk_context* context = scene->getGlobalContext();
+		auto* module = (JSScriptModule*)app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
+		duk_context* context = module->getGlobalContext();
 		if (ImGui::Begin("JavaScript console", &opened)) {
 			if (ImGui::Button("Execute")) {
 				duk_push_string(context, buf);
@@ -598,13 +598,13 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 			IAllocator& allocator = editor.getAllocator();
 			auto cmd = UniquePtr<PropertyGridPlugin::AddScriptCommand>::create(allocator);
 
-			auto* script_scene = static_cast<JSScriptScene*>(editor.getWorld()->getModule(JS_SCRIPT_TYPE));
-			cmd->scene = script_scene;
+			auto* script_module = static_cast<JSScriptModule*>(editor.getWorld()->getModule(JS_SCRIPT_TYPE));
+			cmd->module = script_module;
 			cmd->cmp = entity;
 			editor.executeCommand(cmd.move());
 
 			if (!create_empty) {
-				int scr_count = script_scene->getScriptCount(entity);
+				int scr_count = script_module->getScriptCount(entity);
 				auto set_source_cmd = UniquePtr<PropertyGridPlugin::SetPropertyCommand>::create(allocator, editor, entity, scr_count - 1, "-source", buf, allocator);
 				editor.executeCommand(set_source_cmd.move());
 			}
