@@ -405,6 +405,7 @@ public:
 	}
 
 
+	const char* getName() const override { return "js_script"; }
 	int getVersion() const override { return -1; }
 
 
