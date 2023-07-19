@@ -472,7 +472,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	}
 
 
-	void onWindowGUI() override {
+	void onGUI() override {
 		if (!opened) return;
 
 		auto* module = (JSScriptModule*)app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
