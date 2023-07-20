@@ -325,10 +325,10 @@ struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 
 	ResourceType getResourceType() const override { return JSScript::TYPE; }
 
-	bool onGUI(Span<Resource*> resources) override {
+	bool onGUI(Span<AssetBrowser::ResourceView*> resources) override {
 		if (resources.length() > 1) return false;
 
-		auto* script = static_cast<JSScript*>(resources[0]);
+		auto* script = static_cast<JSScript*>(resources[0]->getResource());
 
 		if (m_text_buffer[0] == '\0') {
 			copyString(m_text_buffer, script->getSourceCode());
@@ -356,7 +356,7 @@ struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 	}
 
 
-	void onResourceUnloaded(Resource*) override { m_text_buffer[0] = 0; }
+	void onResourceUnloaded(AssetBrowser::ResourceView&) override { m_text_buffer[0] = 0; }
 	const char* getName() const override { return "JS Script"; }
 
 
