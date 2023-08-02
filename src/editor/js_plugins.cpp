@@ -3,6 +3,7 @@
 #include "../js_script_system.h"
 #include "editor/asset_browser.h"
 #include "editor/asset_compiler.h"
+#include "editor/editor_asset.h"
 #include "editor/property_grid.h"
 #include "editor/studio_app.h"
 #include "editor/utils.h"
@@ -307,69 +308,89 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 };
 
 
+struct EditorWindow : AssetEditorWindow {
+	EditorWindow(const Path& path, StudioApp& app, IAllocator& allocator)
+		: AssetEditorWindow(app)
+		, m_allocator(allocator)
+		, m_buffer(allocator)
+		, m_app(app)
+	{
+		m_resource = app.getEngine().getResourceManager().load<JSScript>(path);
+	}
+
+	~EditorWindow() {
+		m_resource->decRefCount();
+	}
+
+	void save() {
+		Span<const u8> data((const u8*)m_buffer.getData(), m_buffer.length());
+		m_app.getAssetBrowser().saveResource(*m_resource, data);
+		m_dirty = false;
+	}
+	
+	bool onAction(const Action& action) override { 
+		if (&action == &m_app.getSaveAction()) save();
+		else return false;
+		return true;
+	}
+
+	void windowGUI() override {
+		if (ImGui::BeginMenuBar()) {
+			if (ImGuiEx::IconButton(ICON_FA_SAVE, "Save")) save();
+			if (ImGuiEx::IconButton(ICON_FA_EXTERNAL_LINK_ALT, "Open externally")) m_app.getAssetBrowser().openInExternalEditor(m_resource);
+			ImGui::EndMenuBar();
+		}
+
+		if (m_resource->isEmpty()) {
+			ImGui::TextUnformatted("Loading...");
+			return;
+		}
+
+		if (m_buffer.length() == 0) m_buffer = m_resource->getSourceCode();
+
+		if (inputStringMultiline("##code", &m_buffer, ImGui::GetContentRegionAvail())) {
+			m_dirty = true;
+		}
+	}
+	
+	void destroy() override { LUMIX_DELETE(m_allocator, this); }
+	const Path& getPath() override { return m_resource->getPath(); }
+	const char* getName() const override { return "JS script editor"; }
+
+	IAllocator& m_allocator;
+	StudioApp& m_app;
+	JSScript* m_resource;
+	String m_buffer;
+};
+
 struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
+	
 	explicit AssetPlugin(StudioApp& app)
 		: m_app(app)
-		, AssetBrowser::Plugin(app.getAllocator())
 	{
-		m_text_buffer[0] = 0;
 		app.getAssetCompiler().registerExtension("js", JSScript::TYPE);
+	}
+
+	void onResourceDoubleClicked(const Path& path) override { 
+		AssetBrowser& ab = m_app.getAssetBrowser();
+		if (AssetEditorWindow* win = ab.getWindow(Path(path))) {
+			win->m_focus_request = true;
+			return;
+		}
+	
+		IAllocator& allocator = m_app.getAllocator();
+		EditorWindow* win = LUMIX_NEW(allocator, EditorWindow)(Path(path), m_app, m_app.getAllocator());
+		ab.addWindow(win);
 	}
 
 	bool canCreateResource() const override { return true; }
 	void createResource(OutputMemoryStream& content) override {}
 	const char* getDefaultExtension() const override { return "js"; }
-
-	void onResourceDoubleClicked(const Path& path) override {
-		m_app.getAssetBrowser().openInExternalEditor(path);
-	}
-
-	bool compile(const Path& src) override {
-		return m_app.getAssetCompiler().copyCompile(src);
-	}
-
-	void deserialize(InputMemoryStream& blob) override { ASSERT(false); }
-	void serialize(OutputMemoryStream& blob) override {}
-
+	bool compile(const Path& src) override { return m_app.getAssetCompiler().copyCompile(src); }
 	ResourceType getResourceType() const override { return JSScript::TYPE; }
-
-	bool onGUI(Span<AssetBrowser::ResourceView*> resources) override {
-		if (resources.length() > 1) return false;
-
-		auto* script = static_cast<JSScript*>(resources[0]->getResource());
-
-		if (m_text_buffer[0] == '\0') {
-			copyString(m_text_buffer, script->getSourceCode());
-		}
-		ImGui::SetNextItemWidth(-1);
-		ImGui::InputTextMultiline("Code", m_text_buffer, sizeof(m_text_buffer), ImVec2(0, 300));
-		if (ImGui::Button("Save")) {
-			auto& fs = m_app.getWorldEditor().getEngine().getFileSystem();
-			os::OutputFile file;
-			if (!fs.open(script->getPath().c_str(), file)) {
-				logWarning("Could not save ", script->getPath());
-				return false;
-			}
-
-			if (!file.write(m_text_buffer, stringLength(m_text_buffer))) {
-				logWarning("Could not write ", script->getPath());
-			}
-			file.close();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_EXTERNAL_LINK_ALT "Open externally")) {
-			m_app.getAssetBrowser().openInExternalEditor(script->getPath().c_str());
-		}
-		return false;
-	}
-
-
-	void onResourceUnloaded(AssetBrowser::ResourceView&) override { m_text_buffer[0] = 0; }
 	const char* getName() const override { return "JS Script"; }
 
-
 	StudioApp& m_app;
-	char m_text_buffer[8192];
 };
 
 
