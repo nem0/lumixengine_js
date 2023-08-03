@@ -329,7 +329,7 @@ struct EditorWindow : AssetEditorWindow {
 	}
 	
 	bool onAction(const Action& action) override { 
-		if (&action == &m_app.getSaveAction()) save();
+		if (&action == &m_app.getCommonActions().save) save();
 		else return false;
 		return true;
 	}
@@ -353,7 +353,6 @@ struct EditorWindow : AssetEditorWindow {
 		}
 	}
 	
-	void destroy() override { LUMIX_DELETE(m_allocator, this); }
 	const Path& getPath() override { return m_resource->getPath(); }
 	const char* getName() const override { return "JS script editor"; }
 
@@ -371,16 +370,10 @@ struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 		app.getAssetCompiler().registerExtension("js", JSScript::TYPE);
 	}
 
-	void onResourceDoubleClicked(const Path& path) override { 
-		AssetBrowser& ab = m_app.getAssetBrowser();
-		if (AssetEditorWindow* win = ab.getWindow(Path(path))) {
-			win->m_focus_request = true;
-			return;
-		}
-	
+	void openEditor(const Path& path) override { 
 		IAllocator& allocator = m_app.getAllocator();
-		EditorWindow* win = LUMIX_NEW(allocator, EditorWindow)(Path(path), m_app, m_app.getAllocator());
-		ab.addWindow(win);
+		UniquePtr<EditorWindow> win = UniquePtr<EditorWindow>::create(allocator, path, m_app, m_app.getAllocator());
+		m_app.getAssetBrowser().addWindow(win.move());
 	}
 
 	bool canCreateResource() const override { return true; }
@@ -388,7 +381,7 @@ struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 	const char* getDefaultExtension() const override { return "js"; }
 	bool compile(const Path& src) override { return m_app.getAssetCompiler().copyCompile(src); }
 	ResourceType getResourceType() const override { return JSScript::TYPE; }
-	const char* getName() const override { return "JS Script"; }
+	const char* getLabel() const override { return "JS Script"; }
 
 	StudioApp& m_app;
 };
