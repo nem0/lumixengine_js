@@ -16,6 +16,7 @@
 #include "engine/os.h"
 #include "engine/path.h"
 #include "engine/plugin.h"
+#include "engine/profiler.h"
 #include "engine/reflection.h"
 #include "engine/resource_manager.h"
 #include "engine/world.h"
@@ -662,6 +663,7 @@ struct StudioAppPlugin : StudioApp::IPlugin {
 	}
 
 	void init() override {
+		PROFILE_FUNCTION();
 		WorldEditor& editor = m_app.getWorldEditor();
 		auto* cmp_plugin = LUMIX_NEW(editor.getAllocator(), AddComponentPlugin)(m_app);
 		m_app.registerComponent("", "js_script", *cmp_plugin);
@@ -686,6 +688,7 @@ struct StudioAppPlugin : StudioApp::IPlugin {
 } // namespace
 
 LUMIX_STUDIO_ENTRY(js) {
+	PROFILE_FUNCTION();
 	IAllocator& allocator = app.getAllocator();
 	return LUMIX_NEW(allocator, StudioAppPlugin)(app);
 }

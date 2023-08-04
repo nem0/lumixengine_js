@@ -279,7 +279,7 @@ struct JSScriptManager final : public ResourceManager {
 struct JSScriptSystemImpl final : ISystem {
 	explicit JSScriptSystemImpl(Engine& engine);
 	virtual ~JSScriptSystemImpl();
-	void init() override;
+	void initBegin() override;
 
 	void serialize(OutputMemoryStream& serializer) const override {}
 	bool deserialize(i32 version, InputMemoryStream& serializer) override { return version == 0; }
@@ -1092,7 +1092,7 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 		.LUMIX_CMP(Script, "js_script", "JS Script");
 }
 
-void JSScriptSystemImpl::init() {
+void JSScriptSystemImpl::initBegin() {
 	registerGlobalAPI();
 }
 
@@ -1348,6 +1348,7 @@ void JSScriptSystemImpl::createModules(World& world) {
 
 
 LUMIX_PLUGIN_ENTRY(js) {
+	PROFILE_FUNCTION();
 	return LUMIX_NEW(engine.getAllocator(), JSScriptSystemImpl)(engine);
 }
 } // namespace Lumix
