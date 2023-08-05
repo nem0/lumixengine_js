@@ -363,7 +363,7 @@ struct EditorWindow : AssetEditorWindow {
 	String m_buffer;
 };
 
-struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
+struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 	
 	explicit AssetPlugin(StudioApp& app)
 		: m_app(app)
@@ -381,7 +381,6 @@ struct AssetPlugin : AssetBrowser::Plugin, AssetCompiler::IPlugin {
 	void createResource(OutputMemoryStream& content) override {}
 	const char* getDefaultExtension() const override { return "js"; }
 	bool compile(const Path& src) override { return m_app.getAssetCompiler().copyCompile(src); }
-	ResourceType getResourceType() const override { return JSScript::TYPE; }
 	const char* getLabel() const override { return "JS Script"; }
 
 	StudioApp& m_app;
@@ -668,10 +667,10 @@ struct StudioAppPlugin : StudioApp::IPlugin {
 		auto* cmp_plugin = LUMIX_NEW(editor.getAllocator(), AddComponentPlugin)(m_app);
 		m_app.registerComponent("", "js_script", *cmp_plugin);
 
-		const char* exts[] = {"js", nullptr};
+		const char* exts[] = {"js"};
 		m_app.getPropertyGrid().addPlugin(m_propert_grid_plugin);
-		m_app.getAssetCompiler().addPlugin(m_asset_plugin, exts);
-		m_app.getAssetBrowser().addPlugin(m_asset_plugin);
+		m_app.getAssetCompiler().addPlugin(m_asset_plugin, Span(exts));
+		m_app.getAssetBrowser().addPlugin(m_asset_plugin, Span(exts));
 		m_app.addPlugin(m_console_plugin);
 	}
 
