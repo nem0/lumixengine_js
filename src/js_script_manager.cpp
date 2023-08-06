@@ -19,8 +19,8 @@ void JSScript::unload() {
 	m_source_code = "";
 }
 
-bool JSScript::load(u64 size, const u8* mem) {
-	m_source_code = Span((const char*)mem, (u32)size);
+bool JSScript::load(Span<const u8> mem) {
+	m_source_code = Span((const char*)mem.begin(), (u32)mem.length());
 	return true;
 }
 
