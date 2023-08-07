@@ -20,7 +20,7 @@ void JSScript::unload() {
 }
 
 bool JSScript::load(Span<const u8> mem) {
-	m_source_code = Span((const char*)mem.begin(), (u32)mem.length());
+	m_source_code = StringView((const char*)mem.begin(), (u32)mem.length());
 	return true;
 }
 

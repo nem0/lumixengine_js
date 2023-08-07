@@ -465,7 +465,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 				c = data->Buf[start_word - 1];
 			}
 			char tmp[128];
-			copyNString(Span(tmp), data->Buf + start_word, data->CursorPos - start_word);
+			copyString(Span(tmp), StringView(data->Buf + start_word, data->CursorPos - start_word));
 
 			that->autocomplete.clear();
 
