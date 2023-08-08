@@ -218,11 +218,9 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 		}
 
 		for (int j = 0; j < module->getScriptCount(entity); ++j) {
-			char path_buf[LUMIX_MAX_PATH];
-			copyString(path_buf, module->getScriptPath(entity, j).c_str());
-			StaticString<LUMIX_MAX_PATH + 20> header;
-			copyString(Span(header.data), Path::getBasename(path_buf));
-			if (header.empty()) header.add(j);
+			Path path = module->getScriptPath(entity, j);
+			StaticString<LUMIX_MAX_PATH + 20> header(Path::getBasename(path));
+			if (header.empty()) header.append(j);
 			header.append("###", j);
 			if (ImGui::CollapsingHeader(header)) {
 				ImGui::PushID(j);
@@ -259,8 +257,8 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 				}
 
 				ImGuiEx::Label("Source");
-				if (m_app.getAssetBrowser().resourceInput("src", Span(path_buf), JSScript::TYPE)) {
-					UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, "-source", path_buf, allocator);
+				if (m_app.getAssetBrowser().resourceInput("src", path, JSScript::TYPE)) {
+					UniquePtr<SetPropertyCommand> cmd = UniquePtr<SetPropertyCommand>::create(allocator, editor, entity, j, "-source", path.c_str(), allocator);
 					editor.executeCommand(cmd.move());
 				}
 				for (int k = 0, kc = module->getPropertyCount(entity, j); k < kc; ++k) {
@@ -583,7 +581,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 
 	void onGUI(bool create_entity, bool, EntityPtr parent, WorldEditor& editor) override {
 		if (!ImGui::BeginMenu(getLabel())) return;
-		char buf[LUMIX_MAX_PATH];
+		Path path;
 		AssetBrowser& asset_browser = app.getAssetBrowser();
 		bool new_created = false;
 		if (ImGui::BeginMenu("New")) {
@@ -595,16 +593,16 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 					file.close();
 					new_created = true;
 				} else {
-					logError("Failed to create ", buf);
+					logError("Failed to create ", file_selector.getPath());
 				}
-				copyString(Span(buf), file_selector.getPath());
+				path = file_selector.getPath();
 			}
 			ImGui::EndMenu();
 		}
 		bool create_empty = ImGui::Selectable("Empty", false);
 
 		static StableHash selected_res_hash;
-		if (asset_browser.resourceList(Span(buf), selected_res_hash, JSScript::TYPE, false) || create_empty || new_created) {
+		if (asset_browser.resourceList(path, selected_res_hash, JSScript::TYPE, false) || create_empty || new_created) {
 			editor.beginCommandGroup("createEntityWithComponent");
 			if (create_entity) {
 				EntityRef entity = editor.addEntity();
@@ -627,7 +625,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 
 			if (!create_empty) {
 				int scr_count = script_module->getScriptCount(entity);
-				auto set_source_cmd = UniquePtr<PropertyGridPlugin::SetPropertyCommand>::create(allocator, editor, entity, scr_count - 1, "-source", buf, allocator);
+				auto set_source_cmd = UniquePtr<PropertyGridPlugin::SetPropertyCommand>::create(allocator, editor, entity, scr_count - 1, "-source", path.c_str(), allocator);
 				editor.executeCommand(set_source_cmd.move());
 			}
 			if (parent.isValid()) editor.makeParent(parent, entity);
