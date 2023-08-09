@@ -219,7 +219,7 @@ struct PropertyGridPlugin final : public PropertyGrid::IPlugin {
 
 		for (int j = 0; j < module->getScriptCount(entity); ++j) {
 			Path path = module->getScriptPath(entity, j);
-			StaticString<LUMIX_MAX_PATH + 20> header(Path::getBasename(path));
+			StaticString<MAX_PATH + 20> header(Path::getBasename(path));
 			if (header.empty()) header.append(j);
 			header.append("###", j);
 			if (ImGui::CollapsingHeader(header)) {
@@ -322,7 +322,7 @@ struct EditorWindow : AssetEditorWindow {
 	}
 
 	void save() {
-		Span<const u8> data((const u8*)m_buffer.getData(), m_buffer.length());
+		Span<const u8> data((const u8*)m_buffer.c_str(), m_buffer.length());
 		m_app.getAssetBrowser().saveResource(*m_resource, data);
 		m_dirty = false;
 	}
@@ -508,7 +508,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Execute file")) {
-				char tmp[LUMIX_MAX_PATH];
+				char tmp[MAX_PATH];
 				if (os::getOpenFilename(Span(tmp), "Scripts\0*.JS\0", nullptr)) {
 					os::InputFile file;
 					IAllocator& allocator = app.getWorldEditor().getAllocator();
@@ -585,7 +585,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		AssetBrowser& asset_browser = app.getAssetBrowser();
 		bool new_created = false;
 		if (ImGui::BeginMenu("New")) {
-			file_selector.gui(false);
+			file_selector.gui(false, "js");
 			if (file_selector.getPath()[0] && ImGui::Selectable("Create")) {
 				os::OutputFile file;
 				FileSystem& fs = app.getEngine().getFileSystem();

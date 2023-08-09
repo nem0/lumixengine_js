@@ -375,12 +375,8 @@ inline const char* jsTypeToString(duk_int_t type)
 
 inline void argError(duk_context* ctx, int index, const char* expected_type)
 {
-	char buf[128];
-	copyString(buf, "expected ");
-	catString(buf, expected_type);
-	catString(buf, ", got ");
 	int type = duk_get_type(ctx, index);
-	catString(buf, jsTypeToString(type));
+	StaticString<128> buf("expected ", expected_type, ", got ", jsTypeToString(type));
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, buf);
 }
 
