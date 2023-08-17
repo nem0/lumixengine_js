@@ -620,9 +620,9 @@ public:
 			allocator.deallocate(ptr);
 			return nullptr;
 		}
-		if (nsize > 0 && ptr == nullptr) return allocator.allocate(nsize);
+		if (nsize > 0 && ptr == nullptr) return allocator.allocate(nsize, 8);
 
-		void* new_mem = allocator.allocate(nsize);
+		void* new_mem = allocator.allocate(nsize, 8);
 		memcpy(new_mem, ptr, minimum(osize, nsize));
 		allocator.deallocate(ptr);
 		return new_mem;
