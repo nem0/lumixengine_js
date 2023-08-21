@@ -348,9 +348,11 @@ struct EditorWindow : AssetEditorWindow {
 
 		if (m_buffer.length() == 0) m_buffer = m_resource->getSourceCode();
 
+		ImGui::PushFont(m_app.getMonospaceFont());
 		if (inputStringMultiline("##code", &m_buffer, ImGui::GetContentRegionAvail())) {
 			m_dirty = true;
 		}
+		ImGui::PopFont();
 	}
 	
 	const Path& getPath() override { return m_resource->getPath(); }
