@@ -322,7 +322,7 @@ struct JSScriptModuleImpl final : public JSScriptModule{
 			, m_entity(entity) {}
 
 
-		static int getProperty(ScriptInstance& inst, StableHash32 hash) {
+		static int getProperty(ScriptInstance& inst, StableHash hash) {
 			for (int i = 0, c = inst.m_properties.size(); i < c; ++i) {
 				if (inst.m_properties[i].name_hash == hash) return i;
 			}
@@ -385,7 +385,7 @@ public:
 			if (!script_cmp) continue;
 
 			for (auto& script : script_cmp->m_scripts) {
-				setScriptPath(*script_cmp, script, invalid_path);
+				setScriptPathInternal(*script_cmp, script, invalid_path);
 			}
 			LUMIX_DELETE(m_system.m_allocator, script_cmp);
 		}
@@ -581,12 +581,50 @@ public:
 	}
 
 
-	const char* getPropertyName(StableHash32 name_hash) const {
+	const char* getPropertyName(StableHash name_hash) const {
 		int idx = m_property_names.find(name_hash);
 		if (idx >= 0) return m_property_names.at(idx).c_str();
-		return nullptr;
+		return "N/A";;
+	}
+	
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, bool value) {
+		const char* name = getPropertyName(prop.name_hash);
+		if (!name) return;
+		
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)script.m_id);
+		duk_get_prop(ctx, -2);
+
+		duk_push_boolean(ctx, value);
+		duk_put_prop_string(ctx, -2, name);
+		duk_pop_2(ctx);
 	}
 
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, Vec3 value) {
+		const StaticString<512> tmp("{", value.x, ",", value.y, ",", value.z, "}");
+		applyProperty(ctx, script, prop, tmp.data);
+	}
+
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, i32 value) {
+		applyProperty(ctx, script, prop, double(value));
+	}
+
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, float value) {
+		applyProperty(ctx, script, prop, double(value));
+	}
+
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, double value) {
+		const char* name = getPropertyName(prop.name_hash);
+		if (!name) return;
+		
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)script.m_id);
+		duk_get_prop(ctx, -2);
+
+		duk_push_number(ctx, value);
+		duk_put_prop_string(ctx, -2, name);
+		duk_pop_2(ctx);
+	}
 
 	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, const char* value) {
 		if (!value) return;
@@ -677,7 +715,7 @@ public:
 	}
 
 
-	void setScriptPath(ScriptComponent& cmp, ScriptInstance& inst, const Path& path) {
+	void setScriptPathInternal(ScriptComponent& cmp, ScriptInstance& inst, const Path& path) {
 		if (inst.m_script) {
 			clearInstance(cmp, inst);
 			auto& cb = inst.m_script->getObserverCb();
@@ -718,7 +756,7 @@ public:
 
 			auto& allocator = m_system.m_allocator;
 			const char* prop_name = duk_get_string(ctx, -2);
-			const StableHash32 hash(prop_name);
+			const StableHash hash(prop_name);
 			if (m_property_names.find(hash) < 0)
 			{
 				m_property_names.emplace(hash, prop_name, allocator);
@@ -874,7 +912,7 @@ public:
 	void getPropertyValue(EntityRef entity, int scr_index, const char* property_name, char* out, int max_size) override {
 		ASSERT(max_size > 0);
 
-		const StableHash32 hash(property_name);
+		const StableHash hash(property_name);
 		auto& inst = m_scripts[entity]->m_scripts[scr_index];
 		for (auto& prop : inst.m_properties) {
 			if (prop.name_hash == hash) {
@@ -974,7 +1012,7 @@ public:
 					serializer.read(prop.name_hash);
 					prop.stored_value = serializer.readString();
 				}
-				setScriptPath(*script, scr, Path(path));
+				setScriptPathInternal(*script, scr, Path(path));
 			}
 			m_world.onComponentCreated(script->m_entity, JS_SCRIPT_TYPE, this);
 		}
@@ -1030,7 +1068,7 @@ public:
 
 
 	Property& getScriptProperty(EntityRef entity, int scr_index, const char* name) {
-		const StableHash32 name_hash(name);
+		const StableHash name_hash(name);
 		ScriptComponent* script_cmp = m_scripts[entity];
 		for (auto& prop : script_cmp->m_scripts[scr_index].m_properties) {
 			if (prop.name_hash == name_hash) {
@@ -1054,7 +1092,7 @@ public:
 	void setScriptPath(EntityRef entity, int scr_index, const Path& path) override {
 		auto* script_cmp = m_scripts[entity];
 		if (script_cmp->m_scripts.size() <= scr_index) return;
-		setScriptPath(*script_cmp, script_cmp->m_scripts[scr_index], path);
+		setScriptPathInternal(*script_cmp, script_cmp->m_scripts[scr_index], path);
 	}
 
 
@@ -1064,11 +1102,12 @@ public:
 	void insertScript(EntityRef entity, int idx) override { m_scripts[entity]->m_scripts.emplaceAt(idx, m_system.m_allocator); }
 
 
-	int addScript(EntityRef entity) override {
+	int addScript(EntityRef entity, int scr_index) override {
 		ScriptComponent* script_cmp = m_scripts[entity];
-		ScriptInstance& inst = script_cmp->m_scripts.emplace(m_system.m_allocator);
+		if (scr_index == -1) scr_index = script_cmp->m_scripts.size();
+		ScriptInstance& inst = script_cmp->m_scripts.emplaceAt(scr_index, m_system.m_allocator);
 		inst.m_id = ++m_id_generator;
-		return script_cmp->m_scripts.size() - 1;
+		return scr_index;
 	}
 
 
@@ -1087,11 +1126,99 @@ public:
 		clearInstance(*script_cmp, script_cmp->m_scripts[scr_index]);
 		script_cmp->m_scripts.swapAndPop(scr_index);
 	}
+		
+	template <typename T> static void toString(T val, String& out) {
+		char tmp[128];
+		toCString(val, Span(tmp));
+		out = tmp;
+	}
 
+	template <> static void toString(float val, String& out) {
+		char tmp[128];
+		toCString(val, Span(tmp), 10);
+		out = tmp;
+	}
+
+	template <> static void toString(Vec3 val, String& out) {
+		StaticString<512> tmp("{", val.x, ", ", val.y, ", ", val.z, "}");
+		out = tmp;
+	}
+
+	template <typename T>
+	void setPropertyValue(EntityRef entity, int scr_index, const char* property_name, T value) {
+		auto* script_cmp = m_scripts[entity];
+		if (!script_cmp) return;
+		Property& prop = getScriptProperty(entity, scr_index, property_name);
+		if (!script_cmp->m_scripts[scr_index].m_script) {
+			toString(value, prop.stored_value);
+			return;
+		}
+
+		applyProperty(m_system.m_global_context, script_cmp->m_scripts[scr_index], prop, value);
+	}
+
+	template <typename T> T getProperty(Property& prop, const char* prop_name, ScriptInstance& scr) {
+		if (!scr.m_script) return {};
+		
+
+		duk_context* ctx = m_system.m_global_context;
+		auto xx = duk_get_top(ctx);
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)scr.m_id);
+		duk_get_prop(ctx, -2);
+
+		duk_get_prop_string(ctx, -1, prop_name);
+
+		if (!JSWrapper::isType<T>(ctx, -1)) {
+			duk_pop_3(ctx);
+			return T();
+		}
+		const T res = JSWrapper::toType<T>(ctx, -1);
+		duk_pop_3(ctx);
+		auto yy =duk_get_top(ctx);
+		ASSERT(xx == yy);
+		return res;
+	}
+
+
+	template <typename T> static T fromString(const char* val) {
+		T res;
+		fromCString(val, res);
+		return res;
+	}
+
+	template <> static const char* fromString(const char* val) { return val; }
+	template <> static float fromString(const char* val) { return (float)atof(val); }
+	template <> static bool fromString(const char* val) { return equalIStrings(val, "true"); }
+	template <> static Vec3 fromString(const char* val) { 
+		if (val[0] == '\0') return {};
+		Vec3 r;
+		r.x = (float)atof(val + 1);
+		const char* c = strstr(val + 1, ",");
+		r.y = (float)atof(c + 1);
+		c = strstr(val + 1, ",");
+		r.z = (float)atof(c + 1);
+		return r;
+	}
+
+	template <typename T>
+	T getPropertyValue(EntityRef entity, int scr_index, const char* property_name) {
+		const StableHash hash(property_name);
+		auto& inst = m_scripts[entity]->m_scripts[scr_index];
+		for (auto& prop : inst.m_properties)
+		{
+			if (prop.name_hash == hash)
+			{
+				if (inst.m_script && inst.m_script->isReady()) return getProperty<T>(prop, property_name, inst);
+				return fromString<T>(prop.stored_value.c_str());
+			}
+		}
+		return {};
+	}
 
 	JSScriptSystemImpl& m_system;
 	HashMap<EntityRef, ScriptComponent*> m_scripts;
-	AssociativeArray<StableHash32, String> m_property_names;
+	AssociativeArray<StableHash, String> m_property_names;
 	World& m_world;
 	Array<UpdateData> m_updates;
 	FunctionCall m_function_call;
@@ -1103,6 +1230,97 @@ public:
 };
 
 
+struct JSProperties : reflection::DynamicProperties {
+	JSProperties(IAllocator& allocator)
+		: DynamicProperties(allocator)
+	{
+		name = "js_properties";
+	}
+		
+	u32 getCount(ComponentUID cmp, int index) const override { 
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		return module.getPropertyCount(e, index);
+	}
+
+	Type getType(ComponentUID cmp, int array_idx, u32 idx) const override { 
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
+		switch(type) {
+			case JSScriptModule::Property::Type::BOOLEAN: return BOOLEAN;
+			case JSScriptModule::Property::Type::STRING: return STRING;
+			case JSScriptModule::Property::Type::NUMBER: return ENTITY;
+			case JSScriptModule::Property::Type::ANY: return NONE;
+		}
+		ASSERT(false);
+		return NONE;
+	}
+
+	reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
+		/*reflection::ResourceAttribute attr;
+		LuaScriptModuleImpl& module = (LuaScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		const LuaScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
+		ASSERT(type == LuaScriptModule::Property::Type::RESOURCE);
+		attr.resource_type  = module.getPropertyResourceType(e, array_idx, idx);
+		return attr;*/
+		ASSERT(false);
+		// TODO
+		return {};
+	}
+
+	const char* getName(ComponentUID cmp, int array_idx, u32 idx) const override {
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		return module.getPropertyName(e, array_idx, idx);
+	}
+
+
+	Value getValue(ComponentUID cmp, int array_idx, u32 idx) const override { 
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
+		const char* name = module.getPropertyName(e, array_idx, idx);
+		Value v = {};
+		switch(type) {
+			case JSScriptModule::Property::Type::BOOLEAN: reflection::set(v, module.getPropertyValue<bool>(e, array_idx, name)); break;
+			case JSScriptModule::Property::Type::NUMBER: reflection::set(v, module.getPropertyValue<float>(e, array_idx, name)); break;
+			case JSScriptModule::Property::Type::STRING: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
+			case JSScriptModule::Property::Type::ANY: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
+		}
+		return v;
+	}
+		
+	void set(ComponentUID cmp, int array_idx, const char* name, Type type, Value v) const override { 
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		switch(type) {
+			case BOOLEAN: module.setPropertyValue(e, array_idx, name, v.b); break;
+			case I32: module.setPropertyValue(e, array_idx, name, v.i); break;
+			case FLOAT: module.setPropertyValue(e, array_idx, name, v.f); break;
+			case STRING: module.setPropertyValue(e, array_idx, name, v.s); break;
+			case ENTITY: module.setPropertyValue(e, array_idx, name, v.e); break;
+			case RESOURCE: module.setPropertyValue(e, array_idx, name, v.s); break;
+			case COLOR: module.setPropertyValue(e, array_idx, name, v.v3); break;
+			case NONE: break;
+		}
+	}
+
+	void set(ComponentUID cmp, int array_idx, u32 idx, Value v) const override {
+		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
+		const EntityRef e = (EntityRef)cmp.entity;
+		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
+		const char* name = module.getPropertyName(e, array_idx, idx);
+		switch(type) {
+			case JSScriptModule::Property::Type::BOOLEAN: module.setPropertyValue(e, array_idx, name, v.b); break;
+			case JSScriptModule::Property::Type::NUMBER: module.setPropertyValue(e, array_idx, name, v.f); break;
+			case JSScriptModule::Property::Type::STRING: module.setPropertyValue(e, array_idx, name, v.s); break;
+			case JSScriptModule::Property::Type::ANY: ASSERT(false); break;
+		}
+	}
+};
+
 JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
@@ -1112,7 +1330,12 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	m_global_context = duk_create_heap_default();
 
 	LUMIX_MODULE(JSScriptModuleImpl, "js_script")
-		.LUMIX_CMP(Script, "js_script", "JS Script");
+		.LUMIX_CMP(Script, "js_script", "JS Script")
+		.begin_array<&JSScriptModule::getScriptCount, &JSScriptModule::addScript, &JSScriptModule::removeScript>("scripts")
+			//.prop<&JSScriptModuleImpl::isScriptEnabled, &JSScriptModuleImpl::enableScript>("Enabled")
+			.LUMIX_PROP(ScriptPath, "Path").resourceAttribute(JSScript::TYPE)
+			.property<JSProperties>()
+		.end_array();
 }
 
 void JSScriptSystemImpl::initBegin() {

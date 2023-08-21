@@ -32,7 +32,7 @@ public:
 		{
 		}
 
-		StableHash32 name_hash;
+		StableHash name_hash;
 		Type type;
 		ResourceType resource_type;
 		String stored_value;
@@ -47,24 +47,24 @@ public:
 	};
 
 public:
-	virtual Path getScriptPath(EntityRef cmp, int scr_index) = 0;	
-	virtual void setScriptPath(EntityRef cmp, int scr_index, const Path& path) = 0;
+	virtual Path getScriptPath(EntityRef entity, int scr_index) = 0;	
+	virtual void setScriptPath(EntityRef entity, int scr_index, const Path& path) = 0;
 	virtual bool execute(EntityRef entity, i32 scr_index, StringView code) = 0;
-	virtual IFunctionCall* beginFunctionCall(EntityRef cmp, int scr_index, const char* function) = 0;
+	virtual IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) = 0;
 	virtual void endFunctionCall() = 0;
-	virtual int getScriptCount(EntityRef cmp) = 0;
-	virtual void insertScript(EntityRef cmp, int idx) = 0;
-	virtual int addScript(EntityRef cmp) = 0;
-	virtual void removeScript(EntityRef cmp, int scr_index) = 0;
-	virtual void moveScript(EntityRef cmp, int scr_index, bool up) = 0;
-	virtual void setPropertyValue(EntityRef cmp, int scr_index, const char* name, const char* value) = 0;
-	virtual void getPropertyValue(EntityRef cmp, int scr_index, const char* property_name, char* out, int max_size) = 0;
-	virtual int getPropertyCount(EntityRef cmp, int scr_index) = 0;
-	virtual const char* getPropertyName(EntityRef cmp, int scr_index, int prop_index) = 0;
-	virtual Property::Type getPropertyType(EntityRef cmp, int scr_index, int prop_index) = 0;
-	virtual ResourceType getPropertyResourceType(EntityRef cmp, int scr_index, int prop_index) = 0;
-	virtual void getScriptData(EntityRef cmp, OutputMemoryStream& blob) = 0;
-	virtual void setScriptData(EntityRef cmp, InputMemoryStream& blob) = 0;
+	virtual int getScriptCount(EntityRef entity) = 0;
+	virtual void insertScript(EntityRef entity, int idx) = 0;
+	virtual int addScript(EntityRef entity, int scr_index) = 0;
+	virtual void removeScript(EntityRef entity, int scr_index) = 0;
+	virtual void moveScript(EntityRef entity, int scr_index, bool up) = 0;
+	virtual void setPropertyValue(EntityRef entity, int scr_index, const char* name, const char* value) = 0;
+	virtual void getPropertyValue(EntityRef entity, int scr_index, const char* property_name, char* out, int max_size) = 0;
+	virtual int getPropertyCount(EntityRef entity, int scr_index) = 0;
+	virtual const char* getPropertyName(EntityRef entity, int scr_index, int prop_index) = 0;
+	virtual Property::Type getPropertyType(EntityRef entity, int scr_index, int prop_index) = 0;
+	virtual ResourceType getPropertyResourceType(EntityRef entity, int scr_index, int prop_index) = 0;
+	virtual void getScriptData(EntityRef entity, OutputMemoryStream& blob) = 0;
+	virtual void setScriptData(EntityRef entity, InputMemoryStream& blob) = 0;
 	virtual duk_context* getGlobalContext() = 0;
 };
 
