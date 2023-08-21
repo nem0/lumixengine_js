@@ -49,6 +49,7 @@ public:
 public:
 	virtual Path getScriptPath(EntityRef cmp, int scr_index) = 0;	
 	virtual void setScriptPath(EntityRef cmp, int scr_index, const Path& path) = 0;
+	virtual bool execute(EntityRef entity, i32 scr_index, StringView code) = 0;
 	virtual IFunctionCall* beginFunctionCall(EntityRef cmp, int scr_index, const char* function) = 0;
 	virtual void endFunctionCall() = 0;
 	virtual int getScriptCount(EntityRef cmp) = 0;

@@ -408,6 +408,29 @@ public:
 	const char* getName() const override { return "js_script"; }
 	int getVersion() const override { return -1; }
 
+	bool execute(EntityRef entity, i32 scr_index, StringView code) override {
+		auto* script_cmp = m_scripts[{entity.index}];
+		auto& script = script_cmp->m_scripts[scr_index];
+
+		duk_context* ctx = m_system.m_global_context;
+
+		if (duk_pcompile_lstring(ctx, DUK_COMPILE_EVAL, code.begin, code.size()) != 0) {
+			logError("Compile failed: ", duk_safe_to_stacktrace(ctx, -1));
+			return false;
+		}
+
+		duk_push_global_stash(ctx); // [fn, stash]
+		duk_push_pointer(ctx, (void*)script.m_id);  // [fn, stash, id]
+		duk_get_prop(ctx, -2); // [fn, stash, this]
+		duk_remove(ctx, -2); // [fn, this]
+
+		if (duk_pcall_method(ctx, 0) != DUK_EXEC_SUCCESS) { 
+			logError(duk_safe_to_stacktrace(ctx, -1));
+			return false;
+		}
+		duk_pop(ctx);
+		return true;
+	}
 
 	IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) override {
 		ASSERT(!m_function_call.is_in_progress);

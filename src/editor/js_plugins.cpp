@@ -5,6 +5,7 @@
 #include "editor/asset_compiler.h"
 #include "editor/editor_asset.h"
 #include "editor/property_grid.h"
+#include "editor/settings.h"
 #include "editor/studio_app.h"
 #include "editor/utils.h"
 #include "editor/world_editor.h"
@@ -388,11 +389,11 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	ConsolePlugin(StudioApp& _app)
 		: app(_app)
-		, opened(false)
+		, open(false)
 		, autocomplete(_app.getWorldEditor().getAllocator()) {
 		open_action.init("JS console", "JavaScript console", "script_console", "", true);
-		open_action.func.bind<&ConsolePlugin::toggleOpened>(this);
-		open_action.is_selected.bind<&ConsolePlugin::isOpened>(this);
+		open_action.func.bind<&ConsolePlugin::toggleOpen>(this);
+		open_action.is_selected.bind<&ConsolePlugin::isOpen>(this);
 		app.addWindowAction(&open_action);
 		buf[0] = '\0';
 	}
@@ -401,9 +402,50 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	const char* getName() const override { return "script_console"; }
 
+	void onSettingsLoaded() override {
+		Settings& settings = app.getSettings();
+		open = settings.getValue(Settings::GLOBAL, "is_js_console_open", false);
+		if (!buf[0]) {
+			StringView dir = Path::getDir(settings.getAppDataPath());
+			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
+			os::InputFile file;
+			if (file.open(path)) {
+				const u64 size = file.size();
+				if (size + 1 <= sizeof(buf)) {
+					if (!file.read(buf, size)) {
+						logError("Failed to read ", path);
+						buf[0] = '\0';
+					}
+					else {
+						buf[size] = '\0';
+					}
+				}
+				file.close();
+			}
+		}
+	}
 
-	bool isOpened() const { return opened; }
-	void toggleOpened() { opened = !opened; }
+	void onBeforeSettingsSaved() override {
+		Settings& settings = app.getSettings();
+		settings.setValue(Settings::GLOBAL, "is_js_console_open", open);
+		if (buf[0]) {
+			StringView dir = Path::getDir(settings.getAppDataPath());
+			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
+			os::OutputFile file;
+			if (!file.open(path)) {
+				logError("Failed to save ", path);
+			}
+			else {
+				if (!file.write(buf, stringLength(buf))) {
+					logError("Failed to write ", path);
+				}
+				file.close();
+			}
+		}
+	}
+
+	bool isOpen() const { return open; }
+	void toggleOpen() { open = !open; }
 
 
 	void autocompleteSubstep(duk_context* ctx, const char* str, ImGuiInputTextCallbackData* data) {
@@ -493,46 +535,37 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 
 	void onGUI() override {
-		if (!opened) return;
+		if (!open) return;
 
 		auto* module = (JSScriptModule*)app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
 		duk_context* context = module->getGlobalContext();
-		if (ImGui::Begin("JavaScript console", &opened)) {
+		if (ImGui::Begin("JavaScript console", &open)) {
 			if (ImGui::Button("Execute")) {
-				duk_push_string(context, buf);
-				if (duk_peval(context) != 0) {
-					const char* error = duk_safe_to_string(context, -1);
-					logError(error);
+				if (run_on_entity) {
+					const Array<EntityRef>& selected = app.getWorldEditor().getSelectedEntities();
+					if (selected.size() != 1) logError("Exactly one entity must be selected");
+					else {
+						if (module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
+							module->execute(selected[0], 0, buf);
+						}
+						else logError("Entity does not have JS component");
+					}
+				} else {
+					duk_push_string(context, buf);
+					if (duk_peval(context) != 0) {
+						const char* error = duk_safe_to_string(context, -1);
+						logError(error);
+					}
+					duk_pop(context);
 				}
-				duk_pop(context);
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Execute file")) {
-				char tmp[MAX_PATH];
-				if (os::getOpenFilename(Span(tmp), "Scripts\0*.JS\0", nullptr)) {
-					os::InputFile file;
-					IAllocator& allocator = app.getWorldEditor().getAllocator();
-					if (file.open(tmp)) {
-						size_t size = file.size();
-						Array<char> data(allocator);
-						data.resize((int)size + 1);
-						if (file.read(data.begin(), size)) {
-							data[(int)size] = '\0';
-							duk_push_string(context, &data[0]);
-							if (duk_peval(context) != 0) {
-								const char* error = duk_safe_to_string(context, -1);
-								logError(error);
-							}
-							duk_pop(context);
-						}
-						file.close();
-					} else {
-						logError("Failed to open file ", tmp);
-					}
-				}
-			}
+			ImGui::Checkbox("Run on entity", &run_on_entity);
+
 			if (insert_value) ImGui::SetKeyboardFocusHere();
+			ImGui::PushFont(app.getMonospaceFont());
 			ImGui::InputTextMultiline("##buf", buf, lengthOf(buf), ImVec2(-1, -1), ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_CallbackCompletion, autocompleteCallback, this);
+			ImGui::PopFont();
 
 			if (open_autocomplete) {
 				ImGui::OpenPopup("autocomplete");
@@ -563,7 +596,8 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	StudioApp& app;
 	Array<String> autocomplete;
-	bool opened;
+	bool open;
+	bool run_on_entity = false;
 	bool open_autocomplete = false;
 	int autocomplete_selected = 1;
 	const char* insert_value = nullptr;
