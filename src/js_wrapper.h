@@ -11,6 +11,26 @@ namespace Lumix
 namespace JSWrapper
 {
 
+#ifdef LUMIX_DEBUG
+	struct LUMIX_ENGINE_API DebugGuard {
+		DebugGuard(duk_context* ctx) : ctx(ctx) { top = duk_get_top(ctx); }
+		DebugGuard(duk_context* ctx, i32 offset) : ctx(ctx) { top = duk_get_top(ctx) + offset; }
+		~DebugGuard() {
+			const duk_idx_t current_top = duk_get_top(ctx);
+			ASSERT(current_top == top);
+		}
+
+	private:
+		duk_context* ctx;
+		duk_idx_t top;
+	};
+#else
+	struct LUMIX_ENGINE_API DebugGuard { 
+		DebugGuard(duk_context* ctx) {} 
+		DebugGuard(duk_context* ctx, i32 offset) {} 
+	};
+#endif
+
 
 template <typename T> struct ToType
 {
@@ -59,7 +79,17 @@ template <typename T> struct ToType<T&>
 	}
 };
 
-template <> struct ToType<EntityPtr>;
+template <> struct ToType<EntityPtr> {
+	static EntityPtr value(duk_context* ctx, int index) {
+		return EntityPtr{duk_get_int(ctx, index)};
+	}
+};
+
+template <> struct ToType<EntityRef>  {
+	static EntityRef value(duk_context* ctx, int index) {
+		return {duk_get_int(ctx, index)};
+	}
+};
 
 template <>
 struct ToType<Vec2>

@@ -27,7 +27,7 @@ static const ComponentType JS_SCRIPT_TYPE = reflection::getComponentType("js_scr
 namespace JSImGui {
 int Text(duk_context* ctx) {
 	auto* text = JSWrapper::checkArg<const char*>(ctx, 0);
-	ImGui::Text("%s", text);
+	ImGui::TextUnformatted(text);
 	return 0;
 }
 
@@ -276,10 +276,11 @@ struct JSScriptManager final : public ResourceManager {
 	IAllocator& m_allocator;
 };
 
-struct JSScriptSystemImpl final : ISystem {
+struct JSScriptSystemImpl final : JSScriptSystem {
 	explicit JSScriptSystemImpl(Engine& engine);
 	virtual ~JSScriptSystemImpl();
 	void initBegin() override;
+	duk_context* getGlobalContext() override { return m_global_context; }
 
 	void serialize(OutputMemoryStream& serializer) const override {}
 	bool deserialize(i32 version, InputMemoryStream& serializer) override { return version == 0; }
@@ -674,22 +675,6 @@ public:
 		return script.m_properties.size();
 	}
 
-
-	static void* JSAllocator(void* ud, void* ptr, size_t osize, size_t nsize) {
-		auto& allocator = *static_cast<IAllocator*>(ud);
-		if (nsize == 0) {
-			allocator.deallocate(ptr);
-			return nullptr;
-		}
-		if (nsize > 0 && ptr == nullptr) return allocator.allocate(nsize, 8);
-
-		void* new_mem = allocator.allocate(nsize, 8);
-		memcpy(new_mem, ptr, minimum(osize, nsize));
-		allocator.deallocate(ptr);
-		return new_mem;
-	}
-
-
 	static int getScriptIndex(ScriptComponent& scr, ScriptInstance& inst) { return int(&inst - &scr.m_scripts[0]); }
 
 
@@ -807,8 +792,9 @@ public:
 
 	void startScript(EntityRef entity, ScriptInstance& instance, bool is_restart) {
 		duk_context* ctx = m_system.m_global_context;
-		duk_push_global_stash(ctx);
+		JSWrapper::DebugGuard guard(ctx);
 
+		duk_push_global_stash(ctx);
 		duk_push_pointer(ctx, (void*)instance.m_id);
 
 		duk_get_global_string(ctx, "Entity");
@@ -817,16 +803,22 @@ public:
 		duk_new(ctx, 2);
 		duk_put_global_string(ctx, "_entity");
 
-		if (duk_peval_string(ctx, instance.m_script->getSourceCode()) != 0)
-		{
+		duk_push_string(ctx, instance.m_script->getPath().c_str());
+		if (duk_pcompile_string_filename(ctx, DUK_COMPILE_EVAL, instance.m_script->getSourceCode()) != 0) {
 			const char* error = duk_safe_to_stacktrace(ctx, -1);
 			logError(error);
 			duk_pop_3(ctx);
 			return;
 		}
 
-		if (!duk_is_object(ctx, -1))
-		{
+		if (duk_pcall(ctx, 0) != 0) {
+			const char* error = duk_safe_to_stacktrace(ctx, -1);
+			logError(error);
+			duk_pop_3(ctx);
+			return;
+		}
+
+		if (!duk_is_object(ctx, -1)) {
 			duk_pop_3(ctx);
 			return;
 		}
@@ -835,15 +827,13 @@ public:
 
 		duk_push_pointer(ctx, (void*)instance.m_id); // [stash, id]
 		duk_get_prop(ctx, -2); // [stash, obj]
-		if (duk_is_undefined(ctx, -1))
-		{
+		if (duk_is_undefined(ctx, -1)) {
 			duk_pop_2(ctx);
 			return;
 		}
 
 		duk_get_prop_string(ctx, -1, "update");
-		if (duk_is_callable(ctx, -1))
-		{
+		if (duk_is_callable(ctx, -1)) {
 			UpdateData& update = m_updates.emplace();
 			update.context = ctx;
 			update.id = instance.m_id;
@@ -852,22 +842,19 @@ public:
 
 		detectProperties(instance, entity);
 
-		if (!m_scripts_init_called)
-		{
+		if (!m_scripts_init_called) {
 			duk_pop_2(ctx); // stash
 			return;
 		}
 
 		duk_get_prop_string(ctx, -1, "start");
-		if (!duk_is_callable(ctx, -1))
-		{
+		if (!duk_is_callable(ctx, -1)) {
 			duk_pop_3(ctx);
 			return;
 		}
 		duk_dup(ctx, -2); // [this, func] -> [this, func, this]
 
-		if (duk_pcall_method(ctx, 0))
-		{
+		if (duk_pcall_method(ctx, 0)) {
 			const char* error = duk_safe_to_string(ctx, -1);
 			logError(error);
 		}
@@ -1101,6 +1088,9 @@ public:
 
 	void insertScript(EntityRef entity, int idx) override { m_scripts[entity]->m_scripts.emplaceAt(idx, m_system.m_allocator); }
 
+	uintptr getScriptID(EntityRef entity, i32 scr_index) override {
+		return m_scripts[entity]->m_scripts[scr_index].m_id;
+	}
 
 	int addScript(EntityRef entity, int scr_index) override {
 		ScriptComponent* script_cmp = m_scripts[entity];
@@ -1250,7 +1240,7 @@ struct JSProperties : reflection::DynamicProperties {
 		switch(type) {
 			case JSScriptModule::Property::Type::BOOLEAN: return BOOLEAN;
 			case JSScriptModule::Property::Type::STRING: return STRING;
-			case JSScriptModule::Property::Type::NUMBER: return ENTITY;
+			case JSScriptModule::Property::Type::NUMBER: return FLOAT;
 			case JSScriptModule::Property::Type::ANY: return NONE;
 		}
 		ASSERT(false);
@@ -1321,13 +1311,19 @@ struct JSProperties : reflection::DynamicProperties {
 	}
 };
 
+static void js_fatalHandler(void *udata, const char *msg) {
+	logError("*** JS FATAL ERROR: ", (msg ? msg : "no message"));
+	abort();
+}
+
 JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
 	, m_script_manager(m_allocator) {
 	m_script_manager.create(JSScript::TYPE, engine.getResourceManager());
 
-	m_global_context = duk_create_heap_default();
+	// TODO allocator
+	m_global_context = duk_create_heap(nullptr, nullptr, nullptr, nullptr, js_fatalHandler);
 
 	LUMIX_MODULE(JSScriptModuleImpl, "js_script")
 		.LUMIX_CMP(Script, "js_script", "JS Script")
@@ -1364,6 +1360,7 @@ static void convertPropertyToJSName(const char* src, char* out, int max_size) {
 
 template <typename T>
 static int JS_getProperty(duk_context* ctx) {
+	JSWrapper::DebugGuard guard(ctx, 1);
 	duk_push_this(ctx);
 	if (duk_is_null_or_undefined(ctx, -1)) {
 		duk_eval_error(ctx, "this is null or undefined");
@@ -1372,16 +1369,16 @@ static int JS_getProperty(duk_context* ctx) {
 	IModule* module = JSWrapper::toType<IModule*>(ctx, -1);
 	if(!module) duk_eval_error(ctx, "getting property on invalid object");
 
-	duk_get_prop_string(ctx, -1, "c_entity");
+	duk_get_prop_string(ctx, -2, "c_entity");
 	EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
-	duk_get_prop_string(ctx, -1, "c_cmptype");
+	duk_get_prop_string(ctx, -3, "c_cmptype");
 	ComponentType cmp_type = { JSWrapper::toType<int>(ctx, -1) };
-	duk_pop(ctx);
+	duk_pop_3(ctx);
 
 	duk_push_current_function(ctx);
 	duk_get_prop_string(ctx, -1, "c_desc");
 	const auto* desc = JSWrapper::toType<reflection::Property<T>*>(ctx, -1);
-	duk_pop(ctx);
+	duk_pop_3(ctx);
 	
 	ComponentUID cmp;
 	cmp.module = module;

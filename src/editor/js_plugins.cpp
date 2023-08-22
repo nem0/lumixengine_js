@@ -1,6 +1,7 @@
 #define LUMIX_NO_CUSTOM_CRT
 #include "../js_script_manager.h"
 #include "../js_script_system.h"
+#include "../duktape/duk_trans_socket.h"
 #include "editor/asset_browser.h"
 #include "editor/asset_compiler.h"
 #include "editor/editor_asset.h"
@@ -22,14 +23,14 @@
 #include "engine/resource_manager.h"
 #include "engine/world.h"
 #include "imgui/imgui.h"
-#include <cstdlib>
+
 
 
 using namespace Lumix;
 
 
 static const ComponentType JS_SCRIPT_TYPE = reflection::getComponentType("js_script");
-
+#define JS_DEBUGGER
 
 namespace {
 
@@ -116,36 +117,69 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 
 struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	ConsolePlugin(StudioApp& _app)
-		: app(_app)
-		, open(false)
-		, autocomplete(_app.getWorldEditor().getAllocator()) {
-		open_action.init("JS console", "JavaScript console", "script_console", "", true);
-		open_action.func.bind<&ConsolePlugin::toggleOpen>(this);
-		open_action.is_selected.bind<&ConsolePlugin::isOpen>(this);
-		app.addWindowAction(&open_action);
-		buf[0] = '\0';
+		: m_app(_app)
+		, m_autocomplete(_app.getWorldEditor().getAllocator())
+	{
+		m_open_action.init("JS console", "JavaScript console", "script_console", "", true);
+		m_open_action.func.bind<&ConsolePlugin::toggleOpen>(this);
+		m_open_action.is_selected.bind<&ConsolePlugin::isOpen>(this);
+		m_app.addWindowAction(&m_open_action);
+		m_buffer[0] = '\0';
+
+		#ifdef JS_DEBUGGER
+			logInfo("JS debugger listening");
+			duk_trans_socket_init();
+		#endif
 	}
 
-	~ConsolePlugin() { app.removeAction(&open_action); }
+	~ConsolePlugin() { m_app.removeAction(&m_open_action); }
+	
+	static void onDebuggerDetached(duk_context *ctx, void *udata) {
+		ConsolePlugin* console = (ConsolePlugin*)udata;
+		console->m_is_debugger_attached = false;
+		logInfo("JS debugger disconnected");
+	}
+
+	void update(float) override {
+		#ifdef JS_DEBUGGER
+			JSScriptSystem* system = (JSScriptSystem*)m_app.getEngine().getSystemManager().getSystem("js_script");
+			if (m_is_debugger_attached) {
+				duk_debugger_cooperate(system->getGlobalContext());
+			}
+			else if (duk_trans_socket_tryconn()) {
+				logInfo("JS debugger connected");
+				duk_debugger_attach(system->getGlobalContext(),
+					duk_trans_socket_read_cb,
+					duk_trans_socket_write_cb,
+					duk_trans_socket_peek_cb,
+					duk_trans_socket_read_flush_cb,
+					duk_trans_socket_write_flush_cb,
+					nullptr,
+					&ConsolePlugin::onDebuggerDetached,
+					this);
+				m_is_debugger_attached = true;
+			}
+		#endif
+	}
 
 	const char* getName() const override { return "script_console"; }
 
 	void onSettingsLoaded() override {
-		Settings& settings = app.getSettings();
-		open = settings.getValue(Settings::GLOBAL, "is_js_console_open", false);
-		if (!buf[0]) {
+		Settings& settings = m_app.getSettings();
+		m_is_open = settings.getValue(Settings::GLOBAL, "is_js_console_open", false);
+		if (!m_buffer[0]) {
 			StringView dir = Path::getDir(settings.getAppDataPath());
 			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
 			os::InputFile file;
 			if (file.open(path)) {
 				const u64 size = file.size();
-				if (size + 1 <= sizeof(buf)) {
-					if (!file.read(buf, size)) {
+				if (size + 1 <= sizeof(m_buffer)) {
+					if (!file.read(m_buffer, size)) {
 						logError("Failed to read ", path);
-						buf[0] = '\0';
+						m_buffer[0] = '\0';
 					}
 					else {
-						buf[size] = '\0';
+						m_buffer[size] = '\0';
 					}
 				}
 				file.close();
@@ -154,9 +188,9 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	}
 
 	void onBeforeSettingsSaved() override {
-		Settings& settings = app.getSettings();
-		settings.setValue(Settings::GLOBAL, "is_js_console_open", open);
-		if (buf[0]) {
+		Settings& settings = m_app.getSettings();
+		settings.setValue(Settings::GLOBAL, "is_js_console_open", m_is_open);
+		if (m_buffer[0]) {
 			StringView dir = Path::getDir(settings.getAppDataPath());
 			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
 			os::OutputFile file;
@@ -164,7 +198,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 				logError("Failed to save ", path);
 			}
 			else {
-				if (!file.write(buf, stringLength(buf))) {
+				if (!file.write(m_buffer, stringLength(m_buffer))) {
 					logError("Failed to write ", path);
 				}
 				file.close();
@@ -172,20 +206,17 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		}
 	}
 
-	bool isOpen() const { return open; }
-	void toggleOpen() { open = !open; }
+	bool isOpen() const { return m_is_open; }
+	void toggleOpen() { m_is_open = !m_is_open; }
 
 
 	void autocompleteSubstep(duk_context* ctx, const char* str, ImGuiInputTextCallbackData* data) {
-		char item[128];
-		const char* next = str;
-		char* c = item;
-		while (*next != '.' && *next != '\0') {
-			*c = *next;
-			++next;
-			++c;
+		StringView item;
+		item.begin = str;
+		item.end = str;
+		while (*item.end != '.' && *item.end != '\0') {
+			++item.end;
 		}
-		*c = '\0';
 
 		if (duk_is_null_or_undefined(ctx, -1)) return;
 
@@ -195,17 +226,17 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			if (duk_is_string(ctx, -1) && !duk_is_symbol(ctx, -1)) {
 				const char* name = duk_to_string(ctx, -1);
 				if (startsWith(name, item)) {
-					if (*next == '.' && next[1] == '\0') {
+					if (*item.end == '.' && item.end[1] == '\0') {
 						if (equalStrings(name, item)) {
 							duk_get_prop_string(ctx, -3, name);
 							autocompleteSubstep(ctx, "", data);
 							duk_pop(ctx);
 						}
-					} else if (*next == '\0') {
-						autocomplete.push(String(name, app.getWorldEditor().getAllocator()));
+					} else if (*item.end == '\0') {
+						m_autocomplete.push(String(name, m_app.getWorldEditor().getAllocator()));
 					} else {
 						duk_get_prop_string(ctx, -3, name);
-						autocompleteSubstep(ctx, next + 1, data);
+						autocompleteSubstep(ctx, item.end + 1, data);
 						duk_pop(ctx);
 					}
 				}
@@ -221,7 +252,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	static int autocompleteCallback(ImGuiInputTextCallbackData* data) {
 		auto* that = (ConsolePlugin*)data->UserData;
-		WorldEditor& editor = that->app.getWorldEditor();
+		WorldEditor& editor = that->m_app.getWorldEditor();
 		auto* module = static_cast<JSScriptModule*>(editor.getWorld()->getModule("js_script"));
 		if (data->EventFlag == ImGuiInputTextFlags_CallbackCompletion) {
 			duk_context* ctx = module->getGlobalContext();
@@ -235,51 +266,68 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			char tmp[128];
 			copyString(Span(tmp), StringView(data->Buf + start_word, data->CursorPos - start_word));
 
-			that->autocomplete.clear();
+			that->m_autocomplete.clear();
 
 			duk_push_global_object(ctx);
 			that->autocompleteSubstep(ctx, tmp, data);
 			duk_pop(ctx);
-			if (!that->autocomplete.empty()) {
-				that->open_autocomplete = true;
-				qsort(&that->autocomplete[0], that->autocomplete.size(), sizeof(that->autocomplete[0]), [](const void* a, const void* b) {
+			if (that->m_run_on_entity) {
+				if (startsWith(tmp, "this.")) {
+					const Array<EntityRef>& selected = that->m_app.getWorldEditor().getSelectedEntities();
+					if (selected.size() == 1 && module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
+						const uintptr id = module->getScriptID(selected[0], 0);
+						duk_push_global_stash(ctx); // [stash]
+						duk_push_pointer(ctx, (void*)id);  // [stash, id]
+						duk_get_prop(ctx, -2); // [stash, this]
+						duk_remove(ctx, -2); // [this]
+						that->autocompleteSubstep(ctx, tmp + 5/*"this."*/, data);
+						duk_pop(ctx);
+					}
+				}
+				else if (startsWith("thi", tmp)) {
+					that->m_autocomplete.push(String("this", that->m_app.getWorldEditor().getAllocator()));
+				}
+			}
+			if (!that->m_autocomplete.empty()) {
+				that->m_open_autocomplete = true;
+				qsort(&that->m_autocomplete[0], that->m_autocomplete.size(), sizeof(that->m_autocomplete[0]), [](const void* a, const void* b) {
 					const char* a_str = ((const String*)a)->c_str();
 					const char* b_str = ((const String*)b)->c_str();
 					return compareString(a_str, b_str);
 				});
 			}
-		} else if (that->insert_value) {
+		} else if (that->m_insert_value) {
 			int start_word = data->CursorPos;
 			char c = data->Buf[start_word - 1];
 			while (start_word > 0 && (isWordChar(c))) {
 				--start_word;
 				c = data->Buf[start_word - 1];
 			}
-			data->InsertChars(data->CursorPos, that->insert_value + data->CursorPos - start_word);
-			that->insert_value = nullptr;
+			data->InsertChars(data->CursorPos, that->m_insert_value + data->CursorPos - start_word);
+			that->m_insert_value = nullptr;
 		}
 		return 0;
 	}
 
 
 	void onGUI() override {
-		if (!open) return;
+		if (!m_is_open) return;
 
-		auto* module = (JSScriptModule*)app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
+		auto* module = (JSScriptModule*)m_app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
 		duk_context* context = module->getGlobalContext();
-		if (ImGui::Begin("JavaScript console", &open)) {
+		if (ImGui::Begin("JavaScript console", &m_is_open)) {
 			if (ImGui::Button("Execute")) {
-				if (run_on_entity) {
-					const Array<EntityRef>& selected = app.getWorldEditor().getSelectedEntities();
+				if (m_run_on_entity) {
+					const Array<EntityRef>& selected = m_app.getWorldEditor().getSelectedEntities();
 					if (selected.size() != 1) logError("Exactly one entity must be selected");
 					else {
 						if (module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
-							module->execute(selected[0], 0, buf);
+							module->execute(selected[0], 0, m_buffer);
 						}
 						else logError("Entity does not have JS component");
 					}
 				} else {
-					duk_push_string(context, buf);
+					duk_push_string(context, m_buffer);
 					if (duk_peval(context) != 0) {
 						const char* error = duk_safe_to_string(context, -1);
 						logError(error);
@@ -288,31 +336,31 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 				}
 			}
 			ImGui::SameLine();
-			ImGui::Checkbox("Run on entity", &run_on_entity);
+			ImGui::Checkbox("Run on entity", &m_run_on_entity);
 
-			if (insert_value) ImGui::SetKeyboardFocusHere();
-			ImGui::PushFont(app.getMonospaceFont());
-			ImGui::InputTextMultiline("##buf", buf, lengthOf(buf), ImVec2(-1, -1), ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_CallbackCompletion, autocompleteCallback, this);
+			if (m_insert_value) ImGui::SetKeyboardFocusHere();
+			ImGui::PushFont(m_app.getMonospaceFont());
+			ImGui::InputTextMultiline("##buf", m_buffer, lengthOf(m_buffer), ImVec2(-1, -1), ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_CallbackCompletion, autocompleteCallback, this);
 			ImGui::PopFont();
 
-			if (open_autocomplete) {
+			if (m_open_autocomplete) {
 				ImGui::OpenPopup("autocomplete");
 				ImGui::SetNextWindowPos(ImGuiEx::GetOsImePosRequest());
 			}
-			open_autocomplete = false;
+			m_open_autocomplete = false;
 			if (ImGui::BeginPopup("autocomplete")) {
-				if (autocomplete.size() == 1) {
-					insert_value = autocomplete[0].c_str();
+				if (m_autocomplete.size() == 1) {
+					m_insert_value = m_autocomplete[0].c_str();
 				}
-				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow))) ++autocomplete_selected;
-				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow))) --autocomplete_selected;
-				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) insert_value = autocomplete[autocomplete_selected].c_str();
-				if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape))) ImGui::CloseCurrentPopup();
-				autocomplete_selected = clamp(autocomplete_selected, 0, autocomplete.size() - 1);
-				for (int i = 0, c = autocomplete.size(); i < c; ++i) {
-					const char* value = autocomplete[i].c_str();
-					if (ImGui::Selectable(value, autocomplete_selected == i)) {
-						insert_value = value;
+				if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) ++m_autocomplete_selected;
+				if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) --m_autocomplete_selected;
+				if (ImGui::IsKeyPressed(ImGuiKey_Enter)) m_insert_value = m_autocomplete[m_autocomplete_selected].c_str();
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape)) ImGui::CloseCurrentPopup();
+				m_autocomplete_selected = clamp(m_autocomplete_selected, 0, m_autocomplete.size() - 1);
+				for (int i = 0, c = m_autocomplete.size(); i < c; ++i) {
+					const char* value = m_autocomplete[i].c_str();
+					if (ImGui::Selectable(value, m_autocomplete_selected == i)) {
+						m_insert_value = value;
 					}
 				}
 				ImGui::EndPopup();
@@ -322,15 +370,16 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	}
 
 
-	StudioApp& app;
-	Array<String> autocomplete;
-	bool open;
-	bool run_on_entity = false;
-	bool open_autocomplete = false;
-	int autocomplete_selected = 1;
-	const char* insert_value = nullptr;
-	char buf[10 * 1024];
-	Action open_action;
+	StudioApp& m_app;
+	Array<String> m_autocomplete;
+	bool m_is_open = false;
+	bool m_run_on_entity = false;
+	bool m_open_autocomplete = false;
+	i32 m_autocomplete_selected = 1;
+	const char* m_insert_value = nullptr;
+	char m_buffer[10 * 1024];
+	Action m_open_action;
+	bool m_is_debugger_attached = false;
 };
 
 

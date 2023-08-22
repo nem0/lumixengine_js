@@ -12,15 +12,14 @@
 namespace Lumix
 {
 
+struct JSScriptSystem : ISystem {
+	virtual duk_context* getGlobalContext() = 0;
+};
 
-class JSScriptModule : public IModule
-{
-public:
 
-	struct Property
-	{
-		enum Type : int
-		{
+struct JSScriptModule : public IModule {
+	struct Property {
+		enum Type : i32 {
 			BOOLEAN,
 			NUMBER,
 			STRING,
@@ -29,8 +28,7 @@ public:
 
 		explicit Property(IAllocator& allocator)
 			: stored_value(allocator)
-		{
-		}
+		{}
 
 		StableHash name_hash;
 		Type type;
@@ -39,14 +37,12 @@ public:
 	};
 
 
-	struct IFunctionCall
-	{
+	struct IFunctionCall {
 		virtual void add(int parameter) = 0;
 		virtual void add(float parameter) = 0;
 		virtual void add(void* parameter) = 0;
 	};
 
-public:
 	virtual Path getScriptPath(EntityRef entity, int scr_index) = 0;	
 	virtual void setScriptPath(EntityRef entity, int scr_index, const Path& path) = 0;
 	virtual bool execute(EntityRef entity, i32 scr_index, StringView code) = 0;
@@ -55,6 +51,7 @@ public:
 	virtual int getScriptCount(EntityRef entity) = 0;
 	virtual void insertScript(EntityRef entity, int idx) = 0;
 	virtual int addScript(EntityRef entity, int scr_index) = 0;
+	virtual uintptr getScriptID(EntityRef entity, i32 scr_index) = 0;
 	virtual void removeScript(EntityRef entity, int scr_index) = 0;
 	virtual void moveScript(EntityRef entity, int scr_index, bool up) = 0;
 	virtual void setPropertyValue(EntityRef entity, int scr_index, const char* name, const char* value) = 0;
