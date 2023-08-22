@@ -1,6 +1,10 @@
-# lumixengine_js
+# JavaScript plugin for [Lumix Engine](https://github.com/nem0/LumixEngine). 
 
-JavaScript plugin for [Lumix Engine](https://github.com/nem0/LumixEngine)
+* Attach scripts to entities
+* All properties automatically accessible
+* Console to execute scripts in global or entity's context, with autocomplete
+* [Debugger](https://github.com/harold-b/vscode-duktape-debug) support
+* Using [Duktape](https://github.com/svaarala/duktape)
 
 Example JS code:
 
