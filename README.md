@@ -32,3 +32,6 @@ VS Code debugger:
 
 https://github.com/nem0/lumixengine_js/assets/153526/6fead5ad-0e2c-448b-a7dd-aaf59527998f
 
+Autocomplete in console:
+
+![js_autocomplete](https://github.com/nem0/lumixengine_js/assets/153526/5d13226f-f1e8-4ffd-9766-08c3deb862a1)
