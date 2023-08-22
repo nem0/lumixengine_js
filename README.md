@@ -27,3 +27,8 @@ function localFunction() {
 })
 ```
 ![image](https://github.com/nem0/lumixengine_js/assets/153526/ad85998e-a028-4dcc-afe8-2e87f6c8a521)
+
+VS Code debugger:
+
+https://github.com/nem0/lumixengine_js/assets/153526/6fead5ad-0e2c-448b-a7dd-aaf59527998f
+
