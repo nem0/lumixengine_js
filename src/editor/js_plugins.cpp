@@ -1,7 +1,7 @@
 #define LUMIX_NO_CUSTOM_CRT
 #include "../js_script_manager.h"
 #include "../js_script_system.h"
-#include "../duktape/duk_trans_socket.h"
+#include "../duktape/duk_debugger.h"
 #include "editor/asset_browser.h"
 #include "editor/asset_compiler.h"
 #include "editor/editor_asset.h"
@@ -128,36 +128,37 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 		#ifdef JS_DEBUGGER
 			logInfo("JS debugger listening");
-			duk_trans_socket_init();
+			duk_debugger::init();
 		#endif
 	}
 
-	~ConsolePlugin() { m_app.removeAction(&m_open_action); }
-	
-	static void onDebuggerDetached(duk_context *ctx, void *udata) {
-		ConsolePlugin* console = (ConsolePlugin*)udata;
-		console->m_is_debugger_attached = false;
-		logInfo("JS debugger disconnected");
+	~ConsolePlugin() {
+		duk_debugger::finish();
+		m_app.removeAction(&m_open_action);
 	}
+	
+	static void onDebuggerDetached(duk_context *ctx, void*) {
+		duk_debugger::disconnect();
+	} 
 
 	void update(float) override {
 		#ifdef JS_DEBUGGER
 			JSScriptSystem* system = (JSScriptSystem*)m_app.getEngine().getSystemManager().getSystem("js_script");
-			if (m_is_debugger_attached) {
+			if (duk_debugger::isConnected()) {
 				duk_debugger_cooperate(system->getGlobalContext());
 			}
-			else if (duk_trans_socket_tryconn()) {
+			else if (duk_debugger::tryConnect()) {
 				logInfo("JS debugger connected");
 				duk_debugger_attach(system->getGlobalContext(),
-					duk_trans_socket_read_cb,
-					duk_trans_socket_write_cb,
-					duk_trans_socket_peek_cb,
-					duk_trans_socket_read_flush_cb,
-					duk_trans_socket_write_flush_cb,
+					duk_debugger::readCallback,
+					duk_debugger::writeCallback,
+					duk_debugger::peekCallback,
+					nullptr,
+					nullptr,
 					nullptr,
 					&ConsolePlugin::onDebuggerDetached,
 					this);
-				m_is_debugger_attached = true;
+				duk_debugger_cooperate(system->getGlobalContext());
 			}
 		#endif
 	}
@@ -316,6 +317,15 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		auto* module = (JSScriptModule*)m_app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
 		duk_context* context = module->getGlobalContext();
 		if (ImGui::Begin("JavaScript console", &m_is_open)) {
+			#ifdef JS_DEBUGGER
+				bool is_connected = duk_debugger::isConnected();	
+				ImGui::PushStyleColor(ImGuiCol_Text, is_connected ? IM_COL32(0, 0xff, 0, 0xff) : IM_COL32(0xff, 0, 0, 0xff));
+				ImGui::Bullet();
+				ImGui::PopStyleColor();
+				ImGui::SetItemTooltip(is_connected ? "Debugger connected" : "Debugger disconnected");
+				ImGui::SameLine(0, 16);
+			#endif
+			
 			if (ImGui::Button("Execute")) {
 				if (m_run_on_entity) {
 					const Array<EntityRef>& selected = m_app.getWorldEditor().getSelectedEntities();
@@ -379,7 +389,6 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	const char* m_insert_value = nullptr;
 	char m_buffer[10 * 1024];
 	Action m_open_action;
-	bool m_is_debugger_attached = false;
 };
 
 
