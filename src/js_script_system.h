@@ -23,6 +23,7 @@ struct JSScriptModule : public IModule {
 			BOOLEAN,
 			NUMBER,
 			STRING,
+			ENTITY,
 			ANY
 		};
 

@@ -6,6 +6,7 @@
 #include "engine/engine.h"
 #include "engine/file_system.h"
 #include "engine/hash.h"
+#include "engine/input_system.h"
 #include "engine/log.h"
 #include "engine/path.h"
 #include "engine/plugin.h"
@@ -140,7 +141,7 @@ static int ptrJSConstructor(duk_context* ctx) {
 }
 
 
-static int entityProxyGetter(duk_context* ctx) {
+static int entityProxySetter(duk_context* ctx) {
 	duk_get_prop_string(ctx, 0, "c_world");
 	World* world= (World*)duk_get_pointer(ctx, -1);
 
@@ -149,13 +150,62 @@ static int entityProxyGetter(duk_context* ctx) {
 
 	duk_pop_2(ctx);
 
-	const char* cmp_type_name = duk_get_string(ctx, 1);
-	ComponentType cmp_type = reflection::getComponentType(cmp_type_name);
+	const char* prop_name = duk_get_string(ctx, 1);
+	if (equalStrings(prop_name, "rotation")) {
+		Quat r = JSWrapper::toType<Quat>(ctx, 2);
+		world->setRotation(entity, r);
+	}
+	else if (equalStrings(prop_name, "position")) {
+		DVec3 v = JSWrapper::toType<DVec3>(ctx, 2);
+		world->setPosition(entity, v);
+	}
+	else if (equalStrings(prop_name, "scale")) {
+		Vec3 v = JSWrapper::toType<Vec3>(ctx, 2);
+		world->setScale(entity, v);
+	}
+	else {
+		duk_push_sprintf(ctx, " trying to set unknown property %s", prop_name);
+		duk_throw(ctx);
+	}
+	return 0;
+}
 
+static int entityProxyGetter(duk_context* ctx) {
+	const char* prop_name = duk_get_string(ctx, 1);
+
+	duk_get_prop_string(ctx, 0, "c_entity");
+	EntityRef entity = {duk_get_int(ctx, -1)};
+	duk_pop(ctx);
+	if (equalStrings(prop_name, "c_entity")) {
+		JSWrapper::push(ctx, entity.index);
+		return 1;
+	}
+
+	duk_get_prop_string(ctx, 0, "c_world");
+	World* world= (World*)duk_get_pointer(ctx, -1);
+	if (!world) return 0;
+
+	duk_pop(ctx);
+
+	if (equalStrings(prop_name, "rotation")) {
+		JSWrapper::push(ctx, world->getRotation(entity));
+		return 1;
+	}
+	if (equalStrings(prop_name, "position")) {
+		JSWrapper::push(ctx, world->getPosition(entity));
+		return 1;
+	}
+	if (equalStrings(prop_name, "scale")) {
+		JSWrapper::push(ctx, world->getScale(entity));
+		return 1;
+	}
+	if (!reflection::componentTypeExists(prop_name)) return 0;
+
+	ComponentType cmp_type = reflection::getComponentType(prop_name);
 	IModule* module = world->getModule(cmp_type);
 	if (!module) return 0;
 
-	duk_get_global_string(ctx, cmp_type_name);
+	duk_get_global_string(ctx, prop_name);
 	JSWrapper::push(ctx, module);
 	JSWrapper::push(ctx, entity.index);
 	duk_new(ctx, 2);
@@ -180,6 +230,9 @@ static int entityJSConstructor(duk_context* ctx) {
 	duk_push_object(ctx); // proxy handler
 	duk_push_c_function(ctx, entityProxyGetter, 3);
 	duk_put_prop_string(ctx, -2, "get");
+
+	duk_push_c_function(ctx, entityProxySetter, 3);
+	duk_put_prop_string(ctx, -2, "set");
 
 	duk_new(ctx, 2);
 
@@ -299,11 +352,10 @@ struct JSScriptSystemImpl final : JSScriptSystem {
 
 
 struct JSScriptModuleImpl final : public JSScriptModule{
-	struct UpdateData {
+	struct ContextRef {
 		duk_context* context;
 		uintptr id;
 	};
-
 
 	struct ScriptInstance {
 		explicit ScriptInstance(IAllocator& allocator)
@@ -397,6 +449,7 @@ public:
 		, m_world(ctx)
 		, m_scripts(system.m_allocator)
 		, m_updates(system.m_allocator)
+		, m_input_handlers(system.m_allocator)
 		, m_property_names(system.m_allocator)
 		, m_is_game_running(false)
 		, m_is_api_registered(false) {
@@ -601,6 +654,24 @@ public:
 		duk_pop_2(ctx);
 	}
 
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, EntityPtr value) {
+		const char* name = getPropertyName(prop.name_hash);
+		if (!name) return;
+
+		JSWrapper::DebugGuard guard(ctx);
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)script.m_id);
+		duk_get_prop(ctx, -2);
+		
+		duk_get_global_string(ctx, "Entity");
+		duk_push_pointer(ctx, &m_world);
+		JSWrapper::push(ctx, value.index);
+		duk_new(ctx, 2);
+		duk_put_prop_string(ctx, -2, name);
+
+		duk_pop_2(ctx);
+	}
+
 	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, Vec3 value) {
 		const StaticString<512> tmp("{", value.x, ",", value.y, ",", value.z, "}");
 		applyProperty(ctx, script, prop, tmp.data);
@@ -690,6 +761,13 @@ public:
 			}
 		}
 
+		for (int i = 0; i < m_input_handlers.size(); ++i) {
+			if (m_input_handlers[i].id == inst.m_id) {
+				m_input_handlers.swapAndPop(i);
+				break;
+			}
+		}
+
 		duk_context* ctx = m_system.m_global_context;
 		duk_push_global_stash(ctx);
 		duk_push_pointer(ctx, (void*)inst.m_id);
@@ -733,10 +811,20 @@ public:
 			}
 			memset(valid_properties, 0, (inst.m_properties.size() + 7) / 8);
 
-			if (duk_is_function(ctx, -1) || duk_is_object(ctx, -1))
-			{
+			if (duk_is_function(ctx, -1)) {
 				duk_pop_2(ctx);
 				continue;
+			}
+
+			bool is_entity = false;
+			if (duk_is_object(ctx, -1)) {
+				// duk_instanceof throws, so we use c_entity to detect entities
+				is_entity = duk_get_prop_string(ctx, -1, "c_entity");
+				duk_pop(ctx);
+				if (!is_entity) {
+					duk_pop_2(ctx);
+					continue;
+				}
 			}
 
 			auto& allocator = m_system.m_allocator;
@@ -751,13 +839,11 @@ public:
 			{
 				valid_properties[prop_index] = true;
 				Property& existing_prop = inst.m_properties[prop_index];
-				if (existing_prop.type == Property::ANY)
-				{
-					switch (duk_get_type(ctx, -1))
-					{
+				if (existing_prop.type == Property::ANY) {
+					switch (duk_get_type(ctx, -1)) {
 						case DUK_TYPE_STRING: existing_prop.type = Property::STRING; break;
 						case DUK_TYPE_BOOLEAN: existing_prop.type = Property::BOOLEAN; break;
-						default: existing_prop.type = Property::NUMBER;
+						default: existing_prop.type = is_entity ? Property::ENTITY : Property::NUMBER; break;
 					}
 				}
 				applyProperty(ctx, inst, existing_prop, existing_prop.stored_value.c_str());
@@ -768,11 +854,10 @@ public:
 				if (prop_index < sizeof(valid_properties) * 8) {
 					valid_properties[prop_index / 8] |= 1 << (prop_index % 8);
 					auto& prop = inst.m_properties.emplace(allocator);
-					switch (duk_get_type(ctx, -1))
-					{
+					switch (duk_get_type(ctx, -1)) {
 						case DUK_TYPE_BOOLEAN: prop.type = Property::BOOLEAN; break;
 						case DUK_TYPE_STRING: prop.type = Property::STRING; break;
-						default: prop.type = Property::NUMBER;
+						default: prop.type = is_entity ? Property::ENTITY : Property::NUMBER; break;
 					}
 					prop.name_hash = hash;
 				}
@@ -834,9 +919,17 @@ public:
 
 		duk_get_prop_string(ctx, -1, "update");
 		if (duk_is_callable(ctx, -1)) {
-			UpdateData& update = m_updates.emplace();
+			ContextRef& update = m_updates.emplace();
 			update.context = ctx;
 			update.id = instance.m_id;
+		}
+		duk_pop(ctx);
+
+		duk_get_prop_string(ctx, -1, "onInputEvent");
+		if (duk_is_callable(ctx, -1)) {
+			ContextRef& handler = m_input_handlers.emplace();
+			handler.context = ctx;
+			handler.id = instance.m_id;
 		}
 		duk_pop(ctx);
 
@@ -869,6 +962,7 @@ public:
 		m_scripts_init_called = false;
 		m_is_game_running = false;
 		m_updates.clear();
+		m_input_handlers.clear();
 	}
 
 
@@ -1028,7 +1122,61 @@ public:
 		}
 		m_scripts_init_called = true;
 	}
+	
+	void processInputEvent(const ContextRef& ctx_ref, const InputSystem::Event& event) {
+		duk_context* ctx = ctx_ref.context;
+		JSWrapper::DebugGuard guard(ctx);
+		duk_push_object(ctx);
+		JSWrapper::setField(ctx, "type", (u32)event.type);
+		JSWrapper::setField(ctx, "device_type", (u32)event.device->type);
+		JSWrapper::setField(ctx, "device_index", event.device->index);
+		
+		switch(event.type)
+		{
+			case InputSystem::Event::DEVICE_ADDED:
+				break;
+			case InputSystem::Event::DEVICE_REMOVED:
+				break;
+			case InputSystem::Event::BUTTON:
+				JSWrapper::setField(ctx, "down", event.data.button.down);
+				JSWrapper::setField(ctx, "key_id", event.data.button.key_id);
+				JSWrapper::setField(ctx, "is_repeat", event.data.button.is_repeat);
+				JSWrapper::setField(ctx, "x", event.data.button.x);
+				JSWrapper::setField(ctx, "y", event.data.button.y);
+				break;
+			case InputSystem::Event::AXIS:
+				JSWrapper::setField(ctx, "x", event.data.axis.x);
+				JSWrapper::setField(ctx, "y", event.data.axis.y);
+				JSWrapper::setField(ctx, "x_abs", event.data.axis.x_abs);
+				JSWrapper::setField(ctx, "y_abs", event.data.axis.y_abs);
+				break;
+			case InputSystem::Event::TEXT_INPUT:
+				JSWrapper::setField(ctx, "text", event.data.text.utf8);
+				break;
+		}
 
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)ctx_ref.id);
+		duk_get_prop(ctx, -2);
+		duk_get_prop_string(ctx, -1, "onInputEvent");
+		duk_dup(ctx, -2);        //[arg, stash, this, func, this]
+		duk_dup(ctx, -5);   //[arg, stash, this, func, this, arg]
+		if (duk_pcall_method(ctx, 1) == DUK_EXEC_ERROR) { // [arg, stash, this, retval]
+			const char* error = duk_safe_to_string(ctx, -1);
+			logError(error);
+		}
+		duk_pop_n(ctx, 4);
+	}
+
+	void processInputEvents() {
+		PROFILE_FUNCTION();
+		InputSystem& input_system = m_system.m_engine.getInputSystem();
+		for (const ContextRef& ctx : m_input_handlers) {
+			for (const InputSystem::Event& event : input_system.getEvents()) {
+				processInputEvent(ctx, event);
+			}
+		}
+	}
 
 	void update(float time_delta) override {
 		PROFILE_FUNCTION();
@@ -1036,8 +1184,9 @@ public:
 		if (!m_is_game_running) return;
 		if (!m_scripts_init_called) initScripts();
 
+		processInputEvents();
 		for (int i = 0; i < m_updates.size(); ++i) {
-			UpdateData update_item = m_updates[i];
+			ContextRef update_item = m_updates[i];
 			duk_push_global_stash(update_item.context);
 			duk_push_pointer(update_item.context, (void*)update_item.id);
 			duk_get_prop(update_item.context, -2);					//[stash, this]
@@ -1152,7 +1301,6 @@ public:
 		
 
 		duk_context* ctx = m_system.m_global_context;
-		auto xx = duk_get_top(ctx);
 		duk_push_global_stash(ctx);
 		duk_push_pointer(ctx, (void*)scr.m_id);
 		duk_get_prop(ctx, -2);
@@ -1165,8 +1313,6 @@ public:
 		}
 		const T res = JSWrapper::toType<T>(ctx, -1);
 		duk_pop_3(ctx);
-		auto yy =duk_get_top(ctx);
-		ASSERT(xx == yy);
 		return res;
 	}
 
@@ -1210,7 +1356,8 @@ public:
 	HashMap<EntityRef, ScriptComponent*> m_scripts;
 	AssociativeArray<StableHash, String> m_property_names;
 	World& m_world;
-	Array<UpdateData> m_updates;
+	Array<ContextRef> m_input_handlers;
+	Array<ContextRef> m_updates;
 	FunctionCall m_function_call;
 	ScriptInstance* m_current_script_instance;
 	bool m_scripts_init_called = false;
@@ -1241,6 +1388,7 @@ struct JSProperties : reflection::DynamicProperties {
 			case JSScriptModule::Property::Type::BOOLEAN: return BOOLEAN;
 			case JSScriptModule::Property::Type::STRING: return STRING;
 			case JSScriptModule::Property::Type::NUMBER: return FLOAT;
+			case JSScriptModule::Property::Type::ENTITY: return ENTITY;
 			case JSScriptModule::Property::Type::ANY: return NONE;
 		}
 		ASSERT(false);
@@ -1277,6 +1425,7 @@ struct JSProperties : reflection::DynamicProperties {
 			case JSScriptModule::Property::Type::BOOLEAN: reflection::set(v, module.getPropertyValue<bool>(e, array_idx, name)); break;
 			case JSScriptModule::Property::Type::NUMBER: reflection::set(v, module.getPropertyValue<float>(e, array_idx, name)); break;
 			case JSScriptModule::Property::Type::STRING: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
+			case JSScriptModule::Property::Type::ENTITY: reflection::set(v, module.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
 			case JSScriptModule::Property::Type::ANY: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
 		}
 		return v;
@@ -1306,6 +1455,7 @@ struct JSProperties : reflection::DynamicProperties {
 			case JSScriptModule::Property::Type::BOOLEAN: module.setPropertyValue(e, array_idx, name, v.b); break;
 			case JSScriptModule::Property::Type::NUMBER: module.setPropertyValue(e, array_idx, name, v.f); break;
 			case JSScriptModule::Property::Type::STRING: module.setPropertyValue(e, array_idx, name, v.s); break;
+			case JSScriptModule::Property::Type::ENTITY: module.setPropertyValue(e, array_idx, name, v.e); break;
 			case JSScriptModule::Property::Type::ANY: ASSERT(false); break;
 		}
 	}
@@ -1565,9 +1715,10 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	}
 
 	duk_context* ctx = m_global_context;
+	JSWrapper::DebugGuard guard(ctx);
 	duk_push_object(ctx);
 	duk_dup(ctx, -1);
-	duk_put_global_string(ctx, "LumixAPI");
+	duk_put_global_string(ctx, "Lumix");
 	
 	#define REGISTER_JS_RAW_FUNCTION(F)                     \
 		duk_push_c_function(ctx, &JSAPI::F, DUK_VARARGS); \
@@ -1576,6 +1727,27 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	REGISTER_JS_RAW_FUNCTION(logError);
 
 	#undef REGISTER_JS_RAW_FUNCTION
+
+	#define DEF_CONST(T, N) \
+		do { duk_push_uint(ctx, (u32)T); duk_put_prop_string(ctx, -2, N); } while(false)
+
+	DEF_CONST(InputSystem::Event::BUTTON, "INPUT_EVENT_BUTTON");
+	DEF_CONST(InputSystem::Event::AXIS, "INPUT_EVENT_AXIS");
+	DEF_CONST(InputSystem::Event::TEXT_INPUT, "INPUT_EVENT_TEXT_INPUT");
+
+	DEF_CONST(InputSystem::Device::KEYBOARD, "INPUT_DEVICE_KEYBOARD");
+	DEF_CONST(InputSystem::Device::MOUSE, "INPUT_DEVICE_MOUSE");
+	DEF_CONST(InputSystem::Device::CONTROLLER, "INPUT_DEVICE_CONTROLLER");
+
+	#undef DEF_CONST
+	
+
+	duk_get_global_string(ctx, "Entity");
+	duk_push_pointer(ctx, nullptr);
+	JSWrapper::push(ctx, INVALID_ENTITY.index);
+	duk_new(ctx, 2);
+	duk_put_prop_string(ctx, -2, "INVALID_ENTITY");
+	duk_pop(ctx);
 }
 
 JSScriptSystemImpl::~JSScriptSystemImpl() {

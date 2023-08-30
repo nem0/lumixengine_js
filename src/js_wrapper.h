@@ -81,13 +81,16 @@ template <typename T> struct ToType<T&>
 
 template <> struct ToType<EntityPtr> {
 	static EntityPtr value(duk_context* ctx, int index) {
-		return EntityPtr{duk_get_int(ctx, index)};
+		duk_get_prop_string(ctx, index, "c_entity");
+		int entity_index = ToType<int>::value(ctx, -1);
+		duk_pop(ctx);
+		return EntityPtr{entity_index};
 	}
 };
 
 template <> struct ToType<EntityRef>  {
 	static EntityRef value(duk_context* ctx, int index) {
-		return {duk_get_int(ctx, index)};
+		return *ToType<EntityPtr>::value(ctx, index);
 	}
 };
 
@@ -127,6 +130,23 @@ struct ToType<Vec3>
 	static Vec3 value(duk_context* ctx, int index)
 	{
 		Vec3 v;
+		duk_get_prop_index(ctx, index, 0);
+		v.x = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 1);
+		v.y = ToType<float>::value(ctx, -1);
+		duk_get_prop_index(ctx, index, 2);
+		v.z = ToType<float>::value(ctx, -1);
+		duk_pop_3(ctx);
+		return v;
+	}
+};
+
+template <>
+struct ToType<DVec3>
+{
+	static DVec3 value(duk_context* ctx, int index)
+	{
+		DVec3 v;
 		duk_get_prop_index(ctx, index, 0);
 		v.x = ToType<float>::value(ctx, -1);
 		duk_get_prop_index(ctx, index, 1);
@@ -323,6 +343,16 @@ inline void push(duk_context* ctx, void* value)
 	duk_push_pointer(ctx, value);
 }
 inline void push(duk_context* ctx, const Vec3& value)
+{
+	duk_push_array(ctx);
+	push(ctx, value.x);
+	duk_put_prop_index(ctx, -2, 0);
+	push(ctx, value.y);
+	duk_put_prop_index(ctx, -2, 1);
+	push(ctx, value.z);
+	duk_put_prop_index(ctx, -2, 2);
+}
+inline void push(duk_context* ctx, const DVec3& value)
 {
 	duk_push_array(ctx);
 	push(ctx, value.x);
@@ -662,6 +692,12 @@ template <typename C, typename T, T t> int wrapMethod(duk_context* ctx)
 	return details::Caller<indices>::callMethod(inst, t, ctx);
 }
 
+template <typename T>
+void setField(duk_context* ctx, const char* field_name, const T& value) {
+	duk_push_string(ctx, field_name);
+	push(ctx, value);
+	duk_put_prop(ctx, -3);
+}
 
 } // namespace JSWrapper
 } // namespace Lumix
