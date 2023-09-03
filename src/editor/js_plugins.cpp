@@ -39,7 +39,6 @@ static inline const u32 token_colors[] = {
 	IM_COL32(0xe1, 0xe1, 0xe1, 0xff),
 	IM_COL32(0xf7, 0xc9, 0x5c, 0xff),
 	IM_COL32(0xFF, 0xA9, 0x4D, 0xff),
-	IM_COL32(0xFF, 0xA9, 0x4D, 0xff),
 	IM_COL32(0xE5, 0x8A, 0xC9, 0xff),
 	IM_COL32(0x93, 0xDD, 0xFA, 0xff),
 	IM_COL32(0x67, 0x6b, 0x6f, 0xff),
@@ -51,7 +50,6 @@ enum class TokenType : u8 {
 	IDENTIFIER,
 	NUMBER,
 	STRING,
-	STRING_MULTI,
 	KEYWORD,
 	OPERATOR,
 	COMMENT,
@@ -99,7 +97,7 @@ static bool tokenize(const char* str, u32& token_len, u8& token_type, u8 prev_to
 	if (prev_token_type == (u8)TokenType::COMMENT_MULTI) {
 		token_type = (u8)TokenType::COMMENT;
 		while (*c) {
-			if (c[0] == ']' && c[1] == ']') {
+			if (c[0] == '*' && c[1] == '/') {
 				c += 2;
 				token_len = u32(c - str);
 				return *c;
@@ -112,60 +110,28 @@ static bool tokenize(const char* str, u32& token_len, u8& token_type, u8 prev_to
 		return *c;
 	}
 
-	if (prev_token_type == (u8)TokenType::STRING_MULTI) {
-		token_type = (u8)TokenType::STRING;
+	if (c[0] == '/' && c[1] == '*') {
 		while (*c) {
-			if (c[0] == ']' && c[1] == ']') {
+			if (c[0] == '*' && c[1] == '/') {
 				c += 2;
+				token_type = (u8)TokenType::COMMENT;
 				token_len = u32(c - str);
 				return *c;
 			}
 			++c;
 		}
 			
-		token_type = (u8)TokenType::STRING_MULTI;
+		token_type = (u8)TokenType::COMMENT_MULTI;
 		token_len = u32(c - str);
 		return *c;
 	}
 
-	if (*c == '[' && c[1] == '[') {
-		while (*c) {
-			if (c[0] == ']' && c[1] == ']') {
-				c += 2;
-				token_type = (u8)TokenType::STRING;
-				token_len = u32(c - str);
-				return *c;
-			}
-			++c;
-		}
 
-		token_type = (u8)TokenType::STRING_MULTI;
+	if (*c == '/' && c[1] == '/') {
+		token_type = (u8)TokenType::COMMENT;
+		while (*c) ++c;
 		token_len = u32(c - str);
-		return false;
-	}
-
-	if (*c == '-' && c[1] == '-') {
-		if (c[2] == '[' && c[3] == '[') {
-			while (*c) {
-				if (c[0] == ']' && c[1] == ']') {
-					c += 2;
-					token_type = (u8)TokenType::COMMENT;
-					token_len = u32(c - str);
-					return *c;
-				}
-				++c;
-			}
-			
-			token_type = (u8)TokenType::COMMENT_MULTI;
-			token_len = u32(c - str);
-			return *c;
-		}
-		else {
-			token_type = (u8)TokenType::COMMENT;
-			while (*c) ++c;
-			token_len = u32(c - str);
-			return *c;
-		}
+		return *c;
 	}
 
 	if (*c == '"') {
