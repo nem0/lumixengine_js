@@ -707,7 +707,15 @@ public:
 		duk_push_pointer(ctx, (void*)script.m_id);
 		duk_get_prop(ctx, -2);
 
-		if (prop.type == Property::STRING) {
+		if (prop.type == Property::ENTITY) {
+			duk_get_global_string(ctx, "Entity");
+			duk_push_pointer(ctx, &m_world);
+			EntityPtr e;
+			fromCString(value, e.index);
+			JSWrapper::push(ctx, e.index);
+			duk_new(ctx, 2);			
+		}
+		else if (prop.type == Property::STRING) {
 			duk_push_string(ctx, value);
 		}
 		else if (duk_peval_string(ctx, value) != 0) {
@@ -1023,14 +1031,23 @@ public:
 			case Property::BOOLEAN: {
 				bool b = duk_get_boolean(ctx, -1) != 0;
 				copyString(Span(out, max_size), b ? "true" : "false");
-			} break;
+				break;
+			}
 			case Property::NUMBER: {
 				float val = (float)duk_get_number(ctx, -1);
 				toCString(val, Span(out, max_size), 8);
-			} break;
-			case Property::STRING: {
+				break;
+			}
+			case Property::ENTITY: {
+				duk_get_prop_string(ctx, -1, "c_entity");
+				int entity = duk_to_int(ctx, -1);
+				duk_pop(ctx);
+				toCString(entity, Span(out, max_size));
+				break;
+			}
+			case Property::STRING:
 				copyString(Span(out, max_size), duk_get_string(ctx, -1));
-			} break;
+				break;
 			default: ASSERT(false); break;
 		}
 		duk_pop_3(ctx);
