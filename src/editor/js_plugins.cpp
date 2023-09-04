@@ -281,7 +281,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		: m_app(_app)
 		, m_autocomplete(_app.getWorldEditor().getAllocator())
 	{
-		m_open_action.init("JS console", "JavaScript console", "script_console", "", true);
+		m_open_action.init("JS console", "JavaScript console", "script_console", "", Action::IMGUI_PRIORITY);
 		m_open_action.func.bind<&ConsolePlugin::toggleOpen>(this);
 		m_open_action.is_selected.bind<&ConsolePlugin::isOpen>(this);
 		m_app.addWindowAction(&m_open_action);
