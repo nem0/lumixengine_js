@@ -1,11 +1,11 @@
 #pragma once
 
 
-#include "engine/hash.h"
+#include "core/hash.h"
+#include "core/path.h"
+#include "core/string.h"
 #include "engine/plugin.h"
-#include "engine/path.h"
 #include "engine/resource.h"
-#include "engine/string.h"
 #include "duktape/duktape.h"
 
 

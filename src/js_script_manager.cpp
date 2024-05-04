@@ -1,7 +1,7 @@
 #include "JS_script_manager.h"
 
+#include "core/log.h"
 #include "engine/file_system.h"
-#include "engine/log.h"
 
 
 namespace Lumix {

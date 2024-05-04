@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "engine/log.h"
-#include "engine/math.h"
+#include "core/log.h"
+#include "core/math.h"
 #include "duktape/duktape.h"
 
 
