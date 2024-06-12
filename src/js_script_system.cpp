@@ -1,6 +1,6 @@
 #define LUMIX_NO_CUSTOM_CRT
+#include <string.h>
 #include "JS_script_system.h"
-#include "core/allocators.h"
 #include "core/array.h"
 #include "core/associative_array.h"
 #include "core/hash.h"
@@ -22,6 +22,14 @@
 
 
 namespace Lumix {
+
+inline void toCString(EntityPtr value, Span<char> output) {
+	toCString(value.index, output);
+}
+
+inline const char* fromCString(StringView input, EntityPtr& value) {
+	return fromCString(input, value.index);
+}
 
 static const ComponentType JS_SCRIPT_TYPE = reflection::getComponentType("js_script");
 

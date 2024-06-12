@@ -457,7 +457,7 @@ template <typename T> T checkArg(duk_context* ctx, int index)
 }
 
 
-template <typename T>
+/*template <typename T>
 inline void getOptionalField(duk_context* ctx, int idx, const char* field_name, T* out)
 {
 	if (duk_get_prop(ctx, idx, field_name) && isType<T>(ctx, -1))
@@ -465,7 +465,7 @@ inline void getOptionalField(duk_context* ctx, int idx, const char* field_name, 
 		*out = toType<T>(ctx, -1);
 	}
 	duk_pop(ctx, 1);
-}
+}*/
 
 
 namespace details

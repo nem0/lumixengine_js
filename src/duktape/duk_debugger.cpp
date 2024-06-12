@@ -118,67 +118,72 @@ bool tryConnect() {
 	return false;
 }
 
-duk_size_t readCallback(void *udata, char *buffer, u64 length) {
+duk_size_t readCallback(void* udata, char* buffer, u64 length) {
 	if (client_sock == INVALID_SOCKET) return 0;
-	if (length == 0) goto fail;
-	if (buffer == NULL) goto fail;
+
+	auto fail = [&]() {
+		if (client_sock != INVALID_SOCKET) {
+			closesocket(client_sock);
+			client_sock = INVALID_SOCKET;
+		}
+	};
+	if (length == 0 || buffer == NULL) {
+		fail();
+		return 0;
+	}
 
 	i32 ret = recv(client_sock, buffer, (int) length, 0);
 	if (ret <= 0 || ret > (i32)length) {
-		goto fail;
+		fail();
+		return 0;
 	}
 
 	return ret;
-
- fail:
-	if (client_sock != INVALID_SOCKET) {
-		closesocket(client_sock);
-		client_sock = INVALID_SOCKET;
-	}
-	return 0;
 }
 
 u64 writeCallback(void *udata, const char *buffer, u64 length) {
+	auto fail = [&]() {
+		if (client_sock != INVALID_SOCKET) {
+			closesocket(INVALID_SOCKET);
+			client_sock = INVALID_SOCKET;
+		}
+	};
+	
 	if (client_sock == INVALID_SOCKET) return 0;
-	if (length == 0) goto fail;
-	if (buffer == NULL) goto fail;
+	if (length == 0 || buffer == NULL) {
+		fail();
+		return 0;
+	}
 
 	i32 ret = send(client_sock, buffer, (i32)length, 0);
-	if (ret <= 0 || ret > (i32)length) goto fail;
+	if (ret <= 0 || ret > (i32)length) {
+		fail();
+		return 0;
+	}
 
 	return ret;
-
- fail:
-	if (client_sock != INVALID_SOCKET) {
-		closesocket(INVALID_SOCKET);
-		client_sock = INVALID_SOCKET;
-	}
-	return 0;
 }
 
 u64 peekCallback(void *udata) {
 	u_long avail;
+	auto fail = [&]() {
+	};
 
 	if (client_sock == INVALID_SOCKET) return 0;
 
 	avail = 0;
 	i32 rc = ioctlsocket(client_sock, FIONREAD, &avail);
 	if (rc != 0) {
-		goto fail;
-	} else {
-		if (avail == 0) {
-			return 0;
-		} else {
-			return 1;
+		if (client_sock != INVALID_SOCKET) {
+			closesocket(client_sock);
+			client_sock = INVALID_SOCKET;
 		}
+		return 0;
+	} 
+	if (avail == 0) {
+		return 0;
 	}
-
- fail:
-	if (client_sock != INVALID_SOCKET) {
-		closesocket(client_sock);
-		client_sock = INVALID_SOCKET;
-	}
-	return 0;
+	return 1;
 }
 
 }

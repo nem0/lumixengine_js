@@ -1,4 +1,5 @@
 #define LUMIX_NO_CUSTOM_CRT
+#include <string.h>
 #include "../js_script_manager.h"
 #include "../js_script_system.h"
 #include "../duktape/duk_debugger.h"
@@ -10,7 +11,6 @@
 #include "editor/studio_app.h"
 #include "editor/utils.h"
 #include "editor/world_editor.h"
-#include "core/allocators.h"
 #include "core/array.h"
 #include "core/log.h"
 #include "core/os.h"
