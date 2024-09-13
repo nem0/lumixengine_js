@@ -287,6 +287,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		m_app.addWindowAction(&m_open_action);
 		m_buffer[0] = '\0';
 
+		m_app.getSettings().registerPtr("is_js_console_open", &m_is_open);
 		#ifdef JS_DEBUGGER
 			logInfo("JS debugger listening");
 			duk_debugger::init();
@@ -328,9 +329,8 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	void onSettingsLoaded() override {
 		Settings& settings = m_app.getSettings();
-		m_is_open = settings.getValue(Settings::GLOBAL, "is_js_console_open", false);
 		if (!m_buffer[0]) {
-			StringView dir = Path::getDir(settings.getAppDataPath());
+			StringView dir = Path::getDir(settings.m_app_data_path);
 			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
 			os::InputFile file;
 			if (file.open(path)) {
@@ -351,9 +351,8 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	void onBeforeSettingsSaved() override {
 		Settings& settings = m_app.getSettings();
-		settings.setValue(Settings::GLOBAL, "is_js_console_open", m_is_open);
 		if (m_buffer[0]) {
-			StringView dir = Path::getDir(settings.getAppDataPath());
+			StringView dir = Path::getDir(settings.m_app_data_path);
 			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
 			os::OutputFile file;
 			if (!file.open(path)) {
