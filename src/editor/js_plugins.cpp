@@ -211,15 +211,9 @@ struct EditorWindow : AssetEditorWindow {
 		m_dirty = false;
 	}
 	
-	bool onAction(const Action& action) override { 
-		if (&action == &m_app.getCommonActions().save) save();
-		else return false;
-		return true;
-	}
-
 	void windowGUI() override {
 		if (ImGui::BeginMenuBar()) {
-			if (ImGuiEx::IconButton(ICON_FA_SAVE, "Save")) save();
+			if (m_app.getCommonActions().save.iconButton(true, &m_app)) save();
 			if (ImGuiEx::IconButton(ICON_FA_EXTERNAL_LINK_ALT, "Open externally")) m_app.getAssetBrowser().openInExternalEditor(m_resource);
 			ImGui::EndMenuBar();
 		}
@@ -281,21 +275,18 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		: m_app(_app)
 		, m_autocomplete(_app.getWorldEditor().getAllocator())
 	{
-		m_open_action.init("JS console", "JavaScript console", "script_console", "", Action::IMGUI_PRIORITY);
-		m_open_action.func.bind<&ConsolePlugin::toggleOpen>(this);
-		m_open_action.is_selected.bind<&ConsolePlugin::isOpen>(this);
-		m_app.addWindowAction(&m_open_action);
 		m_buffer[0] = '\0';
 
 		#ifdef JS_DEBUGGER
 			logInfo("JS debugger listening");
 			duk_debugger::init();
 		#endif
+
+		m_app.getSettings().registerOption("js_console_open", &m_is_open);
 	}
 
 	~ConsolePlugin() {
 		duk_debugger::finish();
-		m_app.removeAction(&m_open_action);
 	}
 	
 	static void onDebuggerDetached(duk_context *ctx, void*) {
@@ -325,52 +316,6 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	}
 
 	const char* getName() const override { return "script_console"; }
-
-	void onSettingsLoaded() override {
-		Settings& settings = m_app.getSettings();
-		m_is_open = settings.getValue(Settings::GLOBAL, "is_js_console_open", false);
-		if (!m_buffer[0]) {
-			StringView dir = Path::getDir(settings.getAppDataPath());
-			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
-			os::InputFile file;
-			if (file.open(path)) {
-				const u64 size = file.size();
-				if (size + 1 <= sizeof(m_buffer)) {
-					if (!file.read(m_buffer, size)) {
-						logError("Failed to read ", path);
-						m_buffer[0] = '\0';
-					}
-					else {
-						m_buffer[size] = '\0';
-					}
-				}
-				file.close();
-			}
-		}
-	}
-
-	void onBeforeSettingsSaved() override {
-		Settings& settings = m_app.getSettings();
-		settings.setValue(Settings::GLOBAL, "is_js_console_open", m_is_open);
-		if (m_buffer[0]) {
-			StringView dir = Path::getDir(settings.getAppDataPath());
-			const StaticString<MAX_PATH> path(dir, "/js_console_content.lua");
-			os::OutputFile file;
-			if (!file.open(path)) {
-				logError("Failed to save ", path);
-			}
-			else {
-				if (!file.write(m_buffer, stringLength(m_buffer))) {
-					logError("Failed to write ", path);
-				}
-				file.close();
-			}
-		}
-	}
-
-	bool isOpen() const { return m_is_open; }
-	void toggleOpen() { m_is_open = !m_is_open; }
-
 
 	void autocompleteSubstep(duk_context* ctx, const char* str, ImGuiInputTextCallbackData* data) {
 		StringView item;
@@ -473,6 +418,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 
 	void onGUI() override {
+		if (m_app.checkShortcut(m_open_action, true)) m_is_open = !m_is_open;
 		if (!m_is_open) return;
 
 		auto* module = (JSScriptModule*)m_app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
@@ -549,7 +495,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	i32 m_autocomplete_selected = 1;
 	const char* m_insert_value = nullptr;
 	char m_buffer[10 * 1024];
-	Action m_open_action;
+	Action m_open_action{"JS console", "JavaScript console", "js_console",  nullptr, Action::WINDOW};
 };
 
 
@@ -596,7 +542,10 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 				editor.addComponent(Span(&entity, 1), JS_SCRIPT_TYPE);
 			}
 
-			const ComponentUID cmp = editor.getWorld()->getComponent(entity, JS_SCRIPT_TYPE);
+			ComponentUID cmp;
+			cmp.entity = entity;
+			cmp.module = editor.getWorld()->getModule(JS_SCRIPT_TYPE);
+			cmp.type = JS_SCRIPT_TYPE;
 			editor.addArrayPropertyItem(cmp, "scripts");
 
 			if (!create_empty) {

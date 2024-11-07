@@ -9,7 +9,6 @@ project "js"
 	includedirs { "../../js/src", }
 	defines { "BUILDING_JS" }
 	links { "engine" }
-	useLua()
 	defaultConfigurations()
 
 linkPlugin("js")
