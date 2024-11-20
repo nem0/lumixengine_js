@@ -265,6 +265,7 @@ struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
 	const char* getDefaultExtension() const override { return "js"; }
 	bool compile(const Path& src) override { return m_app.getAssetCompiler().copyCompile(src); }
 	const char* getLabel() const override { return "JS Script"; }
+	ResourceType getResourceType() const override { return JSScript::TYPE; }
 
 	StudioApp& m_app;
 };
