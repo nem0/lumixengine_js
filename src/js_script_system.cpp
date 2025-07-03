@@ -1678,7 +1678,6 @@ void JSScriptSystemImpl::registerImGuiAPI() {
 		duk_put_prop_string(ctx, -2, #F);
 
 		REGISTER_JS_RAW_FUNCTION(Begin);
-		REGISTER_JS_RAW_FUNCTION(BeginChildFrame);
 		REGISTER_JS_FUNCTION(BeginPopup);
 		REGISTER_JS_RAW_FUNCTION(Button);
 		REGISTER_JS_RAW_FUNCTION(Checkbox);
@@ -1687,10 +1686,9 @@ void JSScriptSystemImpl::registerImGuiAPI() {
 		REGISTER_JS_RAW_FUNCTION(DragFloat);
 		REGISTER_JS_FUNCTION(Dummy);
 		REGISTER_JS_FUNCTION(End);
-		REGISTER_JS_FUNCTION(EndChildFrame);
+		REGISTER_JS_FUNCTION(EndChild);
 		REGISTER_JS_FUNCTION(EndPopup);
 		REGISTER_JS_FUNCTION(GetColumnWidth);
-		REGISTER_JS_FUNCTION(Image);
 		REGISTER_JS_FUNCTION(Indent);
 		REGISTER_JS_RAW_FUNCTION(LabelText);
 		REGISTER_JS_FUNCTION(NewLine);
