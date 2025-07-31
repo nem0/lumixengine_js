@@ -575,6 +575,14 @@ public:
 
 	duk_context* getGlobalContext() override { return m_system.m_global_context; }
 
+	void setScriptBlob(EntityRef entity, u32 index, InputMemoryStream& stream) {
+		ASSERT(false); // TODO
+
+	}
+
+	void getScriptBlob(EntityRef entity, u32 index, OutputMemoryStream& stream) {
+		ASSERT(false); // TODO
+	}
 
 	void setScriptData(EntityRef entity, InputMemoryStream& blob) override {
 		ASSERT(false); // TODO
@@ -1391,7 +1399,7 @@ public:
 	uintptr m_id_generator = 0;
 };
 
-
+#if 0
 struct JSProperties : reflection::DynamicProperties {
 	JSProperties(IAllocator& allocator)
 		: DynamicProperties(allocator)
@@ -1485,6 +1493,7 @@ struct JSProperties : reflection::DynamicProperties {
 		}
 	}
 };
+#endif
 
 static void js_fatalHandler(void *udata, const char *msg) {
 	logError("*** JS FATAL ERROR: ", (msg ? msg : "no message"));
@@ -1505,7 +1514,7 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 		.begin_array<&JSScriptModule::getScriptCount, &JSScriptModule::addScript, &JSScriptModule::removeScript>("scripts")
 			//.prop<&JSScriptModuleImpl::isScriptEnabled, &JSScriptModuleImpl::enableScript>("Enabled")
 			.LUMIX_PROP(ScriptPath, "Path").resourceAttribute(JSScript::TYPE)
-			.property<JSProperties>()
+			.blob_property<&JSScriptModuleImpl::getScriptBlob, &JSScriptModuleImpl::setScriptBlob>("script_blob")
 		.end_array();
 }
 
@@ -1642,7 +1651,6 @@ struct RegisterPropertyVisitor : reflection::IPropertyVisitor {
 	void visit(const reflection::Property<Path>& prop) override { reg(prop); }
 	void visit(const reflection::Property<bool>& prop) override { reg(prop); }
 	void visit(const reflection::Property<const char*>& prop) override { reg(prop); }
-	void visit(const reflection::DynamicProperties& prop) override {}
 	void visit(const reflection::ArrayProperty& prop) override {}
 	void visit(const reflection::BlobProperty& prop) override {}
 
