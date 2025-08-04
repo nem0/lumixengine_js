@@ -496,7 +496,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 	i32 m_autocomplete_selected = 1;
 	const char* m_insert_value = nullptr;
 	char m_buffer[10 * 1024];
-	Action m_open_action{"JS console", "JavaScript console", "js_console",  nullptr, Action::WINDOW};
+	Action m_open_action{"JavaScript", "JS console", "Console", "js_console",  nullptr, Action::WINDOW};
 };
 
 
