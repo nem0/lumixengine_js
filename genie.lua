@@ -1,5 +1,4 @@
-project "js"
-	libType()
+if plugin "js" then
 	files { 
 		"src/**.c",
 		"src/**.cpp",
@@ -8,7 +7,5 @@ project "js"
 	}
 	includedirs { "../../js/src", }
 	defines { "BUILDING_JS" }
-	links { "engine" }
-	defaultConfigurations()
-
-linkPlugin("js")
+	dynamic_link_plugin { "engine" }
+end
