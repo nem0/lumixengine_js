@@ -231,7 +231,7 @@ struct EditorWindow : AssetEditorWindow {
 		}
 
 		ImGui::PushFont(m_app.getMonospaceFont());
-		if (m_code_editor->gui("jseditor", ImVec2(0, 0), m_app.getDefaultFont())) {
+		if (m_code_editor->gui("jseditor", ImVec2(0, 0), m_app.getMonospaceFont(), m_app.getDefaultFont())) {
 			m_dirty = true;
 		}
 		ImGui::PopFont();
@@ -381,7 +381,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			duk_pop(ctx);
 			if (that->m_run_on_entity) {
 				if (startsWith(tmp, "this.")) {
-					const Array<EntityRef>& selected = that->m_app.getWorldEditor().getSelectedEntities();
+					Span<const EntityRef> selected = that->m_app.getWorldEditor().getSelectedEntities();
 					if (selected.size() == 1 && module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
 						const uintptr id = module->getScriptID(selected[0], 0);
 						duk_push_global_stash(ctx); // [stash]
@@ -436,7 +436,7 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			
 			if (ImGui::Button("Execute")) {
 				if (m_run_on_entity) {
-					const Array<EntityRef>& selected = m_app.getWorldEditor().getSelectedEntities();
+					Span<const EntityRef> selected = m_app.getWorldEditor().getSelectedEntities();
 					if (selected.size() != 1) logError("Exactly one entity must be selected");
 					else {
 						if (module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
@@ -536,7 +536,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 				EntityRef entity = editor.addEntity();
 				editor.selectEntities(Span(&entity, 1), false);
 			}
-			if (editor.getSelectedEntities().empty()) return;
+			if (editor.getSelectedEntities().size() == 0) return;
 			EntityRef entity = editor.getSelectedEntities()[0];
 
 			if (!editor.getWorld()->hasComponent(entity, JS_SCRIPT_TYPE)) {
