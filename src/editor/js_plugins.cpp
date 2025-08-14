@@ -513,7 +513,7 @@ struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		AssetBrowser& asset_browser = app.getAssetBrowser();
 		bool new_created = false;
 		if (ImGui::BeginMenu("New")) {
-			file_selector.gui(false, "js");
+			file_selector.gui("js");
 			if (file_selector.getPath()[0] && ImGui::Selectable("Create")) {
 				os::OutputFile file;
 				FileSystem& fs = app.getEngine().getFileSystem();
