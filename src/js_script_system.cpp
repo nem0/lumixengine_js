@@ -1509,11 +1509,11 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	// TODO allocator
 	m_global_context = duk_create_heap(nullptr, nullptr, nullptr, nullptr, js_fatalHandler);
 
-	LUMIX_MODULE(JSScriptModuleImpl, "js_script")
-		.LUMIX_CMP(Script, "js_script", "JS Script")
+	reflection::build_module("js_script")
+		.cmp<&JSScriptModuleImpl::createScript, &JSScriptModuleImpl::destroyScript>("js_script", "JS Script")
 		.begin_array<&JSScriptModule::getScriptCount, &JSScriptModule::addScript, &JSScriptModule::removeScript>("scripts")
 			//.prop<&JSScriptModuleImpl::isScriptEnabled, &JSScriptModuleImpl::enableScript>("Enabled")
-			.LUMIX_PROP(ScriptPath, "Path").resourceAttribute(JSScript::TYPE)
+			.prop<&JSScriptModule::getScriptPath, &JSScriptModule::setScriptPath>("Path").resourceAttribute(JSScript::TYPE)
 			.blob_property<&JSScriptModuleImpl::getScriptBlob, &JSScriptModuleImpl::setScriptBlob>("script_blob")
 		.end_array();
 }
