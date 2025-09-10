@@ -990,7 +990,7 @@ public:
 	}
 
 
-	void createScript(EntityRef entity) {
+	void createScript(EntityRef entity) override {
 		auto& allocator = m_system.m_allocator;
 		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(*this, entity, allocator);
 		m_scripts.insert(entity, script);
@@ -998,7 +998,7 @@ public:
 	}
 
 
-	void destroyScript(EntityRef entity) {
+	void destroyScript(EntityRef entity) override {
 		auto* script = m_scripts[entity];
 		for (auto& scr : script->m_scripts) {
 			clearInstance(*script, scr);
@@ -1509,13 +1509,7 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	// TODO allocator
 	m_global_context = duk_create_heap(nullptr, nullptr, nullptr, nullptr, js_fatalHandler);
 
-	reflection::build_module("js_script")
-		.cmp<&JSScriptModuleImpl::createScript, &JSScriptModuleImpl::destroyScript>("js_script", "JS Script")
-		.begin_array<&JSScriptModule::getScriptCount, &JSScriptModule::addScript, &JSScriptModule::removeScript>("scripts")
-			//.prop<&JSScriptModuleImpl::isScriptEnabled, &JSScriptModuleImpl::enableScript>("Enabled")
-			.prop<&JSScriptModule::getScriptPath, &JSScriptModule::setScriptPath>("Path").resourceAttribute(JSScript::TYPE)
-			.blob_property<&JSScriptModuleImpl::getScriptBlob, &JSScriptModuleImpl::setScriptBlob>("script_blob")
-		.end_array();
+	#include "js_script_system.gen.h"
 }
 
 void JSScriptSystemImpl::initBegin() {

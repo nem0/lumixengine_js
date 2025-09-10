@@ -17,6 +17,7 @@ struct JSScriptSystem : ISystem {
 };
 
 
+//@ module JSScriptModule js_script "JS Script"
 struct JSScriptModule : public IModule {
 	struct Property {
 		enum Type : i32 {
@@ -43,9 +44,18 @@ struct JSScriptModule : public IModule {
 		virtual void add(float parameter) = 0;
 		virtual void add(void* parameter) = 0;
 	};
+	
+	virtual void createScript(EntityRef e) = 0;
+	virtual void destroyScript(EntityRef e) = 0;
 
-	virtual Path getScriptPath(EntityRef entity, int scr_index) = 0;	
+	//@ component Script
+	//@ array Script scripts
+	virtual Path getScriptPath(EntityRef entity, int scr_index) = 0;	//@ resource_type JSScript::TYPE
 	virtual void setScriptPath(EntityRef entity, int scr_index, const Path& path) = 0;
+	virtual void getScriptData(EntityRef entity, OutputMemoryStream& blob) = 0;
+	virtual void setScriptData(EntityRef entity, InputMemoryStream& blob) = 0;
+	//@ end
+	//@ end
 	virtual bool execute(EntityRef entity, i32 scr_index, StringView code) = 0;
 	virtual IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) = 0;
 	virtual void endFunctionCall() = 0;
@@ -61,8 +71,6 @@ struct JSScriptModule : public IModule {
 	virtual const char* getPropertyName(EntityRef entity, int scr_index, int prop_index) = 0;
 	virtual Property::Type getPropertyType(EntityRef entity, int scr_index, int prop_index) = 0;
 	virtual ResourceType getPropertyResourceType(EntityRef entity, int scr_index, int prop_index) = 0;
-	virtual void getScriptData(EntityRef entity, OutputMemoryStream& blob) = 0;
-	virtual void setScriptData(EntityRef entity, InputMemoryStream& blob) = 0;
 	virtual duk_context* getGlobalContext() = 0;
 };
 
