@@ -422,7 +422,9 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 		if (m_app.checkShortcut(m_open_action, true)) m_is_open = !m_is_open;
 		if (!m_is_open) return;
 
-		auto* module = (JSScriptModule*)m_app.getWorldEditor().getWorld()->getModule(JS_SCRIPT_TYPE);
+		WorldEditor& editor = m_app.getWorldEditor();
+		World& world = *editor.getWorld();
+		auto* module = (JSScriptModule*)world.getModule(JS_SCRIPT_TYPE);
 		duk_context* context = module->getGlobalContext();
 		if (ImGui::Begin("JavaScript console", &m_is_open)) {
 			#ifdef JS_DEBUGGER
@@ -436,10 +438,10 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			
 			if (ImGui::Button("Execute")) {
 				if (m_run_on_entity) {
-					Span<const EntityRef> selected = m_app.getWorldEditor().getSelectedEntities();
+					Span<const EntityRef> selected = editor.getSelectedEntities();
 					if (selected.size() != 1) logError("Exactly one entity must be selected");
 					else {
-						if (module->getWorld().hasComponent(selected[0], JS_SCRIPT_TYPE)) {
+						if (world.hasComponent(selected[0], JS_SCRIPT_TYPE)) {
 							module->execute(selected[0], 0, m_buffer);
 						}
 						else logError("Entity does not have JS component");

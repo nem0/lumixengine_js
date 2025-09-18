@@ -48,7 +48,7 @@ struct JSScriptModule : public IModule {
 	virtual void createScript(EntityRef e) = 0;
 	virtual void destroyScript(EntityRef e) = 0;
 
-	//@ component Script
+	//@ component Script id js_script
 	//@ array Script scripts
 	virtual Path getScriptPath(EntityRef entity, int scr_index) = 0;	//@ resource_type JSScript::TYPE
 	virtual void setScriptPath(EntityRef entity, int scr_index, const Path& path) = 0;

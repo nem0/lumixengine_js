@@ -1733,9 +1733,10 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	registerJSObject(m_global_context, nullptr, "ModuleBase", &ptrJSConstructor);
 	registerJSObject(m_global_context, nullptr, "Entity", &entityJSConstructor);
 
-	const u32 count = reflection::getComponents().length();
-	for (u32 i = 0; i < count; ++i) {
-		const char* cmp_type_id = reflection::getComponents()[i].cmp->name;
+	Span<const reflection::RegisteredComponent> cmps = reflection::getComponents();
+	for (const reflection::RegisteredComponent& cmp : cmps) {
+		if (!cmp.cmp) continue;
+		const char* cmp_type_id = cmp.cmp->name;
 		registerComponent(m_global_context, cmp_type_id);
 	}
 
