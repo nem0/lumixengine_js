@@ -182,6 +182,7 @@ static int entityProxyGetter(duk_context* ctx) {
 	const char* prop_name = duk_get_string(ctx, 1);
 
 	duk_get_prop_string(ctx, 0, "c_entity");
+	ASSERT(duk_is_number(ctx, -1));
 	EntityRef entity = {duk_get_int(ctx, -1)};
 	duk_pop(ctx);
 	if (equalStrings(prop_name, "c_entity")) {
@@ -210,6 +211,8 @@ static int entityProxyGetter(duk_context* ctx) {
 	if (!reflection::componentTypeExists(prop_name)) return 0;
 
 	ComponentType cmp_type = reflection::getComponentType(prop_name);
+	if (!world->hasComponent(entity, cmp_type)) return 0;
+	
 	IModule* module = world->getModule(cmp_type);
 	if (!module) return 0;
 
@@ -258,11 +261,6 @@ static int componentJSConstructor(duk_context* ctx) {
 
 	duk_dup(ctx, 1);
 	duk_put_prop_string(ctx, -2, "c_entity");
-
-	duk_push_current_function(ctx);
-	duk_get_prop_string(ctx, -1, "c_cmptype");
-	duk_put_prop_string(ctx, -3, "c_cmptype");
-	duk_pop(ctx);
 
 	return 0;
 }
@@ -350,7 +348,6 @@ struct JSScriptSystemImpl final : JSScriptSystem {
 	JSScriptManager& getScriptManager() { return m_script_manager; }
 	void registerGlobalAPI();
 	void registerImGuiAPI();
-	void reflect();
 
 	Engine& m_engine;
 	IAllocator& m_allocator;
@@ -554,7 +551,7 @@ public:
 
 
 	void getScriptData(EntityRef entity, OutputMemoryStream& blob) override {
-		auto* scr = m_scripts[entity];
+		/*auto* scr = m_scripts[entity];
 		blob.write(scr->m_scripts.size());
 		for (int i = 0; i < scr->m_scripts.size(); ++i) {
 			auto& inst = scr->m_scripts[i];
@@ -569,20 +566,12 @@ public:
 				if (prop_name) getPropertyValue(entity, i, getPropertyName(prop.name_hash), tmp, lengthOf(tmp));
 				blob.writeString(prop_name ? tmp : prop.stored_value.c_str());
 			}
-		}
+		}*/
+		ASSERT(false);
 	}
 
 
 	duk_context* getGlobalContext() override { return m_system.m_global_context; }
-
-	void setScriptBlob(EntityRef entity, u32 index, InputMemoryStream& stream) {
-		ASSERT(false); // TODO
-
-	}
-
-	void getScriptBlob(EntityRef entity, u32 index, OutputMemoryStream& stream) {
-		ASSERT(false); // TODO
-	}
 
 	void setScriptData(EntityRef entity, InputMemoryStream& blob) override {
 		ASSERT(false); // TODO
@@ -744,19 +733,6 @@ public:
 		duk_pop_2(ctx);
 	}
 
-
-	void setPropertyValue(EntityRef entity, int scr_index, const char* name, const char* value) override {
-		ScriptComponent* script_cmp = m_scripts[entity];
-		if (!script_cmp) return;
-		Property& prop = getScriptProperty(entity, scr_index, name);
-		if (!script_cmp->m_scripts[scr_index].m_script->isReady()) {
-			prop.stored_value = value;
-			return;
-		}
-
-		applyProperty(m_system.m_global_context, script_cmp->m_scripts[scr_index], prop, value);
-	}
-
 	const char* getPropertyName(EntityRef entity, int scr_index, int index) const {
 		auto& script = m_scripts[entity]->m_scripts[scr_index];
 
@@ -824,16 +800,15 @@ public:
 		duk_get_prop(ctx, -2); //[stash, id] -> [stash, obj]
 
 		duk_enum(ctx, -1, 0);
+		u32 valid_properties[256];
+		memset(valid_properties, 0, (inst.m_properties.size() + 7) / 8);
 		while (duk_next(ctx, -1, 1))
 		{
 			// [... enum key value]
-			u32 valid_properties[256];
 			if (inst.m_properties.size() > sizeof(valid_properties) * 8) {
-				logError("Too many properties in ", inst.m_script->getPath(), ", entity ", entity.index
-					, ". Some will be ignored.");
+				logError("Too many properties in ", inst.m_script->getPath(), ", entity ", entity.index, ". Some will be ignored.");
 				inst.m_properties.shrink(sizeof(valid_properties) * 8);
 			}
-			memset(valid_properties, 0, (inst.m_properties.size() + 7) / 8);
 
 			if (duk_is_function(ctx, -1)) {
 				duk_pop_2(ctx);
@@ -861,7 +836,7 @@ public:
 			int prop_index = ScriptComponent::getProperty(inst, hash);
 			if (prop_index >= 0)
 			{
-				valid_properties[prop_index] = true;
+				valid_properties[prop_index / 8] |= 1 << (prop_index % 8);
 				Property& existing_prop = inst.m_properties[prop_index];
 				if (existing_prop.type == Property::ANY) {
 					switch (duk_get_type(ctx, -1)) {
@@ -893,6 +868,11 @@ public:
 			duk_pop_2(ctx);
 		}
 		duk_pop_3(ctx); // [stash obj enum] -> []
+
+		for (i32 i = inst.m_properties.size() - 1; i >= 0; --i) {
+			if (valid_properties[i / 8] & (1 << (i % 8))) continue;
+			inst.m_properties.swapAndPop(i);
+		}
 	}
 
 	void onScriptLoaded(EntityRef entity, ScriptInstance& instance, bool is_restart) {
@@ -1011,24 +991,6 @@ public:
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
 		m_world.onComponentDestroyed(entity, JS_SCRIPT_TYPE, this);
-	}
-
-
-	void getPropertyValue(EntityRef entity, int scr_index, const char* property_name, char* out, int max_size) override {
-		ASSERT(max_size > 0);
-
-		const StableHash hash(property_name);
-		auto& inst = m_scripts[entity]->m_scripts[scr_index];
-		for (auto& prop : inst.m_properties) {
-			if (prop.name_hash == hash) {
-				if (inst.m_script->isReady())
-					getProperty(prop, property_name, inst, out, max_size);
-				else
-					copyString(Span(out, max_size), prop.stored_value.c_str());
-				return;
-			}
-		}
-		*out = '\0';
 	}
 
 
@@ -1512,8 +1474,11 @@ JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	#include "js_script_system.gen.h"
 }
 
+void registerJSAPI(duk_context* ctx);
+
 void JSScriptSystemImpl::initBegin() {
 	registerGlobalAPI();
+	registerJSAPI(m_global_context);
 }
 
 static void convertPropertyToJSName(const char* src, char* out, int max_size) {
@@ -1793,3 +1758,5 @@ LUMIX_PLUGIN_ENTRY(js) {
 	return LUMIX_NEW(engine.getAllocator(), JSScriptSystemImpl)(engine);
 }
 } // namespace Lumix
+
+#include "js_capi.gen.h"

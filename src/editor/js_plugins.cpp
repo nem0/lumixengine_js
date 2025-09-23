@@ -23,6 +23,7 @@
 #include "engine/resource_manager.h"
 #include "engine/world.h"
 #include "imgui/imgui.h"
+#include "../js_wrapper.h"
 
 
 
@@ -244,6 +245,184 @@ struct EditorWindow : AssetEditorWindow {
 	StudioApp& m_app;
 	JSScript* m_resource;
 	UniquePtr<CodeEditor> m_code_editor;
+};
+
+template <typename T> struct StoredType { 
+	using Type = T; 
+	static T construct(T value, IAllocator& allocator) { return value; }
+	static T get(T value) { return value; }
+	static T toType(duk_context* ctx, i32 idx, JSScriptSystem& system) { return JSWrapper::toType<T>(ctx, -1); }
+	static void push(duk_context* ctx, T value, JSScriptSystem&, WorldEditor&) { JSWrapper::push(ctx, value); }
+};
+
+template <> struct StoredType<const char*> {
+	using Type = String;
+	static String construct(const char* value, IAllocator& allocator) { return String(value, allocator); }
+	static const char* get(const String& value) { return value.c_str(); }
+	static const char* toType(duk_context* ctx, i32 idx, JSScriptSystem& system) { return JSWrapper::toType<const char*>(ctx, -1); }
+	static void push(duk_context* ctx, StringView value, JSScriptSystem&, WorldEditor&) { JSWrapper::push(ctx, value); }
+};
+
+template <> struct StoredType<EntityRef>;
+
+template <> struct StoredType<EntityPtr> {
+	using Type = EntityPtr; 
+	static EntityPtr construct(EntityPtr value, IAllocator& allocator) { return value; }
+	static EntityPtr get(EntityPtr value) { return value; }
+	static EntityPtr toType(duk_context* ctx, i32 idx, JSScriptSystem& system) { return JSWrapper::toType<EntityPtr>(ctx, -1); }
+	static void push(duk_context* ctx, EntityPtr value, JSScriptSystem&, WorldEditor& editor) {
+		JSWrapper::pushEntity(ctx, value, editor.getWorld());
+	}
+};
+
+template <typename T>
+struct SetJSPropertyCommand : IEditorCommand {
+	SetJSPropertyCommand(JSScriptSystem& system, WorldEditor& editor, EntityRef entity, u32 script_index, const char* property_name, T value)
+		: m_editor(editor)
+		, m_entity(entity)
+		, m_script_index(script_index)
+		, m_property_name(property_name)
+		, m_new_value(StoredType<T>::construct(value, editor.getAllocator()))
+		, m_old_value(StoredType<T>::construct({}, editor.getAllocator()))
+		, m_system(system)
+	{
+		auto* module = (JSScriptModule*)m_editor.getWorld()->getModule(JS_SCRIPT_TYPE);
+		uintptr script_id = module->getScriptID(m_entity, m_script_index);
+		duk_context* ctx = system.getGlobalContext();
+		
+		JSWrapper::DebugGuard guard(ctx);
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)script_id);
+		duk_get_prop(ctx, -2);
+		duk_get_prop_string(ctx, -1, m_property_name);
+		m_old_value = StoredType<T>::toType(ctx, -1, m_system);
+		
+		duk_pop_3(ctx);
+	}
+
+	bool execute() override {
+		return setValue(StoredType<T>::get(m_new_value));
+	}
+
+	void undo() override {
+		T value = StoredType<T>::get(m_old_value);
+		setValue(value);
+	}
+
+	bool setValue(T value) {
+		auto* module = (JSScriptModule*)m_editor.getWorld()->getModule(JS_SCRIPT_TYPE);
+		auto& system = (JSScriptSystem&)module->getSystem();
+		uintptr script_id = module->getScriptID(m_entity, m_script_index);
+		duk_context* ctx = system.getGlobalContext();
+		
+		JSWrapper::DebugGuard guard(ctx);
+		duk_push_global_stash(ctx);
+		duk_push_pointer(ctx, (void*)script_id);
+
+		duk_get_prop(ctx, -2);
+		duk_push_string(ctx, m_property_name);
+		StoredType<T>::push(ctx, value, m_system, m_editor);
+
+		duk_put_prop(ctx, -3);
+		duk_pop_2(ctx);
+		return true;
+	}
+
+	const char* getType() override { return "set_js_property"; }
+
+	bool merge(IEditorCommand& command) override { 
+		ASSERT(command.getType() == getType());
+		auto& my_command = static_cast<SetJSPropertyCommand<T>&>(command);
+		if (my_command.m_entity != m_entity) return false;
+		if (my_command.m_script_index != m_script_index) return false;
+		if (!equalStrings(my_command.m_property_name, m_property_name)) return false;
+		
+		my_command.m_new_value = static_cast<StoredType<T>::Type&&>(m_new_value);
+		return true;		
+	}
+
+	WorldEditor& m_editor;
+	JSScriptSystem& m_system;
+	EntityRef m_entity;
+	u32 m_script_index;
+	const char* m_property_name;
+	StoredType<T>::Type m_new_value;
+	StoredType<T>::Type m_old_value;
+};
+
+
+struct JSPropertyGridPlugin : PropertyGrid::IPlugin {
+	JSPropertyGridPlugin(StudioApp& app) : m_app(app) {}
+
+	void onGUI(PropertyGrid& grid, Span<const EntityRef> entities, ComponentType cmp_type, const TextFilter& filter, WorldEditor& editor) override {}
+	
+	void blobGUI(PropertyGrid& grid, Span<const EntityRef> entities, ComponentType cmp_type, u32 array_index, const TextFilter& filter, WorldEditor& editor) override {
+		if (cmp_type != JS_SCRIPT_TYPE) return;
+		if (entities.size() != 1) return;
+
+		auto* module = (JSScriptModule*)editor.getWorld()->getModule(cmp_type);
+		auto& system = (JSScriptSystem&)module->getSystem();
+		EntityRef entity = entities[0];
+		duk_context* ctx = system.getGlobalContext();
+		IAllocator& allocator = editor.getAllocator();
+		UniquePtr<IEditorCommand> cmd;
+		
+		const i32 num_props = module->getPropertyCount(entity, array_index);
+		for (i32 property_index = 0; property_index < num_props; ++property_index) {
+			const char* property_name = module->getPropertyName(entity, array_index, property_index);
+			if (!filter.pass(property_name)) continue;
+
+			ImGui::PushID(property_name);
+			ImGuiEx::Label(property_name);
+
+			uintptr script_id = module->getScriptID(entity, array_index);
+			duk_push_global_stash(ctx);
+			duk_push_pointer(ctx, (void*)script_id);
+			duk_get_prop(ctx, -2);
+			duk_get_prop_string(ctx, -1, property_name);
+
+			JSScriptModule::Property::Type type = module->getPropertyType(entity, array_index, property_index);
+			switch (type) {
+				case JSScriptModule::Property::BOOLEAN: {
+					bool v = duk_get_boolean(ctx, -1) != 0;
+					if (ImGui::Checkbox("##v", &v)) {
+						cmd = UniquePtr<SetJSPropertyCommand<bool>>::create(allocator, system, editor, entity, array_index, property_name, v);
+					}
+					break;
+				}
+				case JSScriptModule::Property::NUMBER: {
+					duk_double_t v = duk_get_number(ctx, -1);
+					if (ImGui::DragScalar("##v", ImGuiDataType_Double, &v)) {
+						cmd = UniquePtr<SetJSPropertyCommand<double>>::create(allocator, system, editor, entity, array_index, property_name, v);
+					}
+					break;
+				}
+				case JSScriptModule::Property::STRING: {
+					char buf[256]; // TODO
+					const char* value = duk_get_string(ctx, -1);
+					copyString(buf, value);
+					if (ImGui::InputText("##v", buf, sizeof(buf))) {
+						if (ImGui::IsItemDeactivatedAfterEdit()) {
+							cmd = UniquePtr<SetJSPropertyCommand<const char*>>::create(allocator, system, editor, entity, array_index, property_name, buf);
+						}
+					}
+					break;
+				}
+				case JSScriptModule::Property::ENTITY:
+					ImGui::NewLine();
+					break;
+				case JSScriptModule::Property::ANY:
+					ImGui::NewLine();
+					break;
+			}
+			duk_pop_3(ctx);
+
+			ImGui::PopID();
+		}
+		if (cmd.get()) editor.executeCommand(cmd.move());
+	}
+
+	StudioApp& m_app;
 };
 
 struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
@@ -502,98 +681,30 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 };
 
 
-struct AddComponentPlugin final : public StudioApp::IAddComponentPlugin {
-	AddComponentPlugin(StudioApp& app)
-		: app(app)
-		, file_selector("js", app)
-	{}
-
-
-	void onGUI(bool create_entity, bool, EntityPtr parent, WorldEditor& editor) override {
-		if (!ImGui::BeginMenu(getLabel())) return;
-		Path path;
-		AssetBrowser& asset_browser = app.getAssetBrowser();
-		bool new_created = false;
-		if (ImGui::BeginMenu("New")) {
-			file_selector.gui("js");
-			if (file_selector.getPath()[0] && ImGui::Selectable("Create")) {
-				os::OutputFile file;
-				FileSystem& fs = app.getEngine().getFileSystem();
-				if (fs.open(file_selector.getPath(), file)) {
-					file.close();
-					new_created = true;
-				} else {
-					logError("Failed to create ", file_selector.getPath());
-				}
-				path = file_selector.getPath();
-			}
-			ImGui::EndMenu();
-		}
-		bool create_empty = ImGui::Selectable("Empty", false);
-
-		static StableHash selected_res_hash;
-		if (asset_browser.resourceList(path, selected_res_hash, JSScript::TYPE, false) || create_empty || new_created) {
-			editor.beginCommandGroup("createEntityWithComponent");
-			if (create_entity) {
-				EntityRef entity = editor.addEntity();
-				editor.selectEntities(Span(&entity, 1), false);
-			}
-			if (editor.getSelectedEntities().size() == 0) return;
-			EntityRef entity = editor.getSelectedEntities()[0];
-
-			if (!editor.getWorld()->hasComponent(entity, JS_SCRIPT_TYPE)) {
-				editor.addComponent(Span(&entity, 1), JS_SCRIPT_TYPE);
-			}
-
-			ComponentUID cmp;
-			cmp.entity = entity;
-			cmp.module = editor.getWorld()->getModule(JS_SCRIPT_TYPE);
-			cmp.type = JS_SCRIPT_TYPE;
-			editor.addArrayPropertyItem(cmp, "scripts");
-
-			if (!create_empty) {
-				auto* script_scene = static_cast<JSScriptModule*>(editor.getWorld()->getModule(JS_SCRIPT_TYPE));
-				int scr_count = script_scene->getScriptCount(entity);
-				editor.setProperty(cmp.type, "scripts", scr_count - 1, "Path", Span((const EntityRef*)&entity, 1), path);
-			}
-			if (parent.isValid()) editor.makeParent(parent, entity);
-			editor.endCommandGroup();
-			editor.lockGroupCommand();
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndMenu();
-	}
-
-	const char* getLabel() const override { return "JS Script"; }
-
-	StudioApp& app;
-	FileSelector file_selector;
-};
-
-
 struct StudioAppPlugin : StudioApp::IPlugin {
 	StudioAppPlugin(StudioApp& app)
 		: m_app(app)
 		, m_asset_plugin(app)
 		, m_console_plugin(app)
+		, m_property_grid_plugin(app)
 	{}
 
 	~StudioAppPlugin() override {
 		m_app.removePlugin(m_console_plugin);
 		m_app.getAssetCompiler().removePlugin(m_asset_plugin);
 		m_app.getAssetBrowser().removePlugin(m_asset_plugin);
+		m_app.getPropertyGrid().removePlugin(m_property_grid_plugin);
 	}
 
 	void init() override {
 		PROFILE_FUNCTION();
 		WorldEditor& editor = m_app.getWorldEditor();
-		auto* cmp_plugin = LUMIX_NEW(editor.getAllocator(), AddComponentPlugin)(m_app);
-		m_app.registerComponent("", "js_script", *cmp_plugin);
 
 		const char* exts[] = {"js"};
 		m_app.getAssetCompiler().addPlugin(m_asset_plugin, Span(exts));
 		m_app.getAssetBrowser().addPlugin(m_asset_plugin, Span(exts));
 		m_app.addPlugin(m_console_plugin);
+		m_app.getPropertyGrid().addPlugin(m_property_grid_plugin);
 	}
 
 	const char* getName() const override { return "js"; }
@@ -603,6 +714,7 @@ struct StudioAppPlugin : StudioApp::IPlugin {
 	StudioApp& m_app;
 	AssetPlugin m_asset_plugin;
 	ConsolePlugin m_console_plugin;
+	JSPropertyGridPlugin m_property_grid_plugin;
 };
 
 } // namespace

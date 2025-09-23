@@ -65,8 +65,6 @@ struct JSScriptModule : public IModule {
 	virtual uintptr getScriptID(EntityRef entity, i32 scr_index) = 0;
 	virtual void removeScript(EntityRef entity, int scr_index) = 0;
 	virtual void moveScript(EntityRef entity, int scr_index, bool up) = 0;
-	virtual void setPropertyValue(EntityRef entity, int scr_index, const char* name, const char* value) = 0;
-	virtual void getPropertyValue(EntityRef entity, int scr_index, const char* property_name, char* out, int max_size) = 0;
 	virtual int getPropertyCount(EntityRef entity, int scr_index) = 0;
 	virtual const char* getPropertyName(EntityRef entity, int scr_index, int prop_index) = 0;
 	virtual Property::Type getPropertyType(EntityRef entity, int scr_index, int prop_index) = 0;

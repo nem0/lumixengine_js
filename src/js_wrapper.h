@@ -53,6 +53,11 @@ template <> struct ToType<float>
 	static float value(duk_context* ctx, int index) { return (float)duk_to_number(ctx, index); }
 };
 
+template <> struct ToType<double>
+{
+	static double value(duk_context* ctx, int index) { return duk_to_number(ctx, index); }
+};
+
 template <> struct ToType<int>
 {
 	static int value(duk_context* ctx, int index) { return duk_to_int(ctx, index); }
@@ -321,6 +326,10 @@ inline void push(duk_context* ctx, bool value)
 inline void push(duk_context* ctx, const char* value)
 {
 	duk_push_string(ctx, value);
+}
+inline void push(duk_context* ctx, StringView value)
+{
+	duk_push_lstring(ctx, value.begin, value.size());
 }
 inline void push(duk_context* ctx, const Path& value)
 {
