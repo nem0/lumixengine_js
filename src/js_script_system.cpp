@@ -23,6 +23,9 @@
 
 namespace Lumix {
 
+// for serialization
+static_assert(sizeof(bool) == sizeof(u8));
+
 inline void toCString(EntityPtr value, Span<char> output) {
 	toCString(value.index, output);
 }
@@ -645,66 +648,8 @@ public:
 		if (idx >= 0) return m_property_names.at(idx).c_str();
 		return "N/A";;
 	}
-	
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, bool value) {
-		const char* name = getPropertyName(prop.name_hash);
-		if (!name) return;
-		
-		duk_push_global_stash(ctx);
-		duk_push_pointer(ctx, (void*)script.m_id);
-		duk_get_prop(ctx, -2);
 
-		duk_push_boolean(ctx, value);
-		duk_put_prop_string(ctx, -2, name);
-		duk_pop_2(ctx);
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, EntityPtr value) {
-		const char* name = getPropertyName(prop.name_hash);
-		if (!name) return;
-
-		JSWrapper::DebugGuard guard(ctx);
-		duk_push_global_stash(ctx);
-		duk_push_pointer(ctx, (void*)script.m_id);
-		duk_get_prop(ctx, -2);
-		
-		duk_get_global_string(ctx, "Entity");
-		duk_push_pointer(ctx, &m_world);
-		JSWrapper::push(ctx, value.index);
-		duk_new(ctx, 2);
-		duk_put_prop_string(ctx, -2, name);
-
-		duk_pop_2(ctx);
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, Vec3 value) {
-		const StaticString<512> tmp("{", value.x, ",", value.y, ",", value.z, "}");
-		applyProperty(ctx, script, prop, tmp.data);
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, i32 value) {
-		applyProperty(ctx, script, prop, double(value));
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, float value) {
-		applyProperty(ctx, script, prop, double(value));
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, double value) {
-		const char* name = getPropertyName(prop.name_hash);
-		if (!name) return;
-		
-		duk_push_global_stash(ctx);
-		duk_push_pointer(ctx, (void*)script.m_id);
-		duk_get_prop(ctx, -2);
-
-		duk_push_number(ctx, value);
-		duk_put_prop_string(ctx, -2, name);
-		duk_pop_2(ctx);
-	}
-
-	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, const char* value) {
-		if (!value) return;
+	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, InputMemoryStream value) {
 		const char* name = getPropertyName(prop.name_hash);
 		if (!name) return;
 
@@ -715,20 +660,24 @@ public:
 		if (prop.type == Property::ENTITY) {
 			duk_get_global_string(ctx, "Entity");
 			duk_push_pointer(ctx, &m_world);
-			EntityPtr e;
-			fromCString(value, e.index);
+			EntityPtr e = value.read<EntityPtr>();
 			JSWrapper::push(ctx, e.index);
 			duk_new(ctx, 2);			
 		}
+		else if (prop.type == Property::BOOLEAN) {
+			bool b = value.read<bool>() != 0;
+			duk_push_boolean(ctx, b);
+		}
+		else if (prop.type == Property::NUMBER) {
+			duk_push_number(ctx, value.read<double>());
+		}
 		else if (prop.type == Property::STRING) {
-			duk_push_string(ctx, value);
+			duk_push_string(ctx, value.readString());
 		}
-		else if (duk_peval_string(ctx, value) != 0) {
-			const char* error = duk_safe_to_string(ctx, -1);
-			logError(error);
-			duk_pop_3(ctx);
-			return;
+		else {
+			ASSERT(false);
 		}
+
 		duk_put_prop_string(ctx, -2, name);
 		duk_pop_2(ctx);
 	}
@@ -838,14 +787,8 @@ public:
 			{
 				valid_properties[prop_index / 8] |= 1 << (prop_index % 8);
 				Property& existing_prop = inst.m_properties[prop_index];
-				if (existing_prop.type == Property::ANY) {
-					switch (duk_get_type(ctx, -1)) {
-						case DUK_TYPE_STRING: existing_prop.type = Property::STRING; break;
-						case DUK_TYPE_BOOLEAN: existing_prop.type = Property::BOOLEAN; break;
-						default: existing_prop.type = is_entity ? Property::ENTITY : Property::NUMBER; break;
-					}
-				}
-				applyProperty(ctx, inst, existing_prop, existing_prop.stored_value.c_str());
+				InputMemoryStream blob(existing_prop.stored_value);
+				applyProperty(ctx, inst, existing_prop, blob);
 			}
 			else
 			{
@@ -856,6 +799,7 @@ public:
 					switch (duk_get_type(ctx, -1)) {
 						case DUK_TYPE_BOOLEAN: prop.type = Property::BOOLEAN; break;
 						case DUK_TYPE_STRING: prop.type = Property::STRING; break;
+						case DUK_TYPE_NUMBER: prop.type = Property::NUMBER; break;
 						default: prop.type = is_entity ? Property::ENTITY : Property::NUMBER; break;
 					}
 					prop.name_hash = hash;
@@ -977,7 +921,6 @@ public:
 		m_world.onComponentCreated(entity, JS_SCRIPT_TYPE, this);
 	}
 
-
 	void destroyScript(EntityRef entity) override {
 		auto* script = m_scripts[entity];
 		for (auto& scr : script->m_scripts) {
@@ -993,45 +936,6 @@ public:
 		m_world.onComponentDestroyed(entity, JS_SCRIPT_TYPE, this);
 	}
 
-
-	void getProperty(Property& prop, const char* prop_name, ScriptInstance& scr, char* out, int max_size) {
-		duk_context* ctx = m_system.m_global_context;
-		duk_push_global_stash(ctx);
-		duk_push_pointer(ctx, (void*)scr.m_id);
-		duk_get_prop(ctx, -2);					 // -> [stash obj]
-		duk_get_prop_string(ctx, -1, prop_name); // -> [stash obj prop]
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			copyString(Span(out, max_size), prop.stored_value.c_str());
-			duk_pop_3(ctx);
-			return;
-		}
-		switch (prop.type) {
-			case Property::BOOLEAN: {
-				bool b = duk_get_boolean(ctx, -1) != 0;
-				copyString(Span(out, max_size), b ? "true" : "false");
-				break;
-			}
-			case Property::NUMBER: {
-				float val = (float)duk_get_number(ctx, -1);
-				toCString(val, Span(out, max_size), 8);
-				break;
-			}
-			case Property::ENTITY: {
-				duk_get_prop_string(ctx, -1, "c_entity");
-				int entity = duk_to_int(ctx, -1);
-				duk_pop(ctx);
-				toCString(entity, Span(out, max_size));
-				break;
-			}
-			case Property::STRING:
-				copyString(Span(out, max_size), duk_get_string(ctx, -1));
-				break;
-			default: ASSERT(false); break;
-		}
-		duk_pop_3(ctx);
-	}
-
-
 	void serialize(OutputMemoryStream& serializer) override {
 		serializer.write(m_scripts.size());
 		for (auto iter = m_scripts.begin(), end = m_scripts.end(); iter != end; ++iter) {
@@ -1044,13 +948,33 @@ public:
 				serializer.write(scr.m_properties.size());
 				for (Property& prop : scr.m_properties) {
 					serializer.write(prop.name_hash);
-					int idx = m_property_names.find(prop.name_hash);
+					i32 idx = m_property_names.find(prop.name_hash);
+					serializer.write(prop.type);
 					if (idx >= 0) {
 						const char* name = m_property_names.at(idx).c_str();
-						char tmp[1024];
-						getProperty(prop, name, scr, tmp, lengthOf(tmp));
-						serializer.writeString(tmp);
+						switch (prop.type) {
+							case Property::BOOLEAN: {
+								bool v = getProperty<bool>(prop, name, scr);
+								serializer.write(v);
+								break;
+							}
+							case Property::NUMBER: {
+								double v = getProperty<double>(prop, name, scr);
+								serializer.write(v);
+								break;
+							}
+							case Property::ENTITY: {
+								EntityPtr v = getProperty<EntityPtr>(prop, name, scr);
+								serializer.write(v);
+								break;
+							}
+							case Property::STRING:
+								ASSERT(false);
+								// TODO
+								break;
+						}
 					} else {
+						ASSERT(false);
 						serializer.writeString("");
 					}
 				}
@@ -1062,7 +986,7 @@ public:
 	void deserialize(InputMemoryStream& serializer, const EntityMap& entity_map, i32 version) override {
 		const i32 len = serializer.read<i32>();
 		m_scripts.reserve(len + m_scripts.size());
-		for (int i = 0; i < len; ++i) {
+		for (i32 i = 0; i < len; ++i) {
 			IAllocator& allocator = m_system.m_allocator;
 			
 			EntityRef entity;
@@ -1072,21 +996,28 @@ public:
 			m_scripts.insert(script->m_entity, script);
 			int scr_count;
 			serializer.read(scr_count);
-			for (int scr_idx = 0; scr_idx < scr_count; ++scr_idx)
-			{
+			for (i32 scr_idx = 0; scr_idx < scr_count; ++scr_idx) {
 				auto& scr = script->m_scripts.emplace(allocator);
 
 				const char* path = serializer.readString();
 				serializer.read(scr.m_id);
-				int prop_count;
-				serializer.read(prop_count);
-				scr.m_properties.reserve(prop_count);
-				for (int j = 0; j < prop_count; ++j)
-				{
+				i32 num_props;
+				serializer.read(num_props);
+				scr.m_properties.reserve(num_props);
+				for (i32 j = 0; j < num_props; ++j) {
 					Property& prop = scr.m_properties.emplace(allocator);
-					prop.type = Property::ANY;
 					serializer.read(prop.name_hash);
-					prop.stored_value = serializer.readString();
+					serializer.read(prop.type);
+					switch (prop.type) {
+						case Property::STRING : prop.stored_value.writeString(serializer.readString()); break;
+						case Property::NUMBER: prop.stored_value.write(serializer.read<double>()); break;
+						case Property::BOOLEAN: prop.stored_value.write(serializer.read<bool>()); break;
+						case Property::ENTITY: {
+							EntityPtr e = serializer.read<EntityPtr>();
+							e = entity_map.get(e);
+							prop.stored_value.write(e);
+						}
+					}
 				}
 				setScriptPathInternal(*script, scr, Path(path));
 			}
@@ -1278,22 +1209,8 @@ public:
 		out = tmp;
 	}
 
-	template <typename T>
-	void setPropertyValue(EntityRef entity, int scr_index, const char* property_name, T value) {
-		auto* script_cmp = m_scripts[entity];
-		if (!script_cmp) return;
-		Property& prop = getScriptProperty(entity, scr_index, property_name);
-		if (!script_cmp->m_scripts[scr_index].m_script) {
-			toString(value, prop.stored_value);
-			return;
-		}
-
-		applyProperty(m_system.m_global_context, script_cmp->m_scripts[scr_index], prop, value);
-	}
-
 	template <typename T> T getProperty(Property& prop, const char* prop_name, ScriptInstance& scr) {
 		if (!scr.m_script) return {};
-		
 
 		duk_context* ctx = m_system.m_global_context;
 		duk_push_global_stash(ctx);
@@ -1304,47 +1221,12 @@ public:
 
 		if (!JSWrapper::isType<T>(ctx, -1)) {
 			duk_pop_3(ctx);
-			return T();
+			InputMemoryStream blob(prop.stored_value);
+			return blob.read<T>();
 		}
 		const T res = JSWrapper::toType<T>(ctx, -1);
 		duk_pop_3(ctx);
 		return res;
-	}
-
-
-	template <typename T> static T fromString(const char* val) {
-		T res;
-		fromCString(val, res);
-		return res;
-	}
-
-	template <> static const char* fromString(const char* val) { return val; }
-	template <> static float fromString(const char* val) { return (float)atof(val); }
-	template <> static bool fromString(const char* val) { return equalIStrings(val, "true"); }
-	template <> static Vec3 fromString(const char* val) { 
-		if (val[0] == '\0') return {};
-		Vec3 r;
-		r.x = (float)atof(val + 1);
-		const char* c = strstr(val + 1, ",");
-		r.y = (float)atof(c + 1);
-		c = strstr(val + 1, ",");
-		r.z = (float)atof(c + 1);
-		return r;
-	}
-
-	template <typename T>
-	T getPropertyValue(EntityRef entity, int scr_index, const char* property_name) {
-		const StableHash hash(property_name);
-		auto& inst = m_scripts[entity]->m_scripts[scr_index];
-		for (auto& prop : inst.m_properties)
-		{
-			if (prop.name_hash == hash)
-			{
-				if (inst.m_script && inst.m_script->isReady()) return getProperty<T>(prop, property_name, inst);
-				return fromString<T>(prop.stored_value.c_str());
-			}
-		}
-		return {};
 	}
 
 	JSScriptSystemImpl& m_system;
@@ -1360,102 +1242,6 @@ public:
 	bool m_is_game_running = false;
 	uintptr m_id_generator = 0;
 };
-
-#if 0
-struct JSProperties : reflection::DynamicProperties {
-	JSProperties(IAllocator& allocator)
-		: DynamicProperties(allocator)
-	{
-		name = "js_properties";
-	}
-		
-	u32 getCount(ComponentUID cmp, int index) const override { 
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		return module.getPropertyCount(e, index);
-	}
-
-	Type getType(ComponentUID cmp, int array_idx, u32 idx) const override { 
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
-		switch(type) {
-			case JSScriptModule::Property::Type::BOOLEAN: return BOOLEAN;
-			case JSScriptModule::Property::Type::STRING: return STRING;
-			case JSScriptModule::Property::Type::NUMBER: return FLOAT;
-			case JSScriptModule::Property::Type::ENTITY: return ENTITY;
-			case JSScriptModule::Property::Type::ANY: return NONE;
-		}
-		ASSERT(false);
-		return NONE;
-	}
-
-	reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
-		/*reflection::ResourceAttribute attr;
-		LuaScriptModuleImpl& module = (LuaScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		const LuaScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
-		ASSERT(type == LuaScriptModule::Property::Type::RESOURCE);
-		attr.resource_type  = module.getPropertyResourceType(e, array_idx, idx);
-		return attr;*/
-		ASSERT(false);
-		// TODO
-		return {};
-	}
-
-	const char* getName(ComponentUID cmp, int array_idx, u32 idx) const override {
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		return module.getPropertyName(e, array_idx, idx);
-	}
-
-
-	Value getValue(ComponentUID cmp, int array_idx, u32 idx) const override { 
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
-		const char* name = module.getPropertyName(e, array_idx, idx);
-		Value v = {};
-		switch(type) {
-			case JSScriptModule::Property::Type::BOOLEAN: reflection::set(v, module.getPropertyValue<bool>(e, array_idx, name)); break;
-			case JSScriptModule::Property::Type::NUMBER: reflection::set(v, module.getPropertyValue<float>(e, array_idx, name)); break;
-			case JSScriptModule::Property::Type::STRING: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
-			case JSScriptModule::Property::Type::ENTITY: reflection::set(v, module.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
-			case JSScriptModule::Property::Type::ANY: reflection::set(v, module.getPropertyValue<const char*>(e, array_idx, name)); break;
-		}
-		return v;
-	}
-		
-	void set(ComponentUID cmp, int array_idx, const char* name, Type type, Value v) const override { 
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		switch(type) {
-			case BOOLEAN: module.setPropertyValue(e, array_idx, name, v.b); break;
-			case I32: module.setPropertyValue(e, array_idx, name, v.i); break;
-			case FLOAT: module.setPropertyValue(e, array_idx, name, v.f); break;
-			case STRING: module.setPropertyValue(e, array_idx, name, v.s); break;
-			case ENTITY: module.setPropertyValue(e, array_idx, name, v.e); break;
-			case RESOURCE: module.setPropertyValue(e, array_idx, name, v.s); break;
-			case COLOR: module.setPropertyValue(e, array_idx, name, v.v3); break;
-			case NONE: break;
-		}
-	}
-
-	void set(ComponentUID cmp, int array_idx, u32 idx, Value v) const override {
-		JSScriptModuleImpl& module = (JSScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		const JSScriptModule::Property::Type type = module.getPropertyType(e, array_idx, idx);
-		const char* name = module.getPropertyName(e, array_idx, idx);
-		switch(type) {
-			case JSScriptModule::Property::Type::BOOLEAN: module.setPropertyValue(e, array_idx, name, v.b); break;
-			case JSScriptModule::Property::Type::NUMBER: module.setPropertyValue(e, array_idx, name, v.f); break;
-			case JSScriptModule::Property::Type::STRING: module.setPropertyValue(e, array_idx, name, v.s); break;
-			case JSScriptModule::Property::Type::ENTITY: module.setPropertyValue(e, array_idx, name, v.e); break;
-			case JSScriptModule::Property::Type::ANY: ASSERT(false); break;
-		}
-	}
-};
-#endif
 
 static void js_fatalHandler(void *udata, const char *msg) {
 	logError("*** JS FATAL ERROR: ", (msg ? msg : "no message"));

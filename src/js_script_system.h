@@ -3,6 +3,7 @@
 
 #include "core/hash.h"
 #include "core/path.h"
+#include "core/stream.h"
 #include "core/string.h"
 #include "engine/plugin.h"
 #include "engine/resource.h"
@@ -24,8 +25,7 @@ struct JSScriptModule : public IModule {
 			BOOLEAN,
 			NUMBER,
 			STRING,
-			ENTITY,
-			ANY
+			ENTITY
 		};
 
 		explicit Property(IAllocator& allocator)
@@ -35,7 +35,7 @@ struct JSScriptModule : public IModule {
 		StableHash name_hash;
 		Type type;
 		ResourceType resource_type;
-		String stored_value;
+		OutputMemoryStream stored_value;
 	};
 
 

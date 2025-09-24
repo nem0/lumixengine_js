@@ -258,6 +258,10 @@ template <> inline bool isType<float>(duk_context* ctx, int index)
 {
 	return duk_is_number(ctx, index) != 0;
 }
+template <> inline bool isType<double>(duk_context* ctx, int index)
+{
+	return duk_is_number(ctx, index) != 0;
+}
 template <> inline bool isType<const char*>(duk_context* ctx, int index)
 {
 	return duk_is_string(ctx, index) != 0;

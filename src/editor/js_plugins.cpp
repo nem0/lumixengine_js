@@ -411,9 +411,6 @@ struct JSPropertyGridPlugin : PropertyGrid::IPlugin {
 				case JSScriptModule::Property::ENTITY:
 					ImGui::NewLine();
 					break;
-				case JSScriptModule::Property::ANY:
-					ImGui::NewLine();
-					break;
 			}
 			duk_pop_3(ctx);
 
