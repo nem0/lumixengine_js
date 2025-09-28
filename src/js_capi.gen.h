@@ -27,7 +27,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isPropertyAnimatorEnabled(entity));
 		return 1;
 	}
@@ -41,10 +41,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enablePropertyAnimator(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enablePropertyAnimator(entity, value);
 		return 0;
 	}
 	
@@ -57,7 +57,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getPropertyAnimatorLooped(entity));
 		return 1;
 	}
@@ -71,10 +71,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setPropertyAnimatorLooped(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setPropertyAnimatorLooped(entity, value);
 		return 0;
 	}
 	
@@ -87,7 +87,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getPropertyAnimatorAnimation(entity));
 		return 1;
 	}
@@ -101,10 +101,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setPropertyAnimatorAnimation(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setPropertyAnimatorAnimation(entity, value);
 		return 0;
 	}
 	
@@ -117,7 +117,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAnimatorSource(entity));
 		return 1;
 	}
@@ -131,10 +131,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setAnimatorSource(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setAnimatorSource(entity, value);
 		return 0;
 	}
 	
@@ -147,7 +147,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAnimatorUseRootMotion(entity));
 		return 1;
 	}
@@ -161,10 +161,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setAnimatorUseRootMotion(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setAnimatorUseRootMotion(entity, value);
 		return 0;
 	}
 	
@@ -177,7 +177,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAnimatorDefaultSet(entity));
 		return 1;
 	}
@@ -191,10 +191,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setAnimatorDefaultSet(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setAnimatorDefaultSet(entity, value);
 		return 0;
 	}
 	
@@ -207,7 +207,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAnimableAnimation(entity));
 		return 1;
 	}
@@ -221,10 +221,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AnimationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setAnimableAnimation(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setAnimableAnimation(entity, value);
 		return 0;
 	}
 	
@@ -237,7 +237,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AudioModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAmbientSoundClip(entity));
 		return 1;
 	}
@@ -251,10 +251,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AudioModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setAmbientSoundClip(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setAmbientSoundClip(entity, value);
 		return 0;
 	}
 	
@@ -267,7 +267,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AudioModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isAmbientSound3D(entity));
 		return 1;
 	}
@@ -281,10 +281,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<AudioModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setAmbientSound3D(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setAmbientSound3D(entity, value);
 		return 0;
 	}
 	
@@ -297,7 +297,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isRectEnabled(entity));
 		return 1;
 	}
@@ -311,10 +311,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enableRect(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enableRect(entity, value);
 		return 0;
 	}
 	
@@ -327,7 +327,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectClip(entity));
 		return 1;
 	}
@@ -341,10 +341,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setRectClip(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setRectClip(entity, value);
 		return 0;
 	}
 	
@@ -357,7 +357,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectLeftPoints(entity));
 		return 1;
 	}
@@ -371,10 +371,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectLeftPoints(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectLeftPoints(entity, value);
 		return 0;
 	}
 	
@@ -387,7 +387,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectLeftRelative(entity));
 		return 1;
 	}
@@ -401,10 +401,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectLeftRelative(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectLeftRelative(entity, value);
 		return 0;
 	}
 	
@@ -417,7 +417,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectRightPoints(entity));
 		return 1;
 	}
@@ -431,10 +431,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectRightPoints(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectRightPoints(entity, value);
 		return 0;
 	}
 	
@@ -447,7 +447,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectRightRelative(entity));
 		return 1;
 	}
@@ -461,10 +461,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectRightRelative(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectRightRelative(entity, value);
 		return 0;
 	}
 	
@@ -477,7 +477,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectTopPoints(entity));
 		return 1;
 	}
@@ -491,10 +491,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectTopPoints(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectTopPoints(entity, value);
 		return 0;
 	}
 	
@@ -507,7 +507,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectTopRelative(entity));
 		return 1;
 	}
@@ -521,10 +521,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectTopRelative(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectTopRelative(entity, value);
 		return 0;
 	}
 	
@@ -537,7 +537,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectBottomPoints(entity));
 		return 1;
 	}
@@ -551,10 +551,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectBottomPoints(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectBottomPoints(entity, value);
 		return 0;
 	}
 	
@@ -567,7 +567,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRectBottomRelative(entity));
 		return 1;
 	}
@@ -581,10 +581,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRectBottomRelative(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRectBottomRelative(entity, value);
 		return 0;
 	}
 	
@@ -597,7 +597,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getButtonHoveredColorRGBA(entity));
 		return 1;
 	}
@@ -611,10 +611,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec4>(ctx, 3);
-		ctx, module->setButtonHoveredColorRGBA(entity, value);
+		auto value = JSWrapper::checkArg<Vec4>(ctx, 0);
+		module->setButtonHoveredColorRGBA(entity, value);
 		return 0;
 	}
 	
@@ -627,7 +627,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getButtonHoveredCursor(entity));
 		return 1;
 	}
@@ -641,10 +641,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (os::CursorType)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setButtonHoveredCursor(entity, value);
+		auto value = (os::CursorType)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setButtonHoveredCursor(entity, value);
 		return 0;
 	}
 	
@@ -657,7 +657,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isImageEnabled(entity));
 		return 1;
 	}
@@ -671,10 +671,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enableImage(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enableImage(entity, value);
 		return 0;
 	}
 	
@@ -687,7 +687,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getImageColorRGBA(entity));
 		return 1;
 	}
@@ -701,10 +701,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec4>(ctx, 3);
-		ctx, module->setImageColorRGBA(entity, value);
+		auto value = JSWrapper::checkArg<Vec4>(ctx, 0);
+		module->setImageColorRGBA(entity, value);
 		return 0;
 	}
 	
@@ -717,7 +717,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getImageSprite(entity));
 		return 1;
 	}
@@ -731,10 +731,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setImageSprite(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setImageSprite(entity, value);
 		return 0;
 	}
 	
@@ -747,7 +747,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTextFontSize(entity));
 		return 1;
 	}
@@ -761,10 +761,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<int>(ctx, 3);
-		ctx, module->setTextFontSize(entity, value);
+		auto value = JSWrapper::checkArg<int>(ctx, 0);
+		module->setTextFontSize(entity, value);
 		return 0;
 	}
 	
@@ -777,7 +777,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTextColorRGBA(entity));
 		return 1;
 	}
@@ -791,10 +791,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec4>(ctx, 3);
-		ctx, module->setTextColorRGBA(entity, value);
+		auto value = JSWrapper::checkArg<Vec4>(ctx, 0);
+		module->setTextColorRGBA(entity, value);
 		return 0;
 	}
 	
@@ -807,7 +807,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTextFontPath(entity));
 		return 1;
 	}
@@ -821,10 +821,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setTextFontPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setTextFontPath(entity, value);
 		return 0;
 	}
 	
@@ -837,7 +837,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getTextHAlign(entity));
 		return 1;
 	}
@@ -851,10 +851,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (TextHAlign)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setTextHAlign(entity, value);
+		auto value = (TextHAlign)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setTextHAlign(entity, value);
 		return 0;
 	}
 	
@@ -867,7 +867,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getTextVAlign(entity));
 		return 1;
 	}
@@ -881,10 +881,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (TextVAlign)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setTextVAlign(entity, value);
+		auto value = (TextVAlign)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setTextVAlign(entity, value);
 		return 0;
 	}
 	
@@ -897,7 +897,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getText(entity));
 		return 1;
 	}
@@ -911,10 +911,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<const char*>(ctx, 3);
-		ctx, module->setText(entity, value);
+		auto value = JSWrapper::checkArg<const char*>(ctx, 0);
+		module->setText(entity, value);
 		return 0;
 	}
 	
@@ -927,7 +927,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<LuaScriptModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInlineScriptCode(entity));
 		return 1;
 	}
@@ -941,10 +941,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<LuaScriptModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<const char*>(ctx, 3);
-		ctx, module->setInlineScriptCode(entity, value);
+		auto value = JSWrapper::checkArg<const char*>(ctx, 0);
+		module->setInlineScriptCode(entity, value);
 		return 0;
 	}
 	
@@ -957,7 +957,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getZoneAutoload(entity));
 		return 1;
 	}
@@ -971,10 +971,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setZoneAutoload(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setZoneAutoload(entity, value);
 		return 0;
 	}
 	
@@ -987,7 +987,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getZoneDetailed(entity));
 		return 1;
 	}
@@ -1001,10 +1001,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setZoneDetailed(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setZoneDetailed(entity, value);
 		return 0;
 	}
 	
@@ -1017,7 +1017,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAgentRadius(entity));
 		return 1;
 	}
@@ -1031,10 +1031,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setAgentRadius(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setAgentRadius(entity, value);
 		return 0;
 	}
 	
@@ -1047,7 +1047,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAgentHeight(entity));
 		return 1;
 	}
@@ -1061,10 +1061,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setAgentHeight(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setAgentHeight(entity, value);
 		return 0;
 	}
 	
@@ -1077,7 +1077,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAgentMoveEntity(entity));
 		return 1;
 	}
@@ -1091,10 +1091,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setAgentMoveEntity(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setAgentMoveEntity(entity, value);
 		return 0;
 	}
 	
@@ -1107,7 +1107,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAgentSpeed(entity));
 		return 1;
 	}
@@ -1121,7 +1121,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHeightfieldSource(entity));
 		return 1;
 	}
@@ -1135,10 +1135,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setHeightfieldSource(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setHeightfieldSource(entity, value);
 		return 0;
 	}
 	
@@ -1151,7 +1151,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHeightfieldXZScale(entity));
 		return 1;
 	}
@@ -1165,10 +1165,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setHeightfieldXZScale(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setHeightfieldXZScale(entity, value);
 		return 0;
 	}
 	
@@ -1181,7 +1181,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHeightfieldYScale(entity));
 		return 1;
 	}
@@ -1195,10 +1195,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setHeightfieldYScale(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setHeightfieldYScale(entity, value);
 		return 0;
 	}
 	
@@ -1211,7 +1211,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHeightfieldLayer(entity));
 		return 1;
 	}
@@ -1225,10 +1225,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setHeightfieldLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setHeightfieldLayer(entity, value);
 		return 0;
 	}
 	
@@ -1241,7 +1241,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointXMotion(entity));
 		return 1;
 	}
@@ -1255,10 +1255,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointXMotion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointXMotion(entity, value);
 		return 0;
 	}
 	
@@ -1271,7 +1271,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointYMotion(entity));
 		return 1;
 	}
@@ -1285,10 +1285,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointYMotion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointYMotion(entity, value);
 		return 0;
 	}
 	
@@ -1301,7 +1301,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointZMotion(entity));
 		return 1;
 	}
@@ -1315,10 +1315,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointZMotion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointZMotion(entity, value);
 		return 0;
 	}
 	
@@ -1331,7 +1331,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointSwing1Motion(entity));
 		return 1;
 	}
@@ -1345,10 +1345,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointSwing1Motion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointSwing1Motion(entity, value);
 		return 0;
 	}
 	
@@ -1361,7 +1361,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointSwing2Motion(entity));
 		return 1;
 	}
@@ -1375,10 +1375,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointSwing2Motion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointSwing2Motion(entity, value);
 		return 0;
 	}
 	
@@ -1391,7 +1391,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getD6JointTwistMotion(entity));
 		return 1;
 	}
@@ -1405,10 +1405,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setD6JointTwistMotion(entity, value);
+		auto value = (PhysicsModule::D6Motion)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setD6JointTwistMotion(entity, value);
 		return 0;
 	}
 	
@@ -1421,7 +1421,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointLinearLimit(entity));
 		return 1;
 	}
@@ -1435,10 +1435,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setD6JointLinearLimit(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setD6JointLinearLimit(entity, value);
 		return 0;
 	}
 	
@@ -1451,7 +1451,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointTwistLimit(entity));
 		return 1;
 	}
@@ -1465,10 +1465,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setD6JointTwistLimit(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setD6JointTwistLimit(entity, value);
 		return 0;
 	}
 	
@@ -1481,7 +1481,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointSwingLimit(entity));
 		return 1;
 	}
@@ -1495,10 +1495,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setD6JointSwingLimit(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setD6JointSwingLimit(entity, value);
 		return 0;
 	}
 	
@@ -1511,7 +1511,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointDamping(entity));
 		return 1;
 	}
@@ -1525,10 +1525,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setD6JointDamping(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setD6JointDamping(entity, value);
 		return 0;
 	}
 	
@@ -1541,7 +1541,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointStiffness(entity));
 		return 1;
 	}
@@ -1555,10 +1555,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setD6JointStiffness(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setD6JointStiffness(entity, value);
 		return 0;
 	}
 	
@@ -1571,7 +1571,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointRestitution(entity));
 		return 1;
 	}
@@ -1585,10 +1585,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setD6JointRestitution(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setD6JointRestitution(entity, value);
 		return 0;
 	}
 	
@@ -1601,7 +1601,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointConnectedBody(entity));
 		return 1;
 	}
@@ -1615,10 +1615,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 3);
-		ctx, module->setD6JointConnectedBody(entity, value);
+		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 0);
+		module->setD6JointConnectedBody(entity, value);
 		return 0;
 	}
 	
@@ -1631,7 +1631,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointAxisPosition(entity));
 		return 1;
 	}
@@ -1645,10 +1645,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setD6JointAxisPosition(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setD6JointAxisPosition(entity, value);
 		return 0;
 	}
 	
@@ -1661,7 +1661,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getD6JointAxisDirection(entity));
 		return 1;
 	}
@@ -1675,10 +1675,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setD6JointAxisDirection(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setD6JointAxisDirection(entity, value);
 		return 0;
 	}
 	
@@ -1691,7 +1691,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointConnectedBody(entity));
 		return 1;
 	}
@@ -1705,10 +1705,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 3);
-		ctx, module->setDistanceJointConnectedBody(entity, value);
+		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 0);
+		module->setDistanceJointConnectedBody(entity, value);
 		return 0;
 	}
 	
@@ -1721,7 +1721,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointAxisPosition(entity));
 		return 1;
 	}
@@ -1735,10 +1735,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setDistanceJointAxisPosition(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setDistanceJointAxisPosition(entity, value);
 		return 0;
 	}
 	
@@ -1751,7 +1751,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointDamping(entity));
 		return 1;
 	}
@@ -1765,10 +1765,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setDistanceJointDamping(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setDistanceJointDamping(entity, value);
 		return 0;
 	}
 	
@@ -1781,7 +1781,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointStiffness(entity));
 		return 1;
 	}
@@ -1795,10 +1795,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setDistanceJointStiffness(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setDistanceJointStiffness(entity, value);
 		return 0;
 	}
 	
@@ -1811,7 +1811,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointTolerance(entity));
 		return 1;
 	}
@@ -1825,10 +1825,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setDistanceJointTolerance(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setDistanceJointTolerance(entity, value);
 		return 0;
 	}
 	
@@ -1841,7 +1841,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointLimits(entity));
 		return 1;
 	}
@@ -1855,10 +1855,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setDistanceJointLimits(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setDistanceJointLimits(entity, value);
 		return 0;
 	}
 	
@@ -1871,7 +1871,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDistanceJointLinearForce(entity));
 		return 1;
 	}
@@ -1885,7 +1885,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointConnectedBody(entity));
 		return 1;
 	}
@@ -1899,10 +1899,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 3);
-		ctx, module->setHingeJointConnectedBody(entity, value);
+		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 0);
+		module->setHingeJointConnectedBody(entity, value);
 		return 0;
 	}
 	
@@ -1915,7 +1915,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointAxisPosition(entity));
 		return 1;
 	}
@@ -1929,10 +1929,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setHingeJointAxisPosition(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setHingeJointAxisPosition(entity, value);
 		return 0;
 	}
 	
@@ -1945,7 +1945,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointAxisDirection(entity));
 		return 1;
 	}
@@ -1959,10 +1959,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setHingeJointAxisDirection(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setHingeJointAxisDirection(entity, value);
 		return 0;
 	}
 	
@@ -1975,7 +1975,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointDamping(entity));
 		return 1;
 	}
@@ -1989,10 +1989,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setHingeJointDamping(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setHingeJointDamping(entity, value);
 		return 0;
 	}
 	
@@ -2005,7 +2005,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointStiffness(entity));
 		return 1;
 	}
@@ -2019,10 +2019,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setHingeJointStiffness(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setHingeJointStiffness(entity, value);
 		return 0;
 	}
 	
@@ -2035,7 +2035,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointUseLimit(entity));
 		return 1;
 	}
@@ -2049,10 +2049,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setHingeJointUseLimit(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setHingeJointUseLimit(entity, value);
 		return 0;
 	}
 	
@@ -2065,7 +2065,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getHingeJointLimit(entity));
 		return 1;
 	}
@@ -2079,10 +2079,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setHingeJointLimit(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setHingeJointLimit(entity, value);
 		return 0;
 	}
 	
@@ -2095,7 +2095,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphericalJointConnectedBody(entity));
 		return 1;
 	}
@@ -2109,10 +2109,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 3);
-		ctx, module->setSphericalJointConnectedBody(entity, value);
+		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 0);
+		module->setSphericalJointConnectedBody(entity, value);
 		return 0;
 	}
 	
@@ -2125,7 +2125,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphericalJointAxisPosition(entity));
 		return 1;
 	}
@@ -2139,10 +2139,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setSphericalJointAxisPosition(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setSphericalJointAxisPosition(entity, value);
 		return 0;
 	}
 	
@@ -2155,7 +2155,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphericalJointAxisDirection(entity));
 		return 1;
 	}
@@ -2169,10 +2169,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setSphericalJointAxisDirection(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setSphericalJointAxisDirection(entity, value);
 		return 0;
 	}
 	
@@ -2185,7 +2185,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphericalJointUseLimit(entity));
 		return 1;
 	}
@@ -2199,10 +2199,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setSphericalJointUseLimit(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setSphericalJointUseLimit(entity, value);
 		return 0;
 	}
 	
@@ -2215,7 +2215,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphericalJointLimit(entity));
 		return 1;
 	}
@@ -2229,10 +2229,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setSphericalJointLimit(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setSphericalJointLimit(entity, value);
 		return 0;
 	}
 	
@@ -2245,7 +2245,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerLayer(entity));
 		return 1;
 	}
@@ -2259,10 +2259,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setControllerLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setControllerLayer(entity, value);
 		return 0;
 	}
 	
@@ -2275,7 +2275,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerRadius(entity));
 		return 1;
 	}
@@ -2289,10 +2289,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setControllerRadius(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setControllerRadius(entity, value);
 		return 0;
 	}
 	
@@ -2305,7 +2305,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerHeight(entity));
 		return 1;
 	}
@@ -2319,10 +2319,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setControllerHeight(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setControllerHeight(entity, value);
 		return 0;
 	}
 	
@@ -2335,7 +2335,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerCustomGravity(entity));
 		return 1;
 	}
@@ -2349,10 +2349,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setControllerCustomGravity(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setControllerCustomGravity(entity, value);
 		return 0;
 	}
 	
@@ -2365,7 +2365,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerCustomGravityAcceleration(entity));
 		return 1;
 	}
@@ -2379,10 +2379,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setControllerCustomGravityAcceleration(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setControllerCustomGravityAcceleration(entity, value);
 		return 0;
 	}
 	
@@ -2395,7 +2395,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getControllerUseRootMotion(entity));
 		return 1;
 	}
@@ -2409,10 +2409,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setControllerUseRootMotion(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setControllerUseRootMotion(entity, value);
 		return 0;
 	}
 	
@@ -2425,7 +2425,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorVelocity(entity));
 		return 1;
 	}
@@ -2439,7 +2439,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorSpeed(entity));
 		return 1;
 	}
@@ -2453,7 +2453,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorLayer(entity));
 		return 1;
 	}
@@ -2467,10 +2467,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setActorLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setActorLayer(entity, value);
 		return 0;
 	}
 	
@@ -2483,7 +2483,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getActorDynamicType(entity));
 		return 1;
 	}
@@ -2497,10 +2497,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::DynamicType)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setActorDynamicType(entity, value);
+		auto value = (PhysicsModule::DynamicType)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setActorDynamicType(entity, value);
 		return 0;
 	}
 	
@@ -2513,7 +2513,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorIsTrigger(entity));
 		return 1;
 	}
@@ -2527,10 +2527,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setActorIsTrigger(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setActorIsTrigger(entity, value);
 		return 0;
 	}
 	
@@ -2543,7 +2543,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorMesh(entity));
 		return 1;
 	}
@@ -2557,10 +2557,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setActorMesh(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setActorMesh(entity, value);
 		return 0;
 	}
 	
@@ -2573,7 +2573,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorMaterial(entity));
 		return 1;
 	}
@@ -2587,10 +2587,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setActorMaterial(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setActorMaterial(entity, value);
 		return 0;
 	}
 	
@@ -2603,7 +2603,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getActorCCD(entity));
 		return 1;
 	}
@@ -2617,10 +2617,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setActorCCD(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setActorCCD(entity, value);
 		return 0;
 	}
 	
@@ -2633,7 +2633,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelSpringStrength(entity));
 		return 1;
 	}
@@ -2647,10 +2647,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelSpringStrength(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelSpringStrength(entity, value);
 		return 0;
 	}
 	
@@ -2663,7 +2663,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelSpringMaxCompression(entity));
 		return 1;
 	}
@@ -2677,10 +2677,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelSpringMaxCompression(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelSpringMaxCompression(entity, value);
 		return 0;
 	}
 	
@@ -2693,7 +2693,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelSpringMaxDroop(entity));
 		return 1;
 	}
@@ -2707,10 +2707,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelSpringMaxDroop(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelSpringMaxDroop(entity, value);
 		return 0;
 	}
 	
@@ -2723,7 +2723,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelSpringDamperRate(entity));
 		return 1;
 	}
@@ -2737,10 +2737,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelSpringDamperRate(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelSpringDamperRate(entity, value);
 		return 0;
 	}
 	
@@ -2753,7 +2753,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelRadius(entity));
 		return 1;
 	}
@@ -2767,10 +2767,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelRadius(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelRadius(entity, value);
 		return 0;
 	}
 	
@@ -2783,7 +2783,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelWidth(entity));
 		return 1;
 	}
@@ -2797,10 +2797,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelWidth(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelWidth(entity, value);
 		return 0;
 	}
 	
@@ -2813,7 +2813,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelMass(entity));
 		return 1;
 	}
@@ -2827,10 +2827,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelMass(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelMass(entity, value);
 		return 0;
 	}
 	
@@ -2843,7 +2843,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelMOI(entity));
 		return 1;
 	}
@@ -2857,10 +2857,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setWheelMOI(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setWheelMOI(entity, value);
 		return 0;
 	}
 	
@@ -2873,7 +2873,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getWheelSlot(entity));
 		return 1;
 	}
@@ -2887,10 +2887,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (PhysicsModule::WheelSlot)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setWheelSlot(entity, value);
+		auto value = (PhysicsModule::WheelSlot)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setWheelSlot(entity, value);
 		return 0;
 	}
 	
@@ -2903,7 +2903,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getWheelRPM(entity));
 		return 1;
 	}
@@ -2917,7 +2917,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehiclePeakTorque(entity));
 		return 1;
 	}
@@ -2931,10 +2931,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setVehiclePeakTorque(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setVehiclePeakTorque(entity, value);
 		return 0;
 	}
 	
@@ -2947,7 +2947,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleMaxRPM(entity));
 		return 1;
 	}
@@ -2961,10 +2961,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setVehicleMaxRPM(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setVehicleMaxRPM(entity, value);
 		return 0;
 	}
 	
@@ -2977,7 +2977,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleRPM(entity));
 		return 1;
 	}
@@ -2991,7 +2991,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleCurrentGear(entity));
 		return 1;
 	}
@@ -3005,7 +3005,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleSpeed(entity));
 		return 1;
 	}
@@ -3019,7 +3019,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleChassis(entity));
 		return 1;
 	}
@@ -3033,10 +3033,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setVehicleChassis(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setVehicleChassis(entity, value);
 		return 0;
 	}
 	
@@ -3049,7 +3049,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleMass(entity));
 		return 1;
 	}
@@ -3063,10 +3063,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setVehicleMass(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setVehicleMass(entity, value);
 		return 0;
 	}
 	
@@ -3079,7 +3079,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleMOIMultiplier(entity));
 		return 1;
 	}
@@ -3093,10 +3093,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setVehicleMOIMultiplier(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setVehicleMOIMultiplier(entity, value);
 		return 0;
 	}
 	
@@ -3109,7 +3109,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleCenterOfMass(entity));
 		return 1;
 	}
@@ -3123,10 +3123,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setVehicleCenterOfMass(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setVehicleCenterOfMass(entity, value);
 		return 0;
 	}
 	
@@ -3139,7 +3139,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleWheelsLayer(entity));
 		return 1;
 	}
@@ -3153,10 +3153,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setVehicleWheelsLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setVehicleWheelsLayer(entity, value);
 		return 0;
 	}
 	
@@ -3169,7 +3169,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getVehicleChassisLayer(entity));
 		return 1;
 	}
@@ -3183,10 +3183,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setVehicleChassisLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setVehicleChassisLayer(entity, value);
 		return 0;
 	}
 	
@@ -3199,7 +3199,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInstancedCubeHalfExtents(entity));
 		return 1;
 	}
@@ -3213,10 +3213,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setInstancedCubeHalfExtents(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setInstancedCubeHalfExtents(entity, value);
 		return 0;
 	}
 	
@@ -3229,7 +3229,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInstancedCubeLayer(entity));
 		return 1;
 	}
@@ -3243,10 +3243,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setInstancedCubeLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setInstancedCubeLayer(entity, value);
 		return 0;
 	}
 	
@@ -3259,7 +3259,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInstancedMeshLayer(entity));
 		return 1;
 	}
@@ -3273,10 +3273,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setInstancedMeshLayer(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setInstancedMeshLayer(entity, value);
 		return 0;
 	}
 	
@@ -3289,7 +3289,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInstancedMeshGeomPath(entity));
 		return 1;
 	}
@@ -3303,10 +3303,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<PhysicsModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setInstancedMeshGeomPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setInstancedMeshGeomPath(entity, value);
 		return 0;
 	}
 	
@@ -3319,7 +3319,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDecalMaterialPath(entity));
 		return 1;
 	}
@@ -3333,10 +3333,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setDecalMaterialPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setDecalMaterialPath(entity, value);
 		return 0;
 	}
 	
@@ -3349,7 +3349,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getDecalHalfExtents(entity));
 		return 1;
 	}
@@ -3363,10 +3363,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setDecalHalfExtents(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setDecalHalfExtents(entity, value);
 		return 0;
 	}
 	
@@ -3379,7 +3379,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getEnvironmentCastShadows(entity));
 		return 1;
 	}
@@ -3393,10 +3393,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setEnvironmentCastShadows(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setEnvironmentCastShadows(entity, value);
 		return 0;
 	}
 	
@@ -3409,7 +3409,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getEnvironmentSkyTexture(entity));
 		return 1;
 	}
@@ -3423,10 +3423,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setEnvironmentSkyTexture(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setEnvironmentSkyTexture(entity, value);
 		return 0;
 	}
 	
@@ -3439,7 +3439,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getEnvironmentShadowmapCascades(entity));
 		return 1;
 	}
@@ -3453,10 +3453,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec4>(ctx, 3);
-		ctx, module->setEnvironmentShadowmapCascades(entity, value);
+		auto value = JSWrapper::checkArg<Vec4>(ctx, 0);
+		module->setEnvironmentShadowmapCascades(entity, value);
 		return 0;
 	}
 	
@@ -3469,7 +3469,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getPointLightRange(entity));
 		return 1;
 	}
@@ -3483,10 +3483,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setPointLightRange(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setPointLightRange(entity, value);
 		return 0;
 	}
 	
@@ -3499,7 +3499,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getPointLightCastShadows(entity));
 		return 1;
 	}
@@ -3513,10 +3513,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setPointLightCastShadows(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setPointLightCastShadows(entity, value);
 		return 0;
 	}
 	
@@ -3529,7 +3529,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getPointLightDynamic(entity));
 		return 1;
 	}
@@ -3543,10 +3543,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setPointLightDynamic(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setPointLightDynamic(entity, value);
 		return 0;
 	}
 	
@@ -3559,7 +3559,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isReflectionProbeEnabled(entity));
 		return 1;
 	}
@@ -3573,10 +3573,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enableReflectionProbe(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enableReflectionProbe(entity, value);
 		return 0;
 	}
 	
@@ -3589,7 +3589,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isEnvironmentProbeEnabled(entity));
 		return 1;
 	}
@@ -3603,10 +3603,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enableEnvironmentProbe(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enableEnvironmentProbe(entity, value);
 		return 0;
 	}
 	
@@ -3619,7 +3619,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBoneAttachmentParent(entity));
 		return 1;
 	}
@@ -3633,10 +3633,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 3);
-		ctx, module->setBoneAttachmentParent(entity, value);
+		auto value = JSWrapper::checkArg<EntityPtr>(ctx, 0);
+		module->setBoneAttachmentParent(entity, value);
 		return 0;
 	}
 	
@@ -3649,7 +3649,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBoneAttachmentBone(entity));
 		return 1;
 	}
@@ -3663,10 +3663,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<int>(ctx, 3);
-		ctx, module->setBoneAttachmentBone(entity, value);
+		auto value = JSWrapper::checkArg<int>(ctx, 0);
+		module->setBoneAttachmentBone(entity, value);
 		return 0;
 	}
 	
@@ -3679,7 +3679,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBoneAttachmentPosition(entity));
 		return 1;
 	}
@@ -3693,10 +3693,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setBoneAttachmentPosition(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setBoneAttachmentPosition(entity, value);
 		return 0;
 	}
 	
@@ -3709,7 +3709,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBoneAttachmentRotation(entity));
 		return 1;
 	}
@@ -3723,10 +3723,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setBoneAttachmentRotation(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setBoneAttachmentRotation(entity, value);
 		return 0;
 	}
 	
@@ -3739,7 +3739,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getParticleEmitterPath(entity));
 		return 1;
 	}
@@ -3753,10 +3753,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setParticleEmitterPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setParticleEmitterPath(entity, value);
 		return 0;
 	}
 	
@@ -3769,7 +3769,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getParticleEmitterAutodestroy(entity));
 		return 1;
 	}
@@ -3783,10 +3783,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setParticleEmitterAutodestroy(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setParticleEmitterAutodestroy(entity, value);
 		return 0;
 	}
 	
@@ -3799,7 +3799,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getInstancedModelPath(entity));
 		return 1;
 	}
@@ -3813,10 +3813,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setInstancedModelPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setInstancedModelPath(entity, value);
 		return 0;
 	}
 	
@@ -3829,7 +3829,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isModelInstanceEnabled(entity));
 		return 1;
 	}
@@ -3843,10 +3843,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->enableModelInstance(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->enableModelInstance(entity, value);
 		return 0;
 	}
 	
@@ -3859,7 +3859,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getModelInstancePath(entity));
 		return 1;
 	}
@@ -3873,10 +3873,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setModelInstancePath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setModelInstancePath(entity, value);
 		return 0;
 	}
 	
@@ -3889,7 +3889,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getCurveDecalMaterialPath(entity));
 		return 1;
 	}
@@ -3903,10 +3903,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setCurveDecalMaterialPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setCurveDecalMaterialPath(entity, value);
 		return 0;
 	}
 	
@@ -3919,7 +3919,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getCurveDecalHalfExtents(entity));
 		return 1;
 	}
@@ -3933,10 +3933,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setCurveDecalHalfExtents(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setCurveDecalHalfExtents(entity, value);
 		return 0;
 	}
 	
@@ -3949,7 +3949,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getCurveDecalUVScale(entity));
 		return 1;
 	}
@@ -3963,10 +3963,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setCurveDecalUVScale(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setCurveDecalUVScale(entity, value);
 		return 0;
 	}
 	
@@ -3979,7 +3979,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getCurveDecalBezierP0(entity));
 		return 1;
 	}
@@ -3993,10 +3993,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setCurveDecalBezierP0(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setCurveDecalBezierP0(entity, value);
 		return 0;
 	}
 	
@@ -4009,7 +4009,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getCurveDecalBezierP2(entity));
 		return 1;
 	}
@@ -4023,10 +4023,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec2>(ctx, 3);
-		ctx, module->setCurveDecalBezierP2(entity, value);
+		auto value = JSWrapper::checkArg<Vec2>(ctx, 0);
+		module->setCurveDecalBezierP2(entity, value);
 		return 0;
 	}
 	
@@ -4039,7 +4039,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainSize(entity));
 		return 1;
 	}
@@ -4053,7 +4053,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainMaterialPath(entity));
 		return 1;
 	}
@@ -4067,10 +4067,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setTerrainMaterialPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setTerrainMaterialPath(entity, value);
 		return 0;
 	}
 	
@@ -4083,7 +4083,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainXZScale(entity));
 		return 1;
 	}
@@ -4097,10 +4097,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setTerrainXZScale(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setTerrainXZScale(entity, value);
 		return 0;
 	}
 	
@@ -4113,7 +4113,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainTesselation(entity));
 		return 1;
 	}
@@ -4127,10 +4127,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setTerrainTesselation(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setTerrainTesselation(entity, value);
 		return 0;
 	}
 	
@@ -4143,7 +4143,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainBaseGridResolution(entity));
 		return 1;
 	}
@@ -4157,10 +4157,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<u32>(ctx, 3);
-		ctx, module->setTerrainBaseGridResolution(entity, value);
+		auto value = JSWrapper::checkArg<u32>(ctx, 0);
+		module->setTerrainBaseGridResolution(entity, value);
 		return 0;
 	}
 	
@@ -4173,7 +4173,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getTerrainYScale(entity));
 		return 1;
 	}
@@ -4187,10 +4187,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setTerrainYScale(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setTerrainYScale(entity, value);
 		return 0;
 	}
 	
@@ -4203,7 +4203,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getProceduralGeometryMaterial(entity));
 		return 1;
 	}
@@ -4217,10 +4217,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<RenderModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setProceduralGeometryMaterial(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setProceduralGeometryMaterial(entity, value);
 		return 0;
 	}
 	
@@ -4233,7 +4233,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getMeshPath(entity));
 		return 1;
 	}
@@ -4247,10 +4247,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Path>(ctx, 3);
-		ctx, module->setMeshPath(entity, value);
+		auto value = JSWrapper::checkArg<Path>(ctx, 0);
+		module->setMeshPath(entity, value);
 		return 0;
 	}
 	
@@ -4263,7 +4263,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getSphereRadius(entity));
 		return 1;
 	}
@@ -4277,10 +4277,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setSphereRadius(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setSphereRadius(entity, value);
 		return 0;
 	}
 	
@@ -4293,7 +4293,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBoxHalfExtents(entity));
 		return 1;
 	}
@@ -4307,10 +4307,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setBoxHalfExtents(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setBoxHalfExtents(entity, value);
 		return 0;
 	}
 	
@@ -4323,7 +4323,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getBodySpeed(entity));
 		return 1;
 	}
@@ -4337,7 +4337,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isBodyActive(entity));
 		return 1;
 	}
@@ -4351,7 +4351,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->isDiscreteMotion(entity));
 		return 1;
 	}
@@ -4365,10 +4365,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<bool>(ctx, 3);
-		ctx, module->setDiscreteMotion(entity, value);
+		auto value = JSWrapper::checkArg<bool>(ctx, 0);
+		module->setDiscreteMotion(entity, value);
 		return 0;
 	}
 	
@@ -4381,7 +4381,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getFriction(entity));
 		return 1;
 	}
@@ -4395,10 +4395,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setFriction(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setFriction(entity, value);
 		return 0;
 	}
 	
@@ -4411,7 +4411,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getRestitution(entity));
 		return 1;
 	}
@@ -4425,10 +4425,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setRestitution(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setRestitution(entity, value);
 		return 0;
 	}
 	
@@ -4441,7 +4441,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getLinearDamping(entity));
 		return 1;
 	}
@@ -4455,10 +4455,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setLinearDamping(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setLinearDamping(entity, value);
 		return 0;
 	}
 	
@@ -4471,7 +4471,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAngularDamping(entity));
 		return 1;
 	}
@@ -4485,10 +4485,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<float>(ctx, 3);
-		ctx, module->setAngularDamping(entity, value);
+		auto value = JSWrapper::checkArg<float>(ctx, 0);
+		module->setAngularDamping(entity, value);
 		return 0;
 	}
 	
@@ -4501,7 +4501,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getDynamicType(entity));
 		return 1;
 	}
@@ -4515,10 +4515,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (JPH::EMotionType)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setDynamicType(entity, value);
+		auto value = (JPH::EMotionType)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setDynamicType(entity, value);
 		return 0;
 	}
 	
@@ -4531,7 +4531,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, (i32)module->getLayer(entity));
 		return 1;
 	}
@@ -4545,10 +4545,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = (ObjectLayer)JSWrapper::checkArg<i32>(ctx, 3);
-		ctx, module->setLayer(entity, value);
+		auto value = (ObjectLayer)JSWrapper::checkArg<i32>(ctx, 0);
+		module->setLayer(entity, value);
 		return 0;
 	}
 	
@@ -4561,7 +4561,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getLinearVelocity(entity));
 		return 1;
 	}
@@ -4575,10 +4575,10 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setLinearVelocity(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setLinearVelocity(entity, value);
 		return 0;
 	}
 	
@@ -4591,7 +4591,7 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if(!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		JSWrapper::push(ctx, module->getAngularVelocity(entity));
 		return 1;
 	}
@@ -4605,1942 +4605,1303 @@ namespace Lumix {
 		auto* module = JSWrapper::toType<JoltModule*>(ctx, -1);
 		if (!module) duk_eval_error(ctx, "getting property on invalid object");
 		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity = JSWrapper::toType<EntityRef>(ctx, -1);
+		EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};
 		duk_pop_2(ctx);
-		auto value = JSWrapper::checkArg<Vec3>(ctx, 3);
-		ctx, module->setAngularVelocity(entity, value);
+		auto value = JSWrapper::checkArg<Vec3>(ctx, 0);
+		module->setAngularVelocity(entity, value);
 		return 0;
 	}
 	
 	void registerJSAPI(duk_context* ctx) {
+		JSWrapper::DebugGuard guard(ctx);
+		duk_push_object(ctx);
+		duk_dup(ctx, -1);
+		duk_put_global_string(ctx, "LumixAPI");
 		// property_animator
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "property_animator");
-			duk_get_global_string(ctx, "property_animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "property_animator");
+			duk_get_prop_string(ctx, -1, "property_animator");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &property_animator_getEnabled, 0);
 			duk_push_c_function(ctx, &property_animator_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "property_animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Looped");
 			duk_push_c_function(ctx, &property_animator_getLooped, 0);
 			duk_push_c_function(ctx, &property_animator_setLooped, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "property_animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Animation");
 			duk_push_c_function(ctx, &property_animator_getAnimation, 0);
 			duk_push_c_function(ctx, &property_animator_setAnimation, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// animator
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "animator");
-			duk_get_global_string(ctx, "animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "animator");
+			duk_get_prop_string(ctx, -1, "animator");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Source");
 			duk_push_c_function(ctx, &animator_getSource, 0);
 			duk_push_c_function(ctx, &animator_setSource, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "UseRootMotion");
 			duk_push_c_function(ctx, &animator_getUseRootMotion, 0);
 			duk_push_c_function(ctx, &animator_setUseRootMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "animator");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "DefaultSet");
 			duk_push_c_function(ctx, &animator_getDefaultSet, 0);
 			duk_push_c_function(ctx, &animator_setDefaultSet, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// animable
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "animable");
-			duk_get_global_string(ctx, "animable");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "animable");
+			duk_get_prop_string(ctx, -1, "animable");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Animation");
 			duk_push_c_function(ctx, &animable_getAnimation, 0);
 			duk_push_c_function(ctx, &animable_setAnimation, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// echo_zone
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "echo_zone");
+			duk_put_prop_string(ctx, -2, "echo_zone");
+			duk_get_prop_string(ctx, -1, "echo_zone");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// chorus_zone
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "chorus_zone");
+			duk_put_prop_string(ctx, -2, "chorus_zone");
+			duk_get_prop_string(ctx, -1, "chorus_zone");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// audio_listener
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "audio_listener");
+			duk_put_prop_string(ctx, -2, "audio_listener");
+			duk_get_prop_string(ctx, -1, "audio_listener");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// ambient_sound
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "ambient_sound");
-			duk_get_global_string(ctx, "ambient_sound");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "ambient_sound");
+			duk_get_prop_string(ctx, -1, "ambient_sound");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Clip");
 			duk_push_c_function(ctx, &ambient_sound_getClip, 0);
 			duk_push_c_function(ctx, &ambient_sound_setClip, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "ambient_sound");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Is3D");
 			duk_push_c_function(ctx, &ambient_sound_getIs_3D, 0);
 			duk_push_c_function(ctx, &ambient_sound_setIs_3D, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// spline
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "spline");
+			duk_put_prop_string(ctx, -2, "spline");
+			duk_get_prop_string(ctx, -1, "spline");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// signal
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "signal");
+			duk_put_prop_string(ctx, -2, "signal");
+			duk_get_prop_string(ctx, -1, "signal");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// gui_canvas
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_canvas");
+			duk_put_prop_string(ctx, -2, "gui_canvas");
+			duk_get_prop_string(ctx, -1, "gui_canvas");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// gui_render_target
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_render_target");
+			duk_put_prop_string(ctx, -2, "gui_render_target");
+			duk_get_prop_string(ctx, -1, "gui_render_target");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// gui_input_field
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_input_field");
+			duk_put_prop_string(ctx, -2, "gui_input_field");
+			duk_get_prop_string(ctx, -1, "gui_input_field");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// gui_rect
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_rect");
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "gui_rect");
+			duk_get_prop_string(ctx, -1, "gui_rect");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &gui_rect_getEnabled, 0);
 			duk_push_c_function(ctx, &gui_rect_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Clip");
 			duk_push_c_function(ctx, &gui_rect_getClip, 0);
 			duk_push_c_function(ctx, &gui_rect_setClip, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LeftPoints");
 			duk_push_c_function(ctx, &gui_rect_getLeftPoints, 0);
 			duk_push_c_function(ctx, &gui_rect_setLeftPoints, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LeftRelative");
 			duk_push_c_function(ctx, &gui_rect_getLeftRelative, 0);
 			duk_push_c_function(ctx, &gui_rect_setLeftRelative, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "RightPoints");
 			duk_push_c_function(ctx, &gui_rect_getRightPoints, 0);
 			duk_push_c_function(ctx, &gui_rect_setRightPoints, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "RightRelative");
 			duk_push_c_function(ctx, &gui_rect_getRightRelative, 0);
 			duk_push_c_function(ctx, &gui_rect_setRightRelative, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "TopPoints");
 			duk_push_c_function(ctx, &gui_rect_getTopPoints, 0);
 			duk_push_c_function(ctx, &gui_rect_setTopPoints, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "TopRelative");
 			duk_push_c_function(ctx, &gui_rect_getTopRelative, 0);
 			duk_push_c_function(ctx, &gui_rect_setTopRelative, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "BottomPoints");
 			duk_push_c_function(ctx, &gui_rect_getBottomPoints, 0);
 			duk_push_c_function(ctx, &gui_rect_setBottomPoints, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_rect");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "BottomRelative");
 			duk_push_c_function(ctx, &gui_rect_getBottomRelative, 0);
 			duk_push_c_function(ctx, &gui_rect_setBottomRelative, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// gui_button
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_button");
-			duk_get_global_string(ctx, "gui_button");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "gui_button");
+			duk_get_prop_string(ctx, -1, "gui_button");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "HoveredColorRGBA");
 			duk_push_c_function(ctx, &gui_button_getHoveredColorRGBA, 0);
 			duk_push_c_function(ctx, &gui_button_setHoveredColorRGBA, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_button");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "HoveredCursor");
 			duk_push_c_function(ctx, &gui_button_getHoveredCursor, 0);
 			duk_push_c_function(ctx, &gui_button_setHoveredCursor, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// gui_image
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_image");
-			duk_get_global_string(ctx, "gui_image");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "gui_image");
+			duk_get_prop_string(ctx, -1, "gui_image");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &gui_image_getEnabled, 0);
 			duk_push_c_function(ctx, &gui_image_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_image");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ColorRGBA");
 			duk_push_c_function(ctx, &gui_image_getColorRGBA, 0);
 			duk_push_c_function(ctx, &gui_image_setColorRGBA, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_image");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Sprite");
 			duk_push_c_function(ctx, &gui_image_getSprite, 0);
 			duk_push_c_function(ctx, &gui_image_setSprite, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// gui_text
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "gui_text");
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "gui_text");
+			duk_get_prop_string(ctx, -1, "gui_text");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "FontSize");
 			duk_push_c_function(ctx, &gui_text_getFontSize, 0);
 			duk_push_c_function(ctx, &gui_text_setFontSize, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ColorRGBA");
 			duk_push_c_function(ctx, &gui_text_getColorRGBA, 0);
 			duk_push_c_function(ctx, &gui_text_setColorRGBA, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "FontPath");
 			duk_push_c_function(ctx, &gui_text_getFontPath, 0);
 			duk_push_c_function(ctx, &gui_text_setFontPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "HAlign");
 			duk_push_c_function(ctx, &gui_text_getHAlign, 0);
 			duk_push_c_function(ctx, &gui_text_setHAlign, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "VAlign");
 			duk_push_c_function(ctx, &gui_text_getVAlign, 0);
 			duk_push_c_function(ctx, &gui_text_setVAlign, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "gui_text");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Text");
 			duk_push_c_function(ctx, &gui_text_getText, 0);
 			duk_push_c_function(ctx, &gui_text_setText, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// lua_script
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "lua_script");
+			duk_put_prop_string(ctx, -2, "lua_script");
+			duk_get_prop_string(ctx, -1, "lua_script");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// lua_script_inline
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "lua_script_inline");
-			duk_get_global_string(ctx, "lua_script_inline");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "lua_script_inline");
+			duk_get_prop_string(ctx, -1, "lua_script_inline");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Code");
 			duk_push_c_function(ctx, &lua_script_inline_getCode, 0);
 			duk_push_c_function(ctx, &lua_script_inline_setCode, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// navmesh_zone
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "navmesh_zone");
-			duk_get_global_string(ctx, "navmesh_zone");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "navmesh_zone");
+			duk_get_prop_string(ctx, -1, "navmesh_zone");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Autoload");
 			duk_push_c_function(ctx, &navmesh_zone_getAutoload, 0);
 			duk_push_c_function(ctx, &navmesh_zone_setAutoload, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "navmesh_zone");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Detailed");
 			duk_push_c_function(ctx, &navmesh_zone_getDetailed, 0);
 			duk_push_c_function(ctx, &navmesh_zone_setDetailed, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// navmesh_agent
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "navmesh_agent");
-			duk_get_global_string(ctx, "navmesh_agent");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "navmesh_agent");
+			duk_get_prop_string(ctx, -1, "navmesh_agent");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Radius");
 			duk_push_c_function(ctx, &navmesh_agent_getRadius, 0);
 			duk_push_c_function(ctx, &navmesh_agent_setRadius, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "navmesh_agent");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Height");
 			duk_push_c_function(ctx, &navmesh_agent_getHeight, 0);
 			duk_push_c_function(ctx, &navmesh_agent_setHeight, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "navmesh_agent");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "MoveEntity");
 			duk_push_c_function(ctx, &navmesh_agent_getMoveEntity, 0);
 			duk_push_c_function(ctx, &navmesh_agent_setMoveEntity, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "navmesh_agent");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Speed");
 			duk_push_c_function(ctx, &navmesh_agent_getSpeed, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
+			duk_pop_2(ctx);
 		}
 		// physical_heightfield
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "physical_heightfield");
-			duk_get_global_string(ctx, "physical_heightfield");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "physical_heightfield");
+			duk_get_prop_string(ctx, -1, "physical_heightfield");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Source");
 			duk_push_c_function(ctx, &physical_heightfield_getSource, 0);
 			duk_push_c_function(ctx, &physical_heightfield_setSource, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_heightfield");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "XZScale");
 			duk_push_c_function(ctx, &physical_heightfield_getXZScale, 0);
 			duk_push_c_function(ctx, &physical_heightfield_setXZScale, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_heightfield");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "YScale");
 			duk_push_c_function(ctx, &physical_heightfield_getYScale, 0);
 			duk_push_c_function(ctx, &physical_heightfield_setYScale, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_heightfield");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &physical_heightfield_getLayer, 0);
 			duk_push_c_function(ctx, &physical_heightfield_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// d6_joint
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "d6_joint");
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "d6_joint");
+			duk_get_prop_string(ctx, -1, "d6_joint");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "XMotion");
 			duk_push_c_function(ctx, &d6_joint_getXMotion, 0);
 			duk_push_c_function(ctx, &d6_joint_setXMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "YMotion");
 			duk_push_c_function(ctx, &d6_joint_getYMotion, 0);
 			duk_push_c_function(ctx, &d6_joint_setYMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ZMotion");
 			duk_push_c_function(ctx, &d6_joint_getZMotion, 0);
 			duk_push_c_function(ctx, &d6_joint_setZMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Swing1Motion");
 			duk_push_c_function(ctx, &d6_joint_getSwing1Motion, 0);
 			duk_push_c_function(ctx, &d6_joint_setSwing1Motion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Swing2Motion");
 			duk_push_c_function(ctx, &d6_joint_getSwing2Motion, 0);
 			duk_push_c_function(ctx, &d6_joint_setSwing2Motion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "TwistMotion");
 			duk_push_c_function(ctx, &d6_joint_getTwistMotion, 0);
 			duk_push_c_function(ctx, &d6_joint_setTwistMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LinearLimit");
 			duk_push_c_function(ctx, &d6_joint_getLinearLimit, 0);
 			duk_push_c_function(ctx, &d6_joint_setLinearLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "TwistLimit");
 			duk_push_c_function(ctx, &d6_joint_getTwistLimit, 0);
 			duk_push_c_function(ctx, &d6_joint_setTwistLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "SwingLimit");
 			duk_push_c_function(ctx, &d6_joint_getSwingLimit, 0);
 			duk_push_c_function(ctx, &d6_joint_setSwingLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Damping");
 			duk_push_c_function(ctx, &d6_joint_getDamping, 0);
 			duk_push_c_function(ctx, &d6_joint_setDamping, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Stiffness");
 			duk_push_c_function(ctx, &d6_joint_getStiffness, 0);
 			duk_push_c_function(ctx, &d6_joint_setStiffness, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Restitution");
 			duk_push_c_function(ctx, &d6_joint_getRestitution, 0);
 			duk_push_c_function(ctx, &d6_joint_setRestitution, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ConnectedBody");
 			duk_push_c_function(ctx, &d6_joint_getConnectedBody, 0);
 			duk_push_c_function(ctx, &d6_joint_setConnectedBody, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisPosition");
 			duk_push_c_function(ctx, &d6_joint_getAxisPosition, 0);
 			duk_push_c_function(ctx, &d6_joint_setAxisPosition, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "d6_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisDirection");
 			duk_push_c_function(ctx, &d6_joint_getAxisDirection, 0);
 			duk_push_c_function(ctx, &d6_joint_setAxisDirection, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// distance_joint
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "distance_joint");
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "distance_joint");
+			duk_get_prop_string(ctx, -1, "distance_joint");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "ConnectedBody");
 			duk_push_c_function(ctx, &distance_joint_getConnectedBody, 0);
 			duk_push_c_function(ctx, &distance_joint_setConnectedBody, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisPosition");
 			duk_push_c_function(ctx, &distance_joint_getAxisPosition, 0);
 			duk_push_c_function(ctx, &distance_joint_setAxisPosition, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Damping");
 			duk_push_c_function(ctx, &distance_joint_getDamping, 0);
 			duk_push_c_function(ctx, &distance_joint_setDamping, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Stiffness");
 			duk_push_c_function(ctx, &distance_joint_getStiffness, 0);
 			duk_push_c_function(ctx, &distance_joint_setStiffness, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Tolerance");
 			duk_push_c_function(ctx, &distance_joint_getTolerance, 0);
 			duk_push_c_function(ctx, &distance_joint_setTolerance, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Limits");
 			duk_push_c_function(ctx, &distance_joint_getLimits, 0);
 			duk_push_c_function(ctx, &distance_joint_setLimits, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "distance_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LinearForce");
 			duk_push_c_function(ctx, &distance_joint_getLinearForce, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
+			duk_pop_2(ctx);
 		}
 		// hinge_joint
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "hinge_joint");
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "hinge_joint");
+			duk_get_prop_string(ctx, -1, "hinge_joint");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "ConnectedBody");
 			duk_push_c_function(ctx, &hinge_joint_getConnectedBody, 0);
 			duk_push_c_function(ctx, &hinge_joint_setConnectedBody, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisPosition");
 			duk_push_c_function(ctx, &hinge_joint_getAxisPosition, 0);
 			duk_push_c_function(ctx, &hinge_joint_setAxisPosition, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisDirection");
 			duk_push_c_function(ctx, &hinge_joint_getAxisDirection, 0);
 			duk_push_c_function(ctx, &hinge_joint_setAxisDirection, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Damping");
 			duk_push_c_function(ctx, &hinge_joint_getDamping, 0);
 			duk_push_c_function(ctx, &hinge_joint_setDamping, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Stiffness");
 			duk_push_c_function(ctx, &hinge_joint_getStiffness, 0);
 			duk_push_c_function(ctx, &hinge_joint_setStiffness, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "UseLimit");
 			duk_push_c_function(ctx, &hinge_joint_getUseLimit, 0);
 			duk_push_c_function(ctx, &hinge_joint_setUseLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "hinge_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Limit");
 			duk_push_c_function(ctx, &hinge_joint_getLimit, 0);
 			duk_push_c_function(ctx, &hinge_joint_setLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// spherical_joint
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "spherical_joint");
-			duk_get_global_string(ctx, "spherical_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "spherical_joint");
+			duk_get_prop_string(ctx, -1, "spherical_joint");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "ConnectedBody");
 			duk_push_c_function(ctx, &spherical_joint_getConnectedBody, 0);
 			duk_push_c_function(ctx, &spherical_joint_setConnectedBody, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "spherical_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisPosition");
 			duk_push_c_function(ctx, &spherical_joint_getAxisPosition, 0);
 			duk_push_c_function(ctx, &spherical_joint_setAxisPosition, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "spherical_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AxisDirection");
 			duk_push_c_function(ctx, &spherical_joint_getAxisDirection, 0);
 			duk_push_c_function(ctx, &spherical_joint_setAxisDirection, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "spherical_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "UseLimit");
 			duk_push_c_function(ctx, &spherical_joint_getUseLimit, 0);
 			duk_push_c_function(ctx, &spherical_joint_setUseLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "spherical_joint");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Limit");
 			duk_push_c_function(ctx, &spherical_joint_getLimit, 0);
 			duk_push_c_function(ctx, &spherical_joint_setLimit, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// physical_controller
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "physical_controller");
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "physical_controller");
+			duk_get_prop_string(ctx, -1, "physical_controller");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &physical_controller_getLayer, 0);
 			duk_push_c_function(ctx, &physical_controller_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Radius");
 			duk_push_c_function(ctx, &physical_controller_getRadius, 0);
 			duk_push_c_function(ctx, &physical_controller_setRadius, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Height");
 			duk_push_c_function(ctx, &physical_controller_getHeight, 0);
 			duk_push_c_function(ctx, &physical_controller_setHeight, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CustomGravity");
 			duk_push_c_function(ctx, &physical_controller_getCustomGravity, 0);
 			duk_push_c_function(ctx, &physical_controller_setCustomGravity, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CustomGravityAcceleration");
 			duk_push_c_function(ctx, &physical_controller_getCustomGravityAcceleration, 0);
 			duk_push_c_function(ctx, &physical_controller_setCustomGravityAcceleration, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_controller");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "UseRootMotion");
 			duk_push_c_function(ctx, &physical_controller_getUseRootMotion, 0);
 			duk_push_c_function(ctx, &physical_controller_setUseRootMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// rigid_actor
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "rigid_actor");
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "rigid_actor");
+			duk_get_prop_string(ctx, -1, "rigid_actor");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Velocity");
 			duk_push_c_function(ctx, &rigid_actor_getVelocity, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Speed");
 			duk_push_c_function(ctx, &rigid_actor_getSpeed, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &rigid_actor_getLayer, 0);
 			duk_push_c_function(ctx, &rigid_actor_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "DynamicType");
 			duk_push_c_function(ctx, &rigid_actor_getDynamicType, 0);
 			duk_push_c_function(ctx, &rigid_actor_setDynamicType, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "IsTrigger");
 			duk_push_c_function(ctx, &rigid_actor_getIsTrigger, 0);
 			duk_push_c_function(ctx, &rigid_actor_setIsTrigger, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Mesh");
 			duk_push_c_function(ctx, &rigid_actor_getMesh, 0);
 			duk_push_c_function(ctx, &rigid_actor_setMesh, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Material");
 			duk_push_c_function(ctx, &rigid_actor_getMaterial, 0);
 			duk_push_c_function(ctx, &rigid_actor_setMaterial, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "rigid_actor");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CCD");
 			duk_push_c_function(ctx, &rigid_actor_getCCD, 0);
 			duk_push_c_function(ctx, &rigid_actor_setCCD, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// wheel
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "wheel");
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "wheel");
+			duk_get_prop_string(ctx, -1, "wheel");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "SpringStrength");
 			duk_push_c_function(ctx, &wheel_getSpringStrength, 0);
 			duk_push_c_function(ctx, &wheel_setSpringStrength, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "SpringMaxCompression");
 			duk_push_c_function(ctx, &wheel_getSpringMaxCompression, 0);
 			duk_push_c_function(ctx, &wheel_setSpringMaxCompression, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "SpringMaxDroop");
 			duk_push_c_function(ctx, &wheel_getSpringMaxDroop, 0);
 			duk_push_c_function(ctx, &wheel_setSpringMaxDroop, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "SpringDamperRate");
 			duk_push_c_function(ctx, &wheel_getSpringDamperRate, 0);
 			duk_push_c_function(ctx, &wheel_setSpringDamperRate, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Radius");
 			duk_push_c_function(ctx, &wheel_getRadius, 0);
 			duk_push_c_function(ctx, &wheel_setRadius, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Width");
 			duk_push_c_function(ctx, &wheel_getWidth, 0);
 			duk_push_c_function(ctx, &wheel_setWidth, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Mass");
 			duk_push_c_function(ctx, &wheel_getMass, 0);
 			duk_push_c_function(ctx, &wheel_setMass, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "MOI");
 			duk_push_c_function(ctx, &wheel_getMOI, 0);
 			duk_push_c_function(ctx, &wheel_setMOI, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Slot");
 			duk_push_c_function(ctx, &wheel_getSlot, 0);
 			duk_push_c_function(ctx, &wheel_setSlot, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "wheel");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "RPM");
 			duk_push_c_function(ctx, &wheel_getRPM, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
+			duk_pop_2(ctx);
 		}
 		// vehicle
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "vehicle");
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "vehicle");
+			duk_get_prop_string(ctx, -1, "vehicle");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "PeakTorque");
 			duk_push_c_function(ctx, &vehicle_getPeakTorque, 0);
 			duk_push_c_function(ctx, &vehicle_setPeakTorque, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "MaxRPM");
 			duk_push_c_function(ctx, &vehicle_getMaxRPM, 0);
 			duk_push_c_function(ctx, &vehicle_setMaxRPM, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "RPM");
 			duk_push_c_function(ctx, &vehicle_getRPM, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CurrentGear");
 			duk_push_c_function(ctx, &vehicle_getCurrentGear, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Speed");
 			duk_push_c_function(ctx, &vehicle_getSpeed, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Chassis");
 			duk_push_c_function(ctx, &vehicle_getChassis, 0);
 			duk_push_c_function(ctx, &vehicle_setChassis, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Mass");
 			duk_push_c_function(ctx, &vehicle_getMass, 0);
 			duk_push_c_function(ctx, &vehicle_setMass, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "MOIMultiplier");
 			duk_push_c_function(ctx, &vehicle_getMOIMultiplier, 0);
 			duk_push_c_function(ctx, &vehicle_setMOIMultiplier, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CenterOfMass");
 			duk_push_c_function(ctx, &vehicle_getCenterOfMass, 0);
 			duk_push_c_function(ctx, &vehicle_setCenterOfMass, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "WheelsLayer");
 			duk_push_c_function(ctx, &vehicle_getWheelsLayer, 0);
 			duk_push_c_function(ctx, &vehicle_setWheelsLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "vehicle");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ChassisLayer");
 			duk_push_c_function(ctx, &vehicle_getChassisLayer, 0);
 			duk_push_c_function(ctx, &vehicle_setChassisLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// physical_instanced_cube
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "physical_instanced_cube");
-			duk_get_global_string(ctx, "physical_instanced_cube");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "physical_instanced_cube");
+			duk_get_prop_string(ctx, -1, "physical_instanced_cube");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "HalfExtents");
 			duk_push_c_function(ctx, &physical_instanced_cube_getHalfExtents, 0);
 			duk_push_c_function(ctx, &physical_instanced_cube_setHalfExtents, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_instanced_cube");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &physical_instanced_cube_getLayer, 0);
 			duk_push_c_function(ctx, &physical_instanced_cube_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// physical_instanced_mesh
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "physical_instanced_mesh");
-			duk_get_global_string(ctx, "physical_instanced_mesh");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "physical_instanced_mesh");
+			duk_get_prop_string(ctx, -1, "physical_instanced_mesh");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &physical_instanced_mesh_getLayer, 0);
 			duk_push_c_function(ctx, &physical_instanced_mesh_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "physical_instanced_mesh");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "GeomPath");
 			duk_push_c_function(ctx, &physical_instanced_mesh_getGeomPath, 0);
 			duk_push_c_function(ctx, &physical_instanced_mesh_setGeomPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// camera
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "camera");
+			duk_put_prop_string(ctx, -2, "camera");
+			duk_get_prop_string(ctx, -1, "camera");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// decal
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "decal");
-			duk_get_global_string(ctx, "decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "decal");
+			duk_get_prop_string(ctx, -1, "decal");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "MaterialPath");
 			duk_push_c_function(ctx, &decal_getMaterialPath, 0);
 			duk_push_c_function(ctx, &decal_setMaterialPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "HalfExtents");
 			duk_push_c_function(ctx, &decal_getHalfExtents, 0);
 			duk_push_c_function(ctx, &decal_setHalfExtents, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// environment
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "environment");
-			duk_get_global_string(ctx, "environment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "environment");
+			duk_get_prop_string(ctx, -1, "environment");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "CastShadows");
 			duk_push_c_function(ctx, &environment_getCastShadows, 0);
 			duk_push_c_function(ctx, &environment_setCastShadows, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "environment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "SkyTexture");
 			duk_push_c_function(ctx, &environment_getSkyTexture, 0);
 			duk_push_c_function(ctx, &environment_setSkyTexture, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "environment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "ShadowmapCascades");
 			duk_push_c_function(ctx, &environment_getShadowmapCascades, 0);
 			duk_push_c_function(ctx, &environment_setShadowmapCascades, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// point_light
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "point_light");
-			duk_get_global_string(ctx, "point_light");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "point_light");
+			duk_get_prop_string(ctx, -1, "point_light");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Range");
 			duk_push_c_function(ctx, &point_light_getRange, 0);
 			duk_push_c_function(ctx, &point_light_setRange, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "point_light");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "CastShadows");
 			duk_push_c_function(ctx, &point_light_getCastShadows, 0);
 			duk_push_c_function(ctx, &point_light_setCastShadows, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "point_light");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Dynamic");
 			duk_push_c_function(ctx, &point_light_getDynamic, 0);
 			duk_push_c_function(ctx, &point_light_setDynamic, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// reflection_probe
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "reflection_probe");
-			duk_get_global_string(ctx, "reflection_probe");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "reflection_probe");
+			duk_get_prop_string(ctx, -1, "reflection_probe");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &reflection_probe_getEnabled, 0);
 			duk_push_c_function(ctx, &reflection_probe_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// environment_probe
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "environment_probe");
-			duk_get_global_string(ctx, "environment_probe");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "environment_probe");
+			duk_get_prop_string(ctx, -1, "environment_probe");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &environment_probe_getEnabled, 0);
 			duk_push_c_function(ctx, &environment_probe_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// fur
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "fur");
+			duk_put_prop_string(ctx, -2, "fur");
+			duk_get_prop_string(ctx, -1, "fur");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
 		// bone_attachment
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "bone_attachment");
-			duk_get_global_string(ctx, "bone_attachment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "bone_attachment");
+			duk_get_prop_string(ctx, -1, "bone_attachment");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Parent");
 			duk_push_c_function(ctx, &bone_attachment_getParent, 0);
 			duk_push_c_function(ctx, &bone_attachment_setParent, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "bone_attachment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Bone");
 			duk_push_c_function(ctx, &bone_attachment_getBone, 0);
 			duk_push_c_function(ctx, &bone_attachment_setBone, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "bone_attachment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Position");
 			duk_push_c_function(ctx, &bone_attachment_getPosition, 0);
 			duk_push_c_function(ctx, &bone_attachment_setPosition, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "bone_attachment");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Rotation");
 			duk_push_c_function(ctx, &bone_attachment_getRotation, 0);
 			duk_push_c_function(ctx, &bone_attachment_setRotation, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// particle_emitter
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "particle_emitter");
-			duk_get_global_string(ctx, "particle_emitter");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "particle_emitter");
+			duk_get_prop_string(ctx, -1, "particle_emitter");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Path");
 			duk_push_c_function(ctx, &particle_emitter_getPath, 0);
 			duk_push_c_function(ctx, &particle_emitter_setPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "particle_emitter");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Autodestroy");
 			duk_push_c_function(ctx, &particle_emitter_getAutodestroy, 0);
 			duk_push_c_function(ctx, &particle_emitter_setAutodestroy, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// instanced_model
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "instanced_model");
-			duk_get_global_string(ctx, "instanced_model");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "instanced_model");
+			duk_get_prop_string(ctx, -1, "instanced_model");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Path");
 			duk_push_c_function(ctx, &instanced_model_getPath, 0);
 			duk_push_c_function(ctx, &instanced_model_setPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// model_instance
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "model_instance");
-			duk_get_global_string(ctx, "model_instance");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "model_instance");
+			duk_get_prop_string(ctx, -1, "model_instance");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Enabled");
 			duk_push_c_function(ctx, &model_instance_getEnabled, 0);
 			duk_push_c_function(ctx, &model_instance_setEnabled, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "model_instance");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Path");
 			duk_push_c_function(ctx, &model_instance_getPath, 0);
 			duk_push_c_function(ctx, &model_instance_setPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// curve_decal
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "curve_decal");
-			duk_get_global_string(ctx, "curve_decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "curve_decal");
+			duk_get_prop_string(ctx, -1, "curve_decal");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "MaterialPath");
 			duk_push_c_function(ctx, &curve_decal_getMaterialPath, 0);
 			duk_push_c_function(ctx, &curve_decal_setMaterialPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "curve_decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "HalfExtents");
 			duk_push_c_function(ctx, &curve_decal_getHalfExtents, 0);
 			duk_push_c_function(ctx, &curve_decal_setHalfExtents, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "curve_decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "UVScale");
 			duk_push_c_function(ctx, &curve_decal_getUVScale, 0);
 			duk_push_c_function(ctx, &curve_decal_setUVScale, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "curve_decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "BezierP0");
 			duk_push_c_function(ctx, &curve_decal_getBezierP0, 0);
 			duk_push_c_function(ctx, &curve_decal_setBezierP0, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "curve_decal");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "BezierP2");
 			duk_push_c_function(ctx, &curve_decal_getBezierP2, 0);
 			duk_push_c_function(ctx, &curve_decal_setBezierP2, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// terrain
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "terrain");
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "terrain");
+			duk_get_prop_string(ctx, -1, "terrain");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Size");
 			duk_push_c_function(ctx, &terrain_getSize, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "MaterialPath");
 			duk_push_c_function(ctx, &terrain_getMaterialPath, 0);
 			duk_push_c_function(ctx, &terrain_setMaterialPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "XZScale");
 			duk_push_c_function(ctx, &terrain_getXZScale, 0);
 			duk_push_c_function(ctx, &terrain_setXZScale, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Tesselation");
 			duk_push_c_function(ctx, &terrain_getTesselation, 0);
 			duk_push_c_function(ctx, &terrain_setTesselation, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "BaseGridResolution");
 			duk_push_c_function(ctx, &terrain_getBaseGridResolution, 0);
 			duk_push_c_function(ctx, &terrain_setBaseGridResolution, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "terrain");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "YScale");
 			duk_push_c_function(ctx, &terrain_getYScale, 0);
 			duk_push_c_function(ctx, &terrain_setYScale, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// procedural_geom
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "procedural_geom");
-			duk_get_global_string(ctx, "procedural_geom");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "procedural_geom");
+			duk_get_prop_string(ctx, -1, "procedural_geom");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Material");
 			duk_push_c_function(ctx, &procedural_geom_getMaterial, 0);
 			duk_push_c_function(ctx, &procedural_geom_setMaterial, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// jolt_mesh
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "jolt_mesh");
-			duk_get_global_string(ctx, "jolt_mesh");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "jolt_mesh");
+			duk_get_prop_string(ctx, -1, "jolt_mesh");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Path");
 			duk_push_c_function(ctx, &jolt_mesh_getPath, 0);
 			duk_push_c_function(ctx, &jolt_mesh_setPath, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// jolt_sphere
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "jolt_sphere");
-			duk_get_global_string(ctx, "jolt_sphere");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "jolt_sphere");
+			duk_get_prop_string(ctx, -1, "jolt_sphere");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Radius");
 			duk_push_c_function(ctx, &jolt_sphere_getRadius, 0);
 			duk_push_c_function(ctx, &jolt_sphere_setRadius, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// jolt_box
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "jolt_box");
-			duk_get_global_string(ctx, "jolt_box");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "jolt_box");
+			duk_get_prop_string(ctx, -1, "jolt_box");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "HalfExtents");
 			duk_push_c_function(ctx, &jolt_box_getHalfExtents, 0);
 			duk_push_c_function(ctx, &jolt_box_setHalfExtents, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// jolt_body
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "jolt_body");
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
+			duk_put_prop_string(ctx, -2, "jolt_body");
+			duk_get_prop_string(ctx, -1, "jolt_body");
+			duk_get_prop_string(ctx, -1, "prototype");
 			duk_push_string(ctx, "Speed");
 			duk_push_c_function(ctx, &jolt_body_getSpeed, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Active");
 			duk_push_c_function(ctx, &jolt_body_getActive, 0);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
+			duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_ENUMERABLE);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "DescreteMotion");
 			duk_push_c_function(ctx, &jolt_body_getDescreteMotion, 0);
 			duk_push_c_function(ctx, &jolt_body_setDescreteMotion, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Friction");
 			duk_push_c_function(ctx, &jolt_body_getFriction, 0);
 			duk_push_c_function(ctx, &jolt_body_setFriction, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Restitution");
 			duk_push_c_function(ctx, &jolt_body_getRestitution, 0);
 			duk_push_c_function(ctx, &jolt_body_setRestitution, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LinearDamping");
 			duk_push_c_function(ctx, &jolt_body_getLinearDamping, 0);
 			duk_push_c_function(ctx, &jolt_body_setLinearDamping, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AngularDamping");
 			duk_push_c_function(ctx, &jolt_body_getAngularDamping, 0);
 			duk_push_c_function(ctx, &jolt_body_setAngularDamping, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "DynamicType");
 			duk_push_c_function(ctx, &jolt_body_getDynamicType, 0);
 			duk_push_c_function(ctx, &jolt_body_setDynamicType, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "Layer");
 			duk_push_c_function(ctx, &jolt_body_getLayer, 0);
 			duk_push_c_function(ctx, &jolt_body_setLayer, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "LinearVelocity");
 			duk_push_c_function(ctx, &jolt_body_getLinearVelocity, 0);
 			duk_push_c_function(ctx, &jolt_body_setLinearVelocity, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
-			duk_get_global_string(ctx, "jolt_body");
-			if (duk_get_prop_string(ctx, -1, "prototype") != 1) {
-				ASSERT(false);
-			}
 			duk_push_string(ctx, "AngularVelocity");
 			duk_push_c_function(ctx, &jolt_body_getAngularVelocity, 0);
 			duk_push_c_function(ctx, &jolt_body_setAngularVelocity, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			duk_pop_2(ctx);
 			
+			duk_pop_2(ctx);
 		}
 		// js_script
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_global_string(ctx, "js_script");
+			duk_put_prop_string(ctx, -2, "js_script");
+			duk_get_prop_string(ctx, -1, "js_script");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_pop_2(ctx);
 		}
+		duk_pop(ctx);
 	}
+	
 }

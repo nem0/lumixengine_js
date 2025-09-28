@@ -68,6 +68,11 @@ template <> struct ToType<const char*>
 	static const char* value(duk_context* ctx, int index) { return duk_to_string(ctx, index); }
 };
 
+template <> struct ToType<Path>
+{
+	static Path value(duk_context* ctx, int index) { return Path(duk_to_string(ctx, index)); }
+};
+
 template <typename T> struct ToType<T*>
 {
 	static T* value(duk_context* ctx, int index) { return (T*)duk_to_pointer(ctx, index); }
@@ -208,6 +213,10 @@ template <> inline const char* typeToString<const char*>()
 {
 	return "string";
 }
+template <> inline const char* typeToString<Path>()
+{
+	return "Path";
+}
 template <> inline const char* typeToString<bool>()
 {
 	return "boolean";
@@ -281,6 +290,10 @@ template <> inline bool isType<Vec2>(duk_context* ctx, int index)
 template <> inline bool isType<IVec2>(duk_context* ctx, int index)
 {
 	return duk_is_array(ctx, index) != 0;
+}
+template <> inline bool isType<Path>(duk_context* ctx, int index)
+{
+	return duk_is_string(ctx, index) != 0;
 }
 template <> inline bool isType<Quat>(duk_context* ctx, int index)
 {

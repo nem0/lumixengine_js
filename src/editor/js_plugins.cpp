@@ -226,6 +226,7 @@ struct EditorWindow : AssetEditorWindow {
 
 		if (!m_code_editor) {
 			m_code_editor = createCodeEditor(m_app);
+			m_code_editor->focus();
 			m_code_editor->setTokenColors(token_colors);
 			m_code_editor->setTokenizer(tokenize);
 			m_code_editor->setText(m_resource->getSourceCode());
@@ -370,6 +371,7 @@ struct JSPropertyGridPlugin : PropertyGrid::IPlugin {
 		const i32 num_props = module->getPropertyCount(entity, array_index);
 		for (i32 property_index = 0; property_index < num_props; ++property_index) {
 			const char* property_name = module->getPropertyName(entity, array_index, property_index);
+			if (!property_name) continue;
 			if (!filter.pass(property_name)) continue;
 
 			ImGui::PushID(property_name);

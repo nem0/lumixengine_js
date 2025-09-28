@@ -1,5 +1,3 @@
-#define LUMIX_NO_CUSTOM_CRT
-#include <string.h>
 #include "JS_script_system.h"
 #include "core/array.h"
 #include "core/associative_array.h"
@@ -219,10 +217,13 @@ static int entityProxyGetter(duk_context* ctx) {
 	IModule* module = world->getModule(cmp_type);
 	if (!module) return 0;
 
-	duk_get_global_string(ctx, prop_name);
+	JSWrapper::DebugGuard guard(ctx, 1);
+	duk_get_global_string(ctx, "LumixAPI");
+	duk_get_prop_string(ctx, -1, prop_name);
 	JSWrapper::push(ctx, module);
 	JSWrapper::push(ctx, entity.index);
 	duk_new(ctx, 2);
+	duk_remove(ctx, -2);
 
 	return 1;
 }
@@ -646,7 +647,7 @@ public:
 	const char* getPropertyName(StableHash name_hash) const {
 		int idx = m_property_names.find(name_hash);
 		if (idx >= 0) return m_property_names.at(idx).c_str();
-		return "N/A";;
+		return nullptr;
 	}
 
 	void applyProperty(duk_context* ctx, ScriptInstance& script, Property& prop, InputMemoryStream value) {
@@ -1488,7 +1489,7 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	for (const reflection::RegisteredComponent& cmp : cmps) {
 		if (!cmp.cmp) continue;
 		const char* cmp_type_id = cmp.cmp->name;
-		registerComponent(m_global_context, cmp_type_id);
+		//registerComponent(m_global_context, cmp_type_id);
 	}
 
 	duk_context* ctx = m_global_context;
@@ -1517,7 +1518,6 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	DEF_CONST(InputSystem::Device::CONTROLLER, "INPUT_DEVICE_CONTROLLER");
 
 	#undef DEF_CONST
-	
 
 	duk_get_global_string(ctx, "Entity");
 	duk_push_pointer(ctx, nullptr);
