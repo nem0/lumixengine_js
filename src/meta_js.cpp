@@ -15,6 +15,11 @@ static Enum* getEnum(MetaData& data, Module& m, StringView name) {
 	return nullptr;
 }
 
+static StringView pickLabel(StringView base, StringView spec) {
+	if (spec.size() > 0) return spec;
+	return base;
+}
+
 void serializeGetter(OutputStream& out, MetaData& data, Module& m, Component& c, Property& p) {
 	L("static int ",c.id,"_get",p.name,"(duk_context* ctx) {");
 	L("duk_push_this(ctx);");
@@ -148,6 +153,29 @@ static void metaJS(MetaData& data) {
 			L("duk_put_prop_string(ctx, -2, \"",c.id,"\");"); // stash.LumixAPI.c_id = constructor
 			L("duk_get_prop_string(ctx, -1, \"",c.id,"\");");
 			L("duk_get_prop_string(ctx, -1, \"prototype\");"); // [LumixAPI, constructor, prototype]
+
+			for (Function& f : c.functions) {
+				L("{");
+				L("auto proxy = [](duk_context* ctx) -> duk_ret_t {");
+				L("duk_push_this(ctx);");
+				L("if (duk_is_null_or_undefined(ctx, -1)) {");
+				L("duk_eval_error(ctx, \"`this` is null or undefined\");");
+				L("}");
+				L("duk_get_prop_string(ctx, -1, \"c_module\");");
+				L("auto* module = JSWrapper::toType<",m.name,"*>(ctx, -1);");
+				L("if(!module) duk_eval_error(ctx, \"getting property on invalid object\");");
+				L("duk_get_prop_string(ctx, -2, \"c_entity\");");
+				L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
+				out.add("module->",f.name,"(entity");
+				// TODO args and return value
+				L(");");
+				L("return 0;");
+				L("};");
+				L("duk_push_c_function(ctx, proxy, 0);");
+				StringView name = pickLabel(f.name, f.attributes.alias);
+				L("duk_put_prop_string(ctx, -2, \"",name,"\");");
+				L("}");
+			}
 
 			for (Property& p : c.properties) {
 				if (p.is_var) continue; // TODO
