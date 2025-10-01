@@ -26,7 +26,6 @@
 #include "../js_wrapper.h"
 
 
-
 using namespace Lumix;
 
 
@@ -195,12 +194,75 @@ struct EditorWindow : AssetEditorWindow {
 		: AssetEditorWindow(app)
 		, m_allocator(allocator)
 		, m_app(app)
+		, m_path(path)
 	{
-		m_resource = app.getEngine().getResourceManager().load<JSScript>(path);
+		FileSystem& fs = app.getEngine().getFileSystem();
+		m_file_async_handle = fs.getContent(path, makeDelegate<&EditorWindow::onFileLoaded>(this));
 	}
 
 	~EditorWindow() {
-		m_resource->decRefCount();
+		if (m_file_async_handle.isValid()) {
+			FileSystem& fs = m_app.getEngine().getFileSystem();
+			fs.cancel(m_file_async_handle);
+		}
+	}
+
+	void modificationNotificationUI() {
+		if (m_show_external_modification_notification) {
+			OutputMemoryStream tmp(m_app.getAllocator());
+			OutputMemoryStream tmp2(m_app.getAllocator());
+			m_code_editor->serializeText(tmp);
+			FileSystem& fs = m_app.getEngine().getFileSystem();
+			if (fs.getContentSync(m_path, tmp2)) {
+				if (tmp.size() != tmp2.size() || memcmp(tmp.data(), tmp2.data(), tmp.size()) != 0) {
+					openCenterStrip("modification_notif");
+				}
+				else {
+					m_dirty = false;
+				}
+			}
+			else {
+				logError("Unexpected error while reading file ", m_path);
+			}
+			m_show_external_modification_notification = false;
+		}
+
+		if (beginCenterStrip("modification_notif")) {
+			ImGui::NewLine();
+			alignGUICenter([&](){
+				ImGui::Text("File %s modified externally", m_path.c_str());
+			});
+			alignGUICenter([&](){
+				if (ImGui::Button("Ignore")) ImGui::CloseCurrentPopup();
+				ImGui::SameLine();
+				if (ImGui::Button("Reload")) {
+					FileSystem& fs = m_app.getEngine().getFileSystem();
+					m_file_async_handle = fs.getContent(m_path, makeDelegate<&EditorWindow::onFileLoaded>(this));
+					m_code_editor.reset();
+					m_dirty = false;
+					ImGui::CloseCurrentPopup();
+				}
+			});
+			endCenterStrip();
+		}	
+	}
+
+	void onFileLoaded(Span<const u8> data, bool success) {
+		m_file_async_handle = FileSystem::AsyncHandle::invalid();
+		if (!success) return;
+
+		StringView v;
+		v.begin = (const char*)data.begin();
+		v.end = (const char*)data.end();
+		m_code_editor = createCodeEditor(m_app);
+		m_code_editor->focus();
+		m_code_editor->setTokenColors(token_colors);
+		m_code_editor->setTokenizer(tokenize);
+		m_code_editor->setText(v);
+	}
+
+	void fileChangedExternally() override {
+		m_show_external_modification_notification = true;
 	}
 
 	void save() {
@@ -208,44 +270,42 @@ struct EditorWindow : AssetEditorWindow {
 
 		OutputMemoryStream blob(m_app.getAllocator());
 		m_code_editor->serializeText(blob);
-		m_app.getAssetBrowser().saveResource(*m_resource, blob);
+		m_app.getAssetBrowser().saveResource(m_path, blob);
 		m_dirty = false;
 	}
 	
 	void windowGUI() override {
 		if (ImGui::BeginMenuBar()) {
 			if (m_app.getCommonActions().save.iconButton(true, &m_app)) save();
-			if (ImGuiEx::IconButton(ICON_FA_EXTERNAL_LINK_ALT, "Open externally")) m_app.getAssetBrowser().openInExternalEditor(m_resource);
+			if (ImGuiEx::IconButton(ICON_FA_EXTERNAL_LINK_ALT, "Open externally")) m_app.getAssetBrowser().openInExternalEditor(m_path);
 			ImGui::EndMenuBar();
 		}
 
-		if (m_resource->isEmpty()) {
+		if (m_file_async_handle.isValid()) {
 			ImGui::TextUnformatted("Loading...");
 			return;
 		}
 
-		if (!m_code_editor) {
-			m_code_editor = createCodeEditor(m_app);
-			m_code_editor->focus();
-			m_code_editor->setTokenColors(token_colors);
-			m_code_editor->setTokenizer(tokenize);
-			m_code_editor->setText(m_resource->getSourceCode());
-		}
+		modificationNotificationUI();
 
-		ImGui::PushFont(m_app.getMonospaceFont());
-		if (m_code_editor->gui("jseditor", ImVec2(0, 0), m_app.getMonospaceFont(), m_app.getDefaultFont())) {
-			m_dirty = true;
+		if (m_code_editor) {
+			ImGui::PushFont(m_app.getMonospaceFont());
+			if (m_code_editor->gui("jseditor", ImVec2(0, 0), m_app.getMonospaceFont(), m_app.getDefaultFont())) {
+				m_dirty = true;
+			}
+			ImGui::PopFont();
 		}
-		ImGui::PopFont();
 	}
 	
-	const Path& getPath() override { return m_resource->getPath(); }
+	const Path& getPath() override { return m_path; }
 	const char* getName() const override { return "JS script editor"; }
 
 	IAllocator& m_allocator;
 	StudioApp& m_app;
-	JSScript* m_resource;
+	Path m_path;
 	UniquePtr<CodeEditor> m_code_editor;
+	bool m_show_external_modification_notification = false;
+	FileSystem::AsyncHandle m_file_async_handle = FileSystem::AsyncHandle::invalid();
 };
 
 template <typename T> struct StoredType { 
@@ -425,7 +485,6 @@ struct JSPropertyGridPlugin : PropertyGrid::IPlugin {
 };
 
 struct AssetPlugin : AssetBrowser::IPlugin, AssetCompiler::IPlugin {
-	
 	explicit AssetPlugin(StudioApp& app)
 		: m_app(app)
 	{

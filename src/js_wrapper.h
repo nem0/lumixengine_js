@@ -158,11 +158,11 @@ struct ToType<DVec3>
 	{
 		DVec3 v;
 		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<float>::value(ctx, -1);
+		v.x = ToType<double>::value(ctx, -1);
 		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<float>::value(ctx, -1);
+		v.y = ToType<double>::value(ctx, -1);
 		duk_get_prop_index(ctx, index, 2);
-		v.z = ToType<float>::value(ctx, -1);
+		v.z = ToType<double>::value(ctx, -1);
 		duk_pop_3(ctx);
 		return v;
 	}

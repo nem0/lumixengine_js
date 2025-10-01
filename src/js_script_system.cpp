@@ -357,6 +357,8 @@ struct JSScriptSystemImpl final : JSScriptSystem {
 	IAllocator& m_allocator;
 	JSScriptManager m_script_manager;
 	duk_context* m_global_context;
+
+	static inline JSScriptSystemImpl* s_instance = nullptr;
 };
 
 
@@ -1252,7 +1254,9 @@ static void js_fatalHandler(void *udata, const char *msg) {
 JSScriptSystemImpl::JSScriptSystemImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
-	, m_script_manager(m_allocator) {
+	, m_script_manager(m_allocator)
+{
+	s_instance = this;
 	m_script_manager.create(JSScript::TYPE, engine.getResourceManager());
 
 	// TODO allocator
@@ -1472,6 +1476,34 @@ int logError(duk_context* ctx) {
 	return 0;
 }
 
+int require(duk_context* ctx) {
+	auto* path = JSWrapper::checkArg<const char*>(ctx, 0);
+	JSScriptSystemImpl* system = JSScriptSystemImpl::s_instance;
+
+	// TODO cache the object
+
+	ResourceManagerHub& rm = system->m_engine.getResourceManager();
+	FileSystem& fs = system->m_engine.getFileSystem();
+	OutputMemoryStream content(system->m_allocator);
+	if (!fs.getContentSync(Path(path, ".js"), content)) {
+		return 0;
+	}
+
+	if (duk_pcompile_lstring(ctx, DUK_COMPILE_EVAL, (const char*)content.data(), content.size()) != 0) {
+		Lumix::logError("Require failed: ", duk_safe_to_stacktrace(ctx, -1));
+		duk_pop(ctx);
+		return 0;
+	}
+
+	if (duk_pcall(ctx, 0) != 0) {
+		duk_pop(ctx);
+		return 0;
+	}
+
+	// TODO what if there's no return value
+	return 1;
+}
+
 } // namespace JSAPI
 
 void JSScriptSystemImpl::registerGlobalAPI() {
@@ -1494,17 +1526,15 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 
 	duk_context* ctx = m_global_context;
 	JSWrapper::DebugGuard guard(ctx);
+	duk_push_c_function(ctx, &JSAPI::require, DUK_VARARGS);
+	duk_put_global_string(ctx, "require");
+
 	duk_push_object(ctx);
 	duk_dup(ctx, -1);
 	duk_put_global_string(ctx, "Lumix");
 	
-	#define REGISTER_JS_RAW_FUNCTION(F)                     \
-		duk_push_c_function(ctx, &JSAPI::F, DUK_VARARGS); \
-		duk_put_prop_string(ctx, -2, #F);
-	
-	REGISTER_JS_RAW_FUNCTION(logError);
-
-	#undef REGISTER_JS_RAW_FUNCTION
+	duk_push_c_function(ctx, &JSAPI::logError, DUK_VARARGS);
+	duk_put_prop_string(ctx, -2, "logError");
 
 	#define DEF_CONST(T, N) \
 		do { duk_push_uint(ctx, (u32)T); duk_put_prop_string(ctx, -2, N); } while(false)
