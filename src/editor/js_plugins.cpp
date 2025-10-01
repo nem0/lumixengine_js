@@ -471,7 +471,11 @@ struct JSPropertyGridPlugin : PropertyGrid::IPlugin {
 					break;
 				}
 				case JSScriptModule::Property::ENTITY:
-					ImGui::NewLine();
+					EntityPtr value = JSWrapper::toType<EntityPtr>(ctx, -1);
+
+					if (m_app.getPropertyGrid().entityInput(property_name, &value)) {
+						cmd = UniquePtr<SetJSPropertyCommand<EntityPtr>>::create(allocator, system, editor, entity, array_index, property_name, value);
+					}
 					break;
 			}
 			duk_pop_3(ctx);

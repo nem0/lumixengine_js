@@ -305,24 +305,11 @@ template <typename T> inline void push(duk_context* ctx, T* value)
 {
 	duk_push_pointer(ctx, value);
 }
-inline void pushEntity(duk_context* ctx, EntityPtr value, World* u) {
-	if (!value.isValid()) {
-		duk_push_object(ctx);
-		return;
-	}
-
-	ASSERT(false);
-	// TODO
-	/*lua_getglobal(L, "Lumix"); // [Lumix]
-	lua_getfield(L, -1, "Entity"); // [Lumix, Lumix.Entity]
-	lua_remove(L, -2); // [Lumix.Entity]
-	lua_getfield(L, -1, "new"); // [Lumix.Entity, Entity.new]
-	lua_pushvalue(L, -2); // [Lumix.Entity, Entity.new, Lumix.Entity]
-	lua_remove(L, -3); // [Entity.new, Lumix.Entity]
-	lua_pushlightuserdata(L, universe); // [Entity.new, Lumix.Entity, universe]
-	lua_pushnumber(L, value.index); // [Entity.new, Lumix.Entity, universe, entity_index]
-	const bool error = !LuaWrapper::pcall(L, 3, 1); // [entity]
-	ASSERT(!error);	*/
+inline void pushEntity(duk_context* ctx, EntityPtr value, World* world) {
+	duk_get_global_string(ctx, "Entity");
+	duk_push_pointer(ctx, world);
+	duk_push_int(ctx, value.index);
+	duk_new(ctx, 2);
 }
 inline void push(duk_context* ctx, float value)
 {
