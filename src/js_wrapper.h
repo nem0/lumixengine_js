@@ -3,6 +3,7 @@
 
 #include "core/log.h"
 #include "core/math.h"
+#include "core/metaprogramming.h"
 #include "duktape/duktape.h"
 
 
@@ -31,217 +32,173 @@ namespace JSWrapper
 	};
 #endif
 
+template <typename T> T toType(duk_context* ctx, int index);
 
-template <typename T> struct ToType
-{
-	static const T& value(duk_context* ctx, int index)
-	{
-		void* ptr = duk_to_pointer(ctx, index);
-		if (!ptr)
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
+template <i32 NUM_ELEMENTS, typename T>
+LUMIX_FORCE_INLINE void getVecN(duk_context* ctx, T* out, i32 object_index) {
+	static_assert(NUM_ELEMENTS <= 4);
+	ASSERT(object_index >= 0);
+
+	if (duk_is_array(ctx, object_index)) {
+		if (duk_get_length(ctx, object_index) != NUM_ELEMENTS) {
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "not Vec%d, array must have %d elements", NUM_ELEMENTS, NUM_ELEMENTS);
+		}
+		for (i32 i = 0; i < NUM_ELEMENTS; ++i) {
+			duk_get_prop_index(ctx, object_index, i);
+			out[i] = toType<T>(ctx, -1);
+		}
+		duk_pop_n(ctx, NUM_ELEMENTS);
+	}
+	else {
+		const char* chars[] = { "x", "y", "z", "w"};
+		for (i32 i = 0; i < NUM_ELEMENTS; ++i) {
+			if (!duk_get_prop_string(ctx, object_index, chars[i])) {
+				duk_error(ctx, DUK_ERR_TYPE_ERROR, "not Vec%d, missing .%s", NUM_ELEMENTS, chars[i]);
+			}
+			out[i] = toType<T>(ctx, -1);
+		}
+		duk_pop_n(ctx, NUM_ELEMENTS);
+	}
+}
+
+template <typename T> struct ToType {
+	static const T& value(duk_context* ctx, int index) {
+		void* ptr = duk_require_pointer(ctx, index);
+		if (!ptr) duk_error(ctx, DUK_ERR_TYPE_ERROR, "trying to convert null pointer to reference");
 		return *(T*)ptr;
 	}
 };
 
-template <> struct ToType<bool>
-{
-	static bool value(duk_context* ctx, int index) { return duk_to_boolean(ctx, index) != 0; }
+template <typename T> struct ToType<T*> {
+	static T* value(duk_context* ctx, int index) { return (T*)duk_require_pointer(ctx, index); }
 };
 
-template <> struct ToType<float>
-{
-	static float value(duk_context* ctx, int index) { return (float)duk_to_number(ctx, index); }
-};
-
-template <> struct ToType<double>
-{
-	static double value(duk_context* ctx, int index) { return duk_to_number(ctx, index); }
-};
-
-template <> struct ToType<int>
-{
-	static int value(duk_context* ctx, int index) { return duk_to_int(ctx, index); }
-};
-
-template <> struct ToType<const char*>
-{
-	static const char* value(duk_context* ctx, int index) { return duk_to_string(ctx, index); }
-};
-
-template <> struct ToType<Path>
-{
-	static Path value(duk_context* ctx, int index) { return Path(duk_to_string(ctx, index)); }
-};
-
-template <typename T> struct ToType<T*>
-{
-	static T* value(duk_context* ctx, int index) { return (T*)duk_to_pointer(ctx, index); }
-};
-
-template <typename T> struct ToType<T&>
-{
+template <typename T> struct ToType<T&> {
 	static T& value(duk_context* ctx, int index)
 	{
-		void* ptr = duk_to_pointer(ctx, index);
-		if (!ptr)
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
+		void* ptr = duk_require_pointer(ctx, index);
+		if (!ptr) duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid argument %d - trying to convert null to reference", index);
 		return *(T*)ptr;
+	}
+};
+
+template <> struct ToType<float> {
+	static float value(duk_context* ctx, int index) {
+		return (float)duk_require_number(ctx, index);
+	}
+};
+
+template <> struct ToType<bool> {
+	static bool value(duk_context* ctx, int index) {
+		return duk_require_boolean(ctx, index);
+	}
+};
+
+template <> struct ToType<i32> {
+	static i32 value(duk_context* ctx, int index) {
+		return duk_require_int(ctx, index);
+	}
+};
+
+template <> struct ToType<u32> {
+	static u32 value(duk_context* ctx, int index) {
+		return duk_require_uint(ctx, index);
+	}
+};
+
+template <> struct ToType<double> {
+	static double value(duk_context* ctx, int index) {
+		return duk_require_number(ctx, index);
+	}
+};
+
+template <> struct ToType<const char*> {
+	static const char* value(duk_context* ctx, int index) {
+		return duk_require_string(ctx, index);
+	}
+};
+
+template <> struct ToType<Path> {
+	static Path value(duk_context* ctx, int index) {
+		return Path(duk_require_string(ctx, index));
+	}
+};
+
+template <> struct ToType<Vec3> {
+	static Vec3 value(duk_context* ctx, int index) {
+		Vec3 v;
+		getVecN<3>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<Vec4> {
+	static Vec4 value(duk_context* ctx, int index) {
+		Vec4 v;
+		getVecN<4>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<Quat> {
+	static Quat value(duk_context* ctx, int index) {
+		Quat v;
+		getVecN<4>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<DVec3> {
+	static DVec3 value(duk_context* ctx, int index) {
+		DVec3 v;
+		getVecN<3>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<IVec2> {
+	static IVec2 value(duk_context* ctx, int index) {
+		IVec2 v;
+		getVecN<2>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<ImVec2> {
+	static ImVec2 value(duk_context* ctx, int index) {
+		ImVec2 v;
+		getVecN<2>(ctx, &v.x, index);
+		return v;
+	}
+};
+
+template <> struct ToType<Vec2> {
+	static Vec2 value(duk_context* ctx, int index) {
+		Vec2 v;
+		getVecN<2>(ctx, &v.x, index);
+		return v;
 	}
 };
 
 template <> struct ToType<EntityPtr> {
 	static EntityPtr value(duk_context* ctx, int index) {
-		duk_get_prop_string(ctx, index, "c_entity");
-		int entity_index = ToType<int>::value(ctx, -1);
+		if (!duk_get_prop_string(ctx, index, "c_entity")) {
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Expected entity");
+		}
+		if (!duk_is_number(ctx, -1)) {
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "Expected entity");
+		}
+		i32 entity_index = ToType<i32>::value(ctx, -1);
 		duk_pop(ctx);
 		return EntityPtr{entity_index};
 	}
 };
 
-template <> struct ToType<EntityRef>  {
+template <> struct ToType<EntityRef> {
 	static EntityRef value(duk_context* ctx, int index) {
 		return *ToType<EntityPtr>::value(ctx, index);
 	}
 };
-
-template <>
-struct ToType<Vec2>
-{
-	static Vec2 value(duk_context* ctx, int index)
-	{
-		Vec2 v;
-		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<float>::value(ctx, -1);
-		duk_pop_2(ctx);
-		return v;
-	}
-};
-
-template <>
-struct ToType<IVec2>
-{
-	static IVec2 value(duk_context* ctx, int index)
-	{
-		IVec2 v;
-		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<int>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<int>::value(ctx, -1);
-		duk_pop_2(ctx);
-		return v;
-	}
-};
-
-template <>
-struct ToType<Vec3>
-{
-	static Vec3 value(duk_context* ctx, int index)
-	{
-		Vec3 v;
-		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 2);
-		v.z = ToType<float>::value(ctx, -1);
-		duk_pop_3(ctx);
-		return v;
-	}
-};
-
-template <>
-struct ToType<DVec3>
-{
-	static DVec3 value(duk_context* ctx, int index)
-	{
-		DVec3 v;
-		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<double>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<double>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 2);
-		v.z = ToType<double>::value(ctx, -1);
-		duk_pop_3(ctx);
-		return v;
-	}
-};
-
-
-template <>
-struct ToType<Quat>
-{
-	static Quat value(duk_context* ctx, int index)
-	{
-		Quat v;
-		duk_get_prop_index(ctx, index, 0);
-		v.x = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 1);
-		v.y = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 2);
-		v.z = ToType<float>::value(ctx, -1);
-		duk_get_prop_index(ctx, index, 3);
-		v.w = ToType<float>::value(ctx, -1);
-		duk_pop_n(ctx, 4);
-		return v;
-	}
-};
-
-
-template <typename T> inline T toType(duk_context* ctx, int index)
-{
-	return ToType<T>::value(ctx, index);
-}
-template <typename T> inline const char* typeToString()
-{
-	return "object";
-}
-template <> inline const char* typeToString<int>()
-{
-	return "integer";
-}
-template <> inline const char* typeToString<EntityPtr>()
-{
-	return "entity";
-}
-template <> inline const char* typeToString<u32>()
-{
-	return "integer";
-}
-template <> inline const char* typeToString<const char*>()
-{
-	return "string";
-}
-template <> inline const char* typeToString<Path>()
-{
-	return "Path";
-}
-template <> inline const char* typeToString<bool>()
-{
-	return "boolean";
-}
-template <> inline const char* typeToString<float>()
-{
-	return "float";
-}
-template <> inline const char* typeToString<Vec3>()
-{
-	return "Vec3";
-}
-template <> inline const char* typeToString<Vec2>()
-{
-	return "Vec2";
-}
-template <> inline const char* typeToString<IVec2>()
-{
-	return "IVec2";
-}
-template <> inline const char* typeToString<Quat>()
-{
-	return "Quat";
-}
-
 
 template <typename T> inline bool isType(duk_context* ctx, int index)
 {
@@ -426,142 +383,22 @@ inline void push(duk_context* ctx, const Quat& value)
 	duk_put_prop_index(ctx, -2, 3);
 }
 
-
-inline const char* jsTypeToString(duk_int_t type)
-{
-	switch (type)
-	{
-		case DUK_TYPE_NONE: return "none";
-		case DUK_TYPE_UNDEFINED: return "undefined";
-		case DUK_TYPE_NULL: return "null";
-		case DUK_TYPE_BOOLEAN: return "boolean";
-		case DUK_TYPE_NUMBER: return "number";
-		case DUK_TYPE_STRING: return "string";
-		case DUK_TYPE_OBJECT: return "object";
-		case DUK_TYPE_BUFFER: return "buffer";
-		case DUK_TYPE_POINTER: return "pointer";
-		case DUK_TYPE_LIGHTFUNC: return "light func";
-	}
-	return "Unknown";
+template <typename T> T toType(duk_context* ctx, int index) {
+	return ToType<T>::value(ctx, index);
 }
 
-
-inline void argError(duk_context* ctx, int index, const char* expected_type)
-{
-	int type = duk_get_type(ctx, index);
-	StaticString<128> buf("expected ", expected_type, ", got ", jsTypeToString(type));
-	duk_error(ctx, DUK_ERR_TYPE_ERROR, buf);
-}
-
-
-template <typename T> void argError(duk_context* ctx, int index)
-{
-	argError(ctx, index, typeToString<T>());
-}
-
-
-template <typename T> T checkArg(duk_context* ctx, int index)
-{
-	if (!isType<T>(ctx, index))
-	{
-		argError<T>(ctx, index);
-	}
-	return toType<T>(ctx, index);
-}
-
-
-/*template <typename T>
-inline void getOptionalField(duk_context* ctx, int idx, const char* field_name, T* out)
-{
-	if (duk_get_prop(ctx, idx, field_name) && isType<T>(ctx, -1))
-	{
-		*out = toType<T>(ctx, -1);
-	}
-	duk_pop(ctx, 1);
-}*/
-
-
-namespace details
-{
-
-
-template <class T> struct remove_reference
-{
-	using type = T;
-};
-
-template <class T> struct remove_reference<T&>
-{
-	using type = T;
-};
-
-template <class T> struct remove_reference<T&&>
-{
-	using type = T;
-};
-
-template <class T> struct remove_const
-{
-	using type = T;
-};
-
-template <class T> struct remove_const<const T>
-{
-	using type = T;
-};
-
-template <class T> struct remove_volatile
-{
-	using type = T;
-};
-
-template <class T> struct remove_volatile<volatile T>
-{
-	using type = T;
-};
-
-template <class T> struct remove_cv
-{
-	using type = typename remove_const<typename remove_volatile<T>::type>::type;
-};
-
-template <class T> struct remove_cv_reference
-{
-	using type =  typename remove_const<typename remove_volatile<typename remove_reference<T>::type>::type>::type;
-};
-
-
-template <int... T>
-struct Indices {};
-
-
-template <int offset, int size, int... T>
-struct build_indices
-{
-	using result = typename build_indices<offset, size - 1, size + offset, T...>::result;
-};
-
-
-template <int offset, int... T>
-struct build_indices<offset, 0, T...>
-{
-	using result = Indices<T...>;
-};
-
+namespace details {
 
 template <typename T, int index>
-typename remove_cv_reference<T>::type convert(duk_context* ctx)
+typename RemoveCVR<T> convert(duk_context* ctx)
 {
-	return checkArg<typename remove_cv_reference<T>::type>(ctx, index - 1);
+	return toType<RemoveCVR<T>>(ctx, index - 1);
 }
-
 
 template <typename T> struct Caller;
 
-
 template <int... indices>
-struct Caller<Indices<indices...>>
-{
+struct Caller<Indices<indices...>> {
 	template <typename R, typename... Args>
 	static int callFunction(R (*f)(Args...), duk_context* ctx)
 	{
@@ -593,58 +430,6 @@ struct Caller<Indices<indices...>>
 	{
 		f(ctx, convert<Args, indices>(ctx)...);
 		return 0;
-	}
-
-
-	template <typename C, typename... Args>
-	static int callMethod(C* inst, void(C::*f)(duk_context*, Args...), duk_context* ctx)
-	{
-		(inst->*f)(ctx, convert<Args, indices>(ctx)...);
-		return 0;
-	}
-
-
-	template <typename R, typename C, typename... Args>
-	static int callMethod(C* inst, R(C::*f)(duk_context*, Args...), duk_context* ctx)
-	{
-		R v = (inst->*f)(ctx, convert<Args, indices>(ctx)...);
-		push(ctx, v);
-		return 1;
-	}
-
-
-	template <typename R, typename C, typename... Args>
-	static int callMethod(C* inst, R(C::*f)(duk_context*, Args...) const, duk_context* ctx)
-	{
-		R v = (inst->*f)(ctx, convert<Args, indices>(ctx)...);
-		push(ctx, v);
-		return 1;
-	}
-
-
-	template <typename C, typename... Args>
-	static int callMethod(C* inst, void(C::*f)(Args...), duk_context* ctx)
-	{
-		(inst->*f)(convert<Args, indices>(ctx)...);
-		return 0;
-	}
-
-
-	template <typename R, typename C, typename... Args>
-	static int callMethod(C* inst, R(C::*f)(Args...), duk_context* ctx)
-	{
-		R v = (inst->*f)(convert<Args, indices>(ctx)...);
-		push(ctx, v);
-		return 1;
-	}
-
-
-	template <typename R, typename C, typename... Args>
-	static int callMethod(C* inst, R(C::*f)(Args...) const, duk_context* ctx)
-	{
-		R v = (inst->*f)(convert<Args, indices>(ctx)...);
-		push(ctx, v);
-		return 1;
 	}
 };
 
@@ -687,22 +472,9 @@ template <typename R, typename C, typename... Args> constexpr int arity(R (C::*f
 
 } // namespace details
 
-
-template <typename T, T t> int wrap(duk_context* ctx)
-{
-	using indices = typename details::build_indices<0, details::arity(t)>::result;
+template <typename T, T t> int wrap(duk_context* ctx) {
+	using indices = typename BuildIndices<0, details::arity(t)>::result;
 	return details::Caller<indices>::callFunction(t, ctx);
-}
-
-
-template <typename C, typename T, T t> int wrapMethod(duk_context* ctx)
-{
-	using indices = typename details::build_indices<0, details::arity(t)>::result;
-	duk_push_this(ctx);
-	duk_get_prop_string(ctx, -1, "c_ptr");
-	auto* inst = toType<C*>(ctx, -1);
-	duk_pop(ctx);
-	return details::Caller<indices>::callMethod(inst, t, ctx);
 }
 
 template <typename T>

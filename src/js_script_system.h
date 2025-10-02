@@ -17,6 +17,12 @@ struct JSScriptSystem : ISystem {
 	virtual duk_context* getGlobalContext() = 0;
 };
 
+enum class JSExecuteResult {
+	SUCCESS,
+	NO_SCRIPT,
+	FAILED_TO_COMPILE,
+	RUNTIME_ERROR
+};
 
 //@ module JSScriptModule js_script "JS Script"
 struct JSScriptModule : public IModule {
@@ -56,7 +62,7 @@ struct JSScriptModule : public IModule {
 	virtual void setScriptData(EntityRef entity, InputMemoryStream& blob) = 0;
 	//@ end
 	//@ end
-	virtual bool execute(EntityRef entity, i32 scr_index, StringView code) = 0;
+	virtual JSExecuteResult execute(EntityRef entity, i32 scr_index, StringView code) = 0;
 	virtual IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) = 0;
 	virtual void endFunctionCall() = 0;
 	virtual int getScriptCount(EntityRef entity) = 0;

@@ -683,9 +683,11 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 					if (selected.size() != 1) logError("Exactly one entity must be selected");
 					else {
 						if (world.hasComponent(selected[0], JS_SCRIPT_TYPE)) {
-							module->execute(selected[0], 0, m_buffer);
+							if (module->execute(selected[0], 0, m_buffer) == JSExecuteResult::NO_SCRIPT) {
+								logError("Entity does not have JS script.");
+							}
 						}
-						else logError("Entity does not have JS component");
+						else logError("Entity does not have JS component.");
 					}
 				} else {
 					duk_push_string(context, m_buffer);

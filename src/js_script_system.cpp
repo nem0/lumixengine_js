@@ -36,21 +36,21 @@ static const ComponentType JS_SCRIPT_TYPE = reflection::getComponentType("js_scr
 
 namespace JSImGui {
 int Text(duk_context* ctx) {
-	auto* text = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* text = JSWrapper::toType<const char*>(ctx, 0);
 	ImGui::TextUnformatted(text);
 	return 0;
 }
 
 
 int OpenPopup(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
 	ImGui::OpenPopup(name);
 	return 0;
 }
 
 
 int Button(duk_context* ctx) {
-	auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* label = JSWrapper::toType<const char*>(ctx, 0);
 	bool ret = ImGui::Button(label);
 	JSWrapper::push(ctx, ret);
 	return 1;
@@ -58,7 +58,7 @@ int Button(duk_context* ctx) {
 
 
 int Begin(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
 	bool ret = ImGui::Begin(name);
 	JSWrapper::push(ctx, ret);
 	return 1;
@@ -66,8 +66,8 @@ int Begin(duk_context* ctx) {
 
 
 int Checkbox(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
-	bool value = JSWrapper::checkArg<bool>(ctx, 1);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
+	bool value = JSWrapper::toType<bool>(ctx, 1);
 	ImGui::Checkbox(name, &value);
 	JSWrapper::push(ctx, value);
 	return 1;
@@ -75,7 +75,7 @@ int Checkbox(duk_context* ctx) {
 
 
 int CollapsingHeader(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
 	bool ret = ImGui::CollapsingHeader(name);
 	JSWrapper::push(ctx, ret);
 	return 1;
@@ -83,8 +83,8 @@ int CollapsingHeader(duk_context* ctx) {
 
 
 int Selectable(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
-	bool selected = JSWrapper::checkArg<bool>(ctx, 1);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
+	bool selected = JSWrapper::toType<bool>(ctx, 1);
 	ImGui::Selectable(name, &selected);
 	JSWrapper::push(ctx, selected);
 	return 1;
@@ -92,11 +92,11 @@ int Selectable(duk_context* ctx) {
 
 
 int BeginChildFrame(duk_context* ctx) {
-	auto* name = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* name = JSWrapper::toType<const char*>(ctx, 0);
 	ImVec2 size(0, 0);
 	if (duk_get_top(ctx) > 1) {
-		size.x = JSWrapper::checkArg<float>(ctx, 1);
-		size.y = JSWrapper::checkArg<float>(ctx, 2);
+		size.x = JSWrapper::toType<float>(ctx, 1);
+		size.y = JSWrapper::toType<float>(ctx, 2);
 	}
 	bool ret = ImGui::BeginChildFrame(ImGui::GetID(name), size);
 	JSWrapper::push(ctx, ret);
@@ -105,10 +105,10 @@ int BeginChildFrame(duk_context* ctx) {
 
 
 int SliderFloat(duk_context* ctx) {
-	auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
-	float value = JSWrapper::checkArg<float>(ctx, 1);
-	float v_min = JSWrapper::checkArg<float>(ctx, 2);
-	float v_max = JSWrapper::checkArg<float>(ctx, 3);
+	auto* label = JSWrapper::toType<const char*>(ctx, 0);
+	float value = JSWrapper::toType<float>(ctx, 1);
+	float v_min = JSWrapper::toType<float>(ctx, 2);
+	float v_max = JSWrapper::toType<float>(ctx, 3);
 	ImGui::SliderFloat(label, &value, v_min, v_max);
 	JSWrapper::push(ctx, value);
 	return 1;
@@ -116,8 +116,8 @@ int SliderFloat(duk_context* ctx) {
 
 
 int DragFloat(duk_context* ctx) {
-	auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
-	float value = JSWrapper::checkArg<float>(ctx, 1);
+	auto* label = JSWrapper::toType<const char*>(ctx, 0);
+	float value = JSWrapper::toType<float>(ctx, 1);
 	ImGui::DragFloat(label, &value);
 	JSWrapper::push(ctx, value);
 	return 1;
@@ -131,8 +131,8 @@ int SameLine(duk_context* ctx) {
 
 
 int LabelText(duk_context* ctx) {
-	auto* label = JSWrapper::checkArg<const char*>(ctx, 0);
-	auto* text = JSWrapper::checkArg<const char*>(ctx, 1);
+	auto* label = JSWrapper::toType<const char*>(ctx, 0);
+	auto* text = JSWrapper::toType<const char*>(ctx, 1);
 	ImGui::LabelText(label, "%s", text);
 	return 0;
 }
@@ -473,15 +473,20 @@ public:
 	const char* getName() const override { return "js_script"; }
 	int getVersion() const override { return -1; }
 
-	bool execute(EntityRef entity, i32 scr_index, StringView code) override {
-		auto* script_cmp = m_scripts[{entity.index}];
-		auto& script = script_cmp->m_scripts[scr_index];
+	JSExecuteResult execute(EntityRef entity, i32 scr_index, StringView code) override {
+		auto iter = m_scripts.find(entity);
+		if (!iter.isValid()) return JSExecuteResult::NO_SCRIPT;
+		
+		ScriptComponent* script_cmp = iter.value();
+		if (scr_index >= script_cmp->m_scripts.size()) return JSExecuteResult::NO_SCRIPT;
+
+		ScriptInstance& script = script_cmp->m_scripts[scr_index];
 
 		duk_context* ctx = m_system.m_global_context;
 
 		if (duk_pcompile_lstring(ctx, DUK_COMPILE_EVAL, code.begin, code.size()) != 0) {
 			logError("Compile failed: ", duk_safe_to_stacktrace(ctx, -1));
-			return false;
+			return JSExecuteResult::FAILED_TO_COMPILE;
 		}
 
 		duk_push_global_stash(ctx); // [fn, stash]
@@ -491,10 +496,10 @@ public:
 
 		if (duk_pcall_method(ctx, 0) != DUK_EXEC_SUCCESS) { 
 			logError(duk_safe_to_stacktrace(ctx, -1));
-			return false;
+			return JSExecuteResult::RUNTIME_ERROR;
 		}
 		duk_pop(ctx);
-		return true;
+		return JSExecuteResult::SUCCESS;
 	}
 
 	IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) override {
@@ -1350,19 +1355,11 @@ static int JS_setProperty(duk_context* ctx) {
 	cmp.module = module;
 	cmp.type = cmp_type;
 	cmp.entity = entity;
-	const T v = JSWrapper::checkArg<T>(ctx, 0);
+	const T v = JSWrapper::toType<T>(ctx, 0);
 	desc->set(cmp, -1, v);
 
 	return 0;
 }
-
-
-#define REGISTER_JS_METHOD(O, F)                                    \
-	do {                                                            \
-		auto f = &JSWrapper::wrapMethod<O, decltype(&O::F), &O::F>; \
-		registerMethod(m_global_context, #O, #F, f);                \
-	} while (false)
-
 
 struct RegisterPropertyVisitor : reflection::IPropertyVisitor {
 	template <typename T>
@@ -1471,13 +1468,13 @@ void JSScriptSystemImpl::registerImGuiAPI() {
 namespace JSAPI {
 
 int logError(duk_context* ctx) {
-	auto* msg = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* msg = JSWrapper::toType<const char*>(ctx, 0);
 	Lumix::logError(msg);
 	return 0;
 }
 
 int require(duk_context* ctx) {
-	auto* path = JSWrapper::checkArg<const char*>(ctx, 0);
+	auto* path = JSWrapper::toType<const char*>(ctx, 0);
 	JSScriptSystemImpl* system = JSScriptSystemImpl::s_instance;
 
 	// TODO cache the object

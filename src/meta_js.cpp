@@ -20,6 +20,14 @@ static StringView pickLabel(StringView base, StringView spec) {
 	return base;
 }
 
+Struct* findStruct(MetaData& md, StringView struct_name) {
+	for (Struct& s : md.structs) {
+		if (equal(s.name, struct_name)) return &s;
+	}
+	return nullptr;
+}
+
+
 void serializeGetter(OutputStream& out, MetaData& data, Module& m, Component& c, Property& p) {
 	L("static int ",c.id,"_get",p.name,"(duk_context* ctx) {");
 	L("duk_push_this(ctx);");
@@ -54,10 +62,10 @@ void serializerSetter(OutputStream& out, MetaData& data, Module& m, Component& c
 	L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
 	L("duk_pop_2(ctx);");
 	if (Enum* e = getEnum(data, m, p.type)) {
-		L("auto value = (",e->full,")JSWrapper::checkArg<i32>(ctx, 0);");
+		L("auto value = (",e->full,")JSWrapper::toType<i32>(ctx, 0);");
 	}
 	else {
-		L("auto value = JSWrapper::checkArg<",p.type,">(ctx, 0);");
+		L("auto value = JSWrapper::toType<",p.type,">(ctx, 0);");
 	}
 	L("module->",p.setter_name,"(entity, value);");
 	L("return 0;");
@@ -155,6 +163,9 @@ static void metaJS(MetaData& data) {
 			L("duk_get_prop_string(ctx, -1, \"prototype\");"); // [LumixAPI, constructor, prototype]
 
 			for (Function& f : c.functions) {
+				Struct* st = findStruct(data, f.return_type);
+				if (st) continue; // TODO support structs and objects
+
 				L("{");
 				L("auto proxy = [](duk_context* ctx) -> duk_ret_t {");
 				L("duk_push_this(ctx);");
@@ -166,12 +177,34 @@ static void metaJS(MetaData& data) {
 				L("if(!module) duk_eval_error(ctx, \"getting property on invalid object\");");
 				L("duk_get_prop_string(ctx, -2, \"c_entity\");");
 				L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
+				L("duk_pop_2(ctx);");
+				i32 arg_idx = 0;
+				forEachArg(f.args, [&](const Arg& arg, bool first){
+					if (first) return; // skip entity
+					if (arg.is_const && equal(arg.type, "char*")) {
+						L("\tauto ",arg.name," = JSWrapper::toType<const char*>(ctx, ",arg_idx,");");
+					}
+					else {
+						L("\tauto ",arg.name," = JSWrapper::toType<",arg.type,">(ctx, ",arg_idx,");");
+					}
+					++arg_idx;
+				});
+				bool has_return = !equal(f.return_type, "void");
+				if (has_return) out.add("auto res = ");
 				out.add("module->",f.name,"(entity");
-				// TODO args and return value
+				forEachArg(f.args, [&](const Arg& arg, bool first){
+					if (!first) out.add(", ", arg.name);
+				});
 				L(");");
-				L("return 0;");
+				if (has_return) {
+					L("JSWrapper::push(ctx, res);");
+					L("return 1;");
+				}
+				else {
+					L("return 0;");
+				}
 				L("};");
-				L("duk_push_c_function(ctx, proxy, 0);");
+				L("duk_push_c_function(ctx, proxy, DUK_VARARGS);");
 				StringView name = pickLabel(f.name, f.attributes.alias);
 				L("duk_put_prop_string(ctx, -2, \"",name,"\");");
 				L("}");
