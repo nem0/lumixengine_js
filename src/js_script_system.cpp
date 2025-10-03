@@ -1483,6 +1483,7 @@ int require(duk_context* ctx) {
 	FileSystem& fs = system->m_engine.getFileSystem();
 	OutputMemoryStream content(system->m_allocator);
 	if (!fs.getContentSync(Path(path, ".js"), content)) {
+		Lumix::logError("Require failed to read ", path, ".js");
 		return 0;
 	}
 
