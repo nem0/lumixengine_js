@@ -1,6 +1,6 @@
 # JavaScript plugin for [Lumix Engine](https://github.com/nem0/LumixEngine). 
 
-* [Documentation](https://github.com/nem0/lumixengine_js/wiki)
+* [Documentation](docs/README.md)
 * Attach scripts to entities
 * All properties automatically accessible
 * Console to execute scripts in global or entity's context, with autocomplete
