@@ -1543,7 +1543,7 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 
 	DEF_CONST(InputSystem::Device::KEYBOARD, "INPUT_DEVICE_KEYBOARD");
 	DEF_CONST(InputSystem::Device::MOUSE, "INPUT_DEVICE_MOUSE");
-	DEF_CONST(InputSystem::Device::CONTROLLER, "INPUT_DEVICE_CONTROLLER");
+	DEF_CONST(InputSystem::Device::GAMEPAD, "INPUT_DEVICE_GAMEPAD");
 
 	#undef DEF_CONST
 
