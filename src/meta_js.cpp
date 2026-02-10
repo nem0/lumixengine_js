@@ -38,7 +38,7 @@ void serializeGetter(OutputStream& out, MetaData& data, Module& m, Component& c,
 	L("auto* module = JSWrapper::toType<",m.name,"*>(ctx, -1);");
 	L("if(!module) duk_eval_error(ctx, \"getting property on invalid object\");");
 	L("duk_get_prop_string(ctx, -2, \"c_entity\");");
-	L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
+	L("EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};");
 	if (Enum* e = getEnum(data, m, p.type)) {
 		L("JSWrapper::push(ctx, (i32)module->",p.getter_name,"(entity));");
 	}
@@ -59,7 +59,7 @@ void serializerSetter(OutputStream& out, MetaData& data, Module& m, Component& c
 	L("auto* module = JSWrapper::toType<",m.name,"*>(ctx, -1);");
 	L("if (!module) duk_eval_error(ctx, \"getting property on invalid object\");");
 	L("duk_get_prop_string(ctx, -2, \"c_entity\");");
-	L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
+	L("EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};");
 	L("duk_pop_2(ctx);");
 	if (Enum* e = getEnum(data, m, p.type)) {
 		L("auto value = (",e->full,")JSWrapper::toType<i32>(ctx, 0);");
@@ -176,7 +176,7 @@ static void metaJS(MetaData& data) {
 				L("auto* module = JSWrapper::toType<",m.name,"*>(ctx, -1);");
 				L("if(!module) duk_eval_error(ctx, \"getting property on invalid object\");");
 				L("duk_get_prop_string(ctx, -2, \"c_entity\");");
-				L("EntityRef entity = {JSWrapper::toType<i32>(ctx, -1)};");
+				L("EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};");
 				L("duk_pop_2(ctx);");
 				i32 arg_idx = 0;
 				forEachArg(f.args, [&](const Arg& arg, bool first){

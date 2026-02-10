@@ -155,7 +155,7 @@ static int entityProxySetter(duk_context* ctx) {
 	World* world= (World*)duk_get_pointer(ctx, -1);
 
 	duk_get_prop_string(ctx, 0, "c_entity");
-	EntityRef entity = {duk_get_int(ctx, -1)};
+	EntityRef entity {duk_get_int(ctx, -1)};
 
 	duk_pop_2(ctx);
 
@@ -184,7 +184,7 @@ static int entityProxyGetter(duk_context* ctx) {
 
 	duk_get_prop_string(ctx, 0, "c_entity");
 	ASSERT(duk_is_number(ctx, -1));
-	EntityRef entity = {duk_get_int(ctx, -1)};
+	EntityRef entity {duk_get_int(ctx, -1)};
 	duk_pop(ctx);
 	if (equalStrings(prop_name, "c_entity")) {
 		JSWrapper::push(ctx, entity.index);
@@ -505,7 +505,7 @@ public:
 	IFunctionCall* beginFunctionCall(EntityRef entity, int scr_index, const char* function) override {
 		ASSERT(!m_function_call.is_in_progress);
 
-		auto* script_cmp = m_scripts[{entity.index}];
+		auto* script_cmp = m_scripts[entity];
 		auto& script = script_cmp->m_scripts[scr_index];
 
 		duk_context* ctx = m_system.m_global_context;
@@ -1050,7 +1050,7 @@ public:
 				if (!instance.m_script) continue;
 				if (!instance.m_script->isReady()) continue;
 
-				auto* call = beginFunctionCall({scr->m_entity.index}, j, "onStartGame");
+				auto* call = beginFunctionCall(EntityRef{scr->m_entity.index}, j, "onStartGame");
 				if (call) endFunctionCall();
 			}
 		}
