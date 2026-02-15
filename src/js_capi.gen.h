@@ -6,6 +6,7 @@
 #include "renderer/editor/game_view.h"
 #include "renderer/editor/scene_view.h"
 #include "renderer/model.h"
+#include "renderer/pipeline.h"
 #include "renderer/renderer.h"
 #include "animation/animation_module.h"
 #include "audio/audio_module.h"

@@ -181,12 +181,7 @@ static void metaJS(MetaData& data) {
 				i32 arg_idx = 0;
 				forEachArg(f.args, [&](const Arg& arg, bool first){
 					if (first) return; // skip entity
-					if (arg.is_const && equal(arg.type, "char*")) {
-						L("\tauto ",arg.name," = JSWrapper::toType<const char*>(ctx, ",arg_idx,");");
-					}
-					else {
-						L("\tauto ",arg.name," = JSWrapper::toType<",arg.type,">(ctx, ",arg_idx,");");
-					}
+					L("\tauto ",arg.name," = JSWrapper::toType<", (arg.is_const && arg.is_ptr ? "const " : ""), arg.type, (arg.is_ptr ? "*" : ""), ">(ctx, ",arg_idx,");");
 					++arg_idx;
 				});
 				bool has_return = !equal(f.return_type, "void");

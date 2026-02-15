@@ -1087,6 +1087,9 @@ public:
 			case InputSystem::Event::TEXT_INPUT:
 				JSWrapper::setField(ctx, "text", event.data.text.utf8);
 				break;
+			case InputSystem::Event::MOUSE_WHEEL:
+				JSWrapper::setField(ctx, "y", event.data.mouse_wheel.y);
+				break;
 		}
 
 		duk_push_global_stash(ctx);
