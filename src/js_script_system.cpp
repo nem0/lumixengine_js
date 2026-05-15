@@ -18,6 +18,7 @@
 #include "js_script_manager.h"
 #include "js_wrapper.h"
 
+#undef EOF
 
 namespace Lumix {
 
@@ -87,19 +88,6 @@ int Selectable(duk_context* ctx) {
 	bool selected = JSWrapper::toType<bool>(ctx, 1);
 	ImGui::Selectable(name, &selected);
 	JSWrapper::push(ctx, selected);
-	return 1;
-}
-
-
-int BeginChildFrame(duk_context* ctx) {
-	auto* name = JSWrapper::toType<const char*>(ctx, 0);
-	ImVec2 size(0, 0);
-	if (duk_get_top(ctx) > 1) {
-		size.x = JSWrapper::toType<float>(ctx, 1);
-		size.y = JSWrapper::toType<float>(ctx, 2);
-	}
-	bool ret = ImGui::BeginChildFrame(ImGui::GetID(name), size);
-	JSWrapper::push(ctx, ret);
 	return 1;
 }
 

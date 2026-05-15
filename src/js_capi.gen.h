@@ -2,22 +2,24 @@
 
 #include "editor/asset_browser.h"
 #include "editor/studio_app.h"
-#include "gui/gui_system.h"
 #include "renderer/editor/game_view.h"
 #include "renderer/editor/scene_view.h"
 #include "renderer/model.h"
 #include "renderer/pipeline.h"
 #include "renderer/renderer.h"
+#include "ui/ui.h"
+#include "ui/ui.h"
+#include "ui/ui_system.h"
 #include "animation/animation_module.h"
 #include "audio/audio_module.h"
 #include "engine/core.h"
-#include "gui/gui_module.h"
 #include "lua/lua_script_system.h"
 #include "navigation/navigation_module.h"
 #include "physics/physics_module.h"
 #include "core/geometry.h"
 #include "renderer/model.h"
 #include "renderer/render_module.h"
+#include "ui/ui_module.h"
 #include "../plugins/js/src/js_script_system.h"
 
 
@@ -289,636 +291,6 @@ namespace Lumix {
 		duk_pop_2(ctx);
 		auto value = JSWrapper::toType<bool>(ctx, 0);
 		module->setAmbientSound3D(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getEnabled(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->isRectEnabled(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setEnabled(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<bool>(ctx, 0);
-		module->enableRect(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getClip(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectClip(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setClip(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<bool>(ctx, 0);
-		module->setRectClip(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getLeftPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectLeftPoints(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setLeftPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectLeftPoints(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getLeftRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectLeftRelative(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setLeftRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectLeftRelative(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getRightPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectRightPoints(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setRightPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectRightPoints(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getRightRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectRightRelative(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setRightRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectRightRelative(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getTopPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectTopPoints(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setTopPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectTopPoints(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getTopRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectTopRelative(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setTopRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectTopRelative(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getBottomPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectBottomPoints(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setBottomPoints(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectBottomPoints(entity, value);
-		return 0;
-	}
-	
-	static int gui_rect_getBottomRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getRectBottomRelative(entity));
-		return 1;
-	}
-	
-	static int gui_rect_setBottomRelative(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<float>(ctx, 0);
-		module->setRectBottomRelative(entity, value);
-		return 0;
-	}
-	
-	static int gui_button_getHoveredColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getButtonHoveredColorRGBA(entity));
-		return 1;
-	}
-	
-	static int gui_button_setHoveredColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<Vec4>(ctx, 0);
-		module->setButtonHoveredColorRGBA(entity, value);
-		return 0;
-	}
-	
-	static int gui_button_getHoveredCursor(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, (i32)module->getButtonHoveredCursor(entity));
-		return 1;
-	}
-	
-	static int gui_button_setHoveredCursor(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = (os::CursorType)JSWrapper::toType<i32>(ctx, 0);
-		module->setButtonHoveredCursor(entity, value);
-		return 0;
-	}
-	
-	static int gui_image_getEnabled(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->isImageEnabled(entity));
-		return 1;
-	}
-	
-	static int gui_image_setEnabled(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<bool>(ctx, 0);
-		module->enableImage(entity, value);
-		return 0;
-	}
-	
-	static int gui_image_getColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getImageColorRGBA(entity));
-		return 1;
-	}
-	
-	static int gui_image_setColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<Vec4>(ctx, 0);
-		module->setImageColorRGBA(entity, value);
-		return 0;
-	}
-	
-	static int gui_image_getSprite(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getImageSprite(entity));
-		return 1;
-	}
-	
-	static int gui_image_setSprite(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<Path>(ctx, 0);
-		module->setImageSprite(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getFontSize(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getTextFontSize(entity));
-		return 1;
-	}
-	
-	static int gui_text_setFontSize(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<int>(ctx, 0);
-		module->setTextFontSize(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getTextColorRGBA(entity));
-		return 1;
-	}
-	
-	static int gui_text_setColorRGBA(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<Vec4>(ctx, 0);
-		module->setTextColorRGBA(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getFontPath(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getTextFontPath(entity));
-		return 1;
-	}
-	
-	static int gui_text_setFontPath(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<Path>(ctx, 0);
-		module->setTextFontPath(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getHAlign(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, (i32)module->getTextHAlign(entity));
-		return 1;
-	}
-	
-	static int gui_text_setHAlign(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = (TextHAlign)JSWrapper::toType<i32>(ctx, 0);
-		module->setTextHAlign(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getVAlign(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, (i32)module->getTextVAlign(entity));
-		return 1;
-	}
-	
-	static int gui_text_setVAlign(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = (TextVAlign)JSWrapper::toType<i32>(ctx, 0);
-		module->setTextVAlign(entity, value);
-		return 0;
-	}
-	
-	static int gui_text_getText(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getText(entity));
-		return 1;
-	}
-	
-	static int gui_text_setText(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<GUIModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<const char*>(ctx, 0);
-		module->setText(entity, value);
 		return 0;
 	}
 	
@@ -4256,6 +3628,96 @@ namespace Lumix {
 		return 0;
 	}
 	
+	static int ui_3d_getPath(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if(!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		JSWrapper::push(ctx, module->getUI3DPath(entity));
+		return 1;
+	}
+	
+	static int ui_3d_setPath(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if (!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		duk_pop_2(ctx);
+		auto value = JSWrapper::toType<Path>(ctx, 0);
+		module->setUI3DPath(entity, value);
+		return 0;
+	}
+	
+	static int ui_3d_getVirtualSize(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if(!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		JSWrapper::push(ctx, module->getUI3DVirtualSize(entity));
+		return 1;
+	}
+	
+	static int ui_3d_setVirtualSize(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if (!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		duk_pop_2(ctx);
+		auto value = JSWrapper::toType<Vec2>(ctx, 0);
+		module->setUI3DVirtualSize(entity, value);
+		return 0;
+	}
+	
+	static int ui_3d_getOrientToCamera(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if(!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		JSWrapper::push(ctx, module->getUI3DOrientToCamera(entity));
+		return 1;
+	}
+	
+	static int ui_3d_setOrientToCamera(duk_context* ctx) {
+		duk_push_this(ctx);
+		if (duk_is_null_or_undefined(ctx, -1)) {
+			duk_eval_error(ctx, "`this` is null or undefined");
+		}
+		duk_get_prop_string(ctx, -1, "c_module");
+		auto* module = JSWrapper::toType<UIModule*>(ctx, -1);
+		if (!module) duk_eval_error(ctx, "getting property on invalid object");
+		duk_get_prop_string(ctx, -2, "c_entity");
+		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+		duk_pop_2(ctx);
+		auto value = JSWrapper::toType<bool>(ctx, 0);
+		module->setUI3DOrientToCamera(entity, value);
+		return 0;
+	}
+	
 	void registerJSAPI(duk_context* ctx) {
 		JSWrapper::DebugGuard guard(ctx);
 		duk_push_object(ctx);
@@ -4529,181 +3991,6 @@ namespace Lumix {
 			duk_put_prop_string(ctx, -2, "signal");
 			duk_get_prop_string(ctx, -1, "signal");
 			duk_get_prop_string(ctx, -1, "prototype");
-			duk_pop_2(ctx);
-		}
-		// gui_canvas
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_canvas");
-			duk_get_prop_string(ctx, -1, "gui_canvas");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_pop_2(ctx);
-		}
-		// gui_render_target
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_render_target");
-			duk_get_prop_string(ctx, -1, "gui_render_target");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_pop_2(ctx);
-		}
-		// gui_input_field
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_input_field");
-			duk_get_prop_string(ctx, -1, "gui_input_field");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_pop_2(ctx);
-		}
-		// gui_rect
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_rect");
-			duk_get_prop_string(ctx, -1, "gui_rect");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_push_string(ctx, "Enabled");
-			duk_push_c_function(ctx, &gui_rect_getEnabled, 0);
-			duk_push_c_function(ctx, &gui_rect_setEnabled, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "Clip");
-			duk_push_c_function(ctx, &gui_rect_getClip, 0);
-			duk_push_c_function(ctx, &gui_rect_setClip, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "LeftPoints");
-			duk_push_c_function(ctx, &gui_rect_getLeftPoints, 0);
-			duk_push_c_function(ctx, &gui_rect_setLeftPoints, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "LeftRelative");
-			duk_push_c_function(ctx, &gui_rect_getLeftRelative, 0);
-			duk_push_c_function(ctx, &gui_rect_setLeftRelative, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "RightPoints");
-			duk_push_c_function(ctx, &gui_rect_getRightPoints, 0);
-			duk_push_c_function(ctx, &gui_rect_setRightPoints, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "RightRelative");
-			duk_push_c_function(ctx, &gui_rect_getRightRelative, 0);
-			duk_push_c_function(ctx, &gui_rect_setRightRelative, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "TopPoints");
-			duk_push_c_function(ctx, &gui_rect_getTopPoints, 0);
-			duk_push_c_function(ctx, &gui_rect_setTopPoints, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "TopRelative");
-			duk_push_c_function(ctx, &gui_rect_getTopRelative, 0);
-			duk_push_c_function(ctx, &gui_rect_setTopRelative, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "BottomPoints");
-			duk_push_c_function(ctx, &gui_rect_getBottomPoints, 0);
-			duk_push_c_function(ctx, &gui_rect_setBottomPoints, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "BottomRelative");
-			duk_push_c_function(ctx, &gui_rect_getBottomRelative, 0);
-			duk_push_c_function(ctx, &gui_rect_setBottomRelative, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_pop_2(ctx);
-		}
-		// gui_button
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_button");
-			duk_get_prop_string(ctx, -1, "gui_button");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_push_string(ctx, "HoveredColorRGBA");
-			duk_push_c_function(ctx, &gui_button_getHoveredColorRGBA, 0);
-			duk_push_c_function(ctx, &gui_button_setHoveredColorRGBA, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "HoveredCursor");
-			duk_push_c_function(ctx, &gui_button_getHoveredCursor, 0);
-			duk_push_c_function(ctx, &gui_button_setHoveredCursor, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_pop_2(ctx);
-		}
-		// gui_image
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_image");
-			duk_get_prop_string(ctx, -1, "gui_image");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_push_string(ctx, "Enabled");
-			duk_push_c_function(ctx, &gui_image_getEnabled, 0);
-			duk_push_c_function(ctx, &gui_image_setEnabled, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "ColorRGBA");
-			duk_push_c_function(ctx, &gui_image_getColorRGBA, 0);
-			duk_push_c_function(ctx, &gui_image_setColorRGBA, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "Sprite");
-			duk_push_c_function(ctx, &gui_image_getSprite, 0);
-			duk_push_c_function(ctx, &gui_image_setSprite, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_pop_2(ctx);
-		}
-		// gui_text
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "gui_text");
-			duk_get_prop_string(ctx, -1, "gui_text");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_push_string(ctx, "FontSize");
-			duk_push_c_function(ctx, &gui_text_getFontSize, 0);
-			duk_push_c_function(ctx, &gui_text_setFontSize, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "ColorRGBA");
-			duk_push_c_function(ctx, &gui_text_getColorRGBA, 0);
-			duk_push_c_function(ctx, &gui_text_setColorRGBA, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "FontPath");
-			duk_push_c_function(ctx, &gui_text_getFontPath, 0);
-			duk_push_c_function(ctx, &gui_text_setFontPath, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "HAlign");
-			duk_push_c_function(ctx, &gui_text_getHAlign, 0);
-			duk_push_c_function(ctx, &gui_text_setHAlign, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "VAlign");
-			duk_push_c_function(ctx, &gui_text_getVAlign, 0);
-			duk_push_c_function(ctx, &gui_text_setVAlign, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
-			duk_push_string(ctx, "Text");
-			duk_push_c_function(ctx, &gui_text_getText, 0);
-			duk_push_c_function(ctx, &gui_text_setText, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
 			duk_pop_2(ctx);
 		}
 		// lua_script
@@ -6162,6 +5449,31 @@ namespace Lumix {
 			duk_push_string(ctx, "Material");
 			duk_push_c_function(ctx, &procedural_geom_getMaterial, 0);
 			duk_push_c_function(ctx, &procedural_geom_setMaterial, 1);
+			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
+			
+			duk_pop_2(ctx);
+		}
+		// ui_3d
+		{
+			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
+			duk_push_object(ctx); // prototype
+			duk_put_prop_string(ctx, -2, "prototype");
+			duk_put_prop_string(ctx, -2, "ui_3d");
+			duk_get_prop_string(ctx, -1, "ui_3d");
+			duk_get_prop_string(ctx, -1, "prototype");
+			duk_push_string(ctx, "Path");
+			duk_push_c_function(ctx, &ui_3d_getPath, 0);
+			duk_push_c_function(ctx, &ui_3d_setPath, 1);
+			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
+			
+			duk_push_string(ctx, "VirtualSize");
+			duk_push_c_function(ctx, &ui_3d_getVirtualSize, 0);
+			duk_push_c_function(ctx, &ui_3d_setVirtualSize, 1);
+			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
+			
+			duk_push_string(ctx, "OrientToCamera");
+			duk_push_c_function(ctx, &ui_3d_getOrientToCamera, 0);
+			duk_push_c_function(ctx, &ui_3d_setOrientToCamera, 1);
 			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
 			
 			duk_pop_2(ctx);
