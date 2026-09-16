@@ -472,7 +472,7 @@ public:
 
 		duk_context* ctx = m_system.m_global_context;
 
-		if (duk_pcompile_lstring(ctx, DUK_COMPILE_EVAL, code.begin, code.size()) != 0) {
+		if (duk_pcompile_lstring(ctx, DUK_COMPILE_EVAL, code.begin(), code.size()) != 0) {
 			logError("Compile failed: ", duk_safe_to_stacktrace(ctx, -1));
 			return JSExecuteResult::FAILED_TO_COMPILE;
 		}
@@ -1055,27 +1055,27 @@ public:
 		
 		switch(event.type)
 		{
-			case InputSystem::Event::DEVICE_ADDED:
+			case InputEventType::DEVICE_ADDED:
 				break;
-			case InputSystem::Event::DEVICE_REMOVED:
+			case InputEventType::DEVICE_REMOVED:
 				break;
-			case InputSystem::Event::BUTTON:
+			case InputEventType::BUTTON:
 				JSWrapper::setField(ctx, "down", event.data.button.down);
 				JSWrapper::setField(ctx, "key_id", event.data.button.key_id);
 				JSWrapper::setField(ctx, "is_repeat", event.data.button.is_repeat);
 				JSWrapper::setField(ctx, "x", event.data.button.x);
 				JSWrapper::setField(ctx, "y", event.data.button.y);
 				break;
-			case InputSystem::Event::AXIS:
+			case InputEventType::AXIS:
 				JSWrapper::setField(ctx, "x", event.data.axis.x);
 				JSWrapper::setField(ctx, "y", event.data.axis.y);
 				JSWrapper::setField(ctx, "x_abs", event.data.axis.x_abs);
 				JSWrapper::setField(ctx, "y_abs", event.data.axis.y_abs);
 				break;
-			case InputSystem::Event::TEXT_INPUT:
+			case InputEventType::TEXT_INPUT:
 				JSWrapper::setField(ctx, "text", event.data.text.utf8);
 				break;
-			case InputSystem::Event::MOUSE_WHEEL:
+			case InputEventType::MOUSE_WHEEL:
 				JSWrapper::setField(ctx, "y", event.data.mouse_wheel.y);
 				break;
 		}
@@ -1528,13 +1528,13 @@ void JSScriptSystemImpl::registerGlobalAPI() {
 	#define DEF_CONST(T, N) \
 		do { duk_push_uint(ctx, (u32)T); duk_put_prop_string(ctx, -2, N); } while(false)
 
-	DEF_CONST(InputSystem::Event::BUTTON, "INPUT_EVENT_BUTTON");
-	DEF_CONST(InputSystem::Event::AXIS, "INPUT_EVENT_AXIS");
-	DEF_CONST(InputSystem::Event::TEXT_INPUT, "INPUT_EVENT_TEXT_INPUT");
+	DEF_CONST(InputEventType::BUTTON, "INPUT_EVENT_BUTTON");
+	DEF_CONST(InputEventType::AXIS, "INPUT_EVENT_AXIS");
+	DEF_CONST(InputEventType::TEXT_INPUT, "INPUT_EVENT_TEXT_INPUT");
 
-	DEF_CONST(InputSystem::Device::KEYBOARD, "INPUT_DEVICE_KEYBOARD");
-	DEF_CONST(InputSystem::Device::MOUSE, "INPUT_DEVICE_MOUSE");
-	DEF_CONST(InputSystem::Device::GAMEPAD, "INPUT_DEVICE_GAMEPAD");
+	DEF_CONST(InputDeviceType::KEYBOARD, "INPUT_DEVICE_KEYBOARD");
+	DEF_CONST(InputDeviceType::MOUSE, "INPUT_DEVICE_MOUSE");
+	DEF_CONST(InputDeviceType::GAMEPAD, "INPUT_DEVICE_GAMEPAD");
 
 	#undef DEF_CONST
 

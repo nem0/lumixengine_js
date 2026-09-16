@@ -13,7 +13,7 @@
 #include "animation/animation_module.h"
 #include "audio/audio_module.h"
 #include "engine/core.h"
-#include "lua/lua_script_system.h"
+#include "evox/evox_module.h"
 #include "navigation/navigation_module.h"
 #include "physics/physics_module.h"
 #include "core/geometry.h"
@@ -291,36 +291,6 @@ namespace Lumix {
 		duk_pop_2(ctx);
 		auto value = JSWrapper::toType<bool>(ctx, 0);
 		module->setAmbientSound3D(entity, value);
-		return 0;
-	}
-	
-	static int lua_script_inline_getCode(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<LuaScriptModule*>(ctx, -1);
-		if(!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		JSWrapper::push(ctx, module->getInlineScriptCode(entity));
-		return 1;
-	}
-	
-	static int lua_script_inline_setCode(duk_context* ctx) {
-		duk_push_this(ctx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_eval_error(ctx, "`this` is null or undefined");
-		}
-		duk_get_prop_string(ctx, -1, "c_module");
-		auto* module = JSWrapper::toType<LuaScriptModule*>(ctx, -1);
-		if (!module) duk_eval_error(ctx, "getting property on invalid object");
-		duk_get_prop_string(ctx, -2, "c_entity");
-		EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
-		duk_pop_2(ctx);
-		auto value = JSWrapper::toType<const char*>(ctx, 0);
-		module->setInlineScriptCode(entity, value);
 		return 0;
 	}
 	
@@ -3993,29 +3963,14 @@ namespace Lumix {
 			duk_get_prop_string(ctx, -1, "prototype");
 			duk_pop_2(ctx);
 		}
-		// lua_script
+		// evox
 		{
 			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
 			duk_push_object(ctx); // prototype
 			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "lua_script");
-			duk_get_prop_string(ctx, -1, "lua_script");
+			duk_put_prop_string(ctx, -2, "evox");
+			duk_get_prop_string(ctx, -1, "evox");
 			duk_get_prop_string(ctx, -1, "prototype");
-			duk_pop_2(ctx);
-		}
-		// lua_script_inline
-		{
-			duk_push_c_function(ctx, &componentJSConstructor, DUK_VARARGS);
-			duk_push_object(ctx); // prototype
-			duk_put_prop_string(ctx, -2, "prototype");
-			duk_put_prop_string(ctx, -2, "lua_script_inline");
-			duk_get_prop_string(ctx, -1, "lua_script_inline");
-			duk_get_prop_string(ctx, -1, "prototype");
-			duk_push_string(ctx, "Code");
-			duk_push_c_function(ctx, &lua_script_inline_getCode, 0);
-			duk_push_c_function(ctx, &lua_script_inline_setCode, 1);
-			duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_ENUMERABLE);
-			
 			duk_pop_2(ctx);
 		}
 		// navmesh_zone
@@ -4200,6 +4155,25 @@ namespace Lumix {
 				};
 				duk_push_c_function(ctx, proxy, DUK_VARARGS);
 				duk_put_prop_string(ctx, -2, "navigate");
+			}
+			{
+				auto proxy = [](duk_context* ctx) -> duk_ret_t {
+					duk_push_this(ctx);
+					if (duk_is_null_or_undefined(ctx, -1)) {
+						duk_eval_error(ctx, "`this` is null or undefined");
+					}
+					duk_get_prop_string(ctx, -1, "c_module");
+					auto* module = JSWrapper::toType<NavigationModule*>(ctx, -1);
+					if(!module) duk_eval_error(ctx, "getting property on invalid object");
+					duk_get_prop_string(ctx, -2, "c_entity");
+					EntityRef entity {JSWrapper::toType<i32>(ctx, -1)};
+					duk_pop_2(ctx);
+					auto res = module->isAgentFinished(entity);
+					JSWrapper::push(ctx, res);
+					return 1;
+				};
+				duk_push_c_function(ctx, proxy, DUK_VARARGS);
+				duk_put_prop_string(ctx, -2, "isFinished");
 			}
 			{
 				auto proxy = [](duk_context* ctx) -> duk_ret_t {

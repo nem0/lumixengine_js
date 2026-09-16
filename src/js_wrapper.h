@@ -290,7 +290,7 @@ inline void push(duk_context* ctx, const char* value)
 }
 inline void push(duk_context* ctx, StringView value)
 {
-	duk_push_lstring(ctx, value.begin, value.size());
+	duk_push_lstring(ctx, value.begin(), value.size());
 }
 inline void push(duk_context* ctx, const Path& value)
 {

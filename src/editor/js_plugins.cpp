@@ -252,8 +252,8 @@ struct EditorWindow : AssetEditorWindow {
 		if (!success) return;
 
 		StringView v;
-		v.begin = (const char*)data.begin();
-		v.end = (const char*)data.end();
+		v.data = (const char*)data.begin();
+		v.length = data.length();
 		m_code_editor = createCodeEditor(m_app);
 		m_code_editor->focus();
 		m_code_editor->setTokenColors(token_colors);
@@ -561,11 +561,13 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 
 	void autocompleteSubstep(duk_context* ctx, const char* str, ImGuiInputTextCallbackData* data) {
 		StringView item;
-		item.begin = str;
-		item.end = str;
-		while (*item.end != '.' && *item.end != '\0') {
-			++item.end;
+		item.data = str;
+		item.length = 0;
+		const char* c = str;
+		while (*c != '.' && *c != '\0') {
+			++c;
 		}
+		item.length = c - str;
 
 		if (duk_is_null_or_undefined(ctx, -1)) return;
 
@@ -575,17 +577,17 @@ struct ConsolePlugin final : public StudioApp::GUIPlugin {
 			if (duk_is_string(ctx, -1) && !duk_is_symbol(ctx, -1)) {
 				const char* name = duk_to_string(ctx, -1);
 				if (startsWith(name, item)) {
-					if (*item.end == '.' && item.end[1] == '\0') {
+					if (*item.end() == '.' && item.end()[1] == '\0') {
 						if (equalStrings(name, item)) {
 							duk_get_prop_string(ctx, -3, name);
 							autocompleteSubstep(ctx, "", data);
 							duk_pop(ctx);
 						}
-					} else if (*item.end == '\0') {
+					} else if (*item.end() == '\0') {
 						m_autocomplete.push(String(name, m_app.getWorldEditor().getAllocator()));
 					} else {
 						duk_get_prop_string(ctx, -3, name);
-						autocompleteSubstep(ctx, item.end + 1, data);
+						autocompleteSubstep(ctx, item.end() + 1, data);
 						duk_pop(ctx);
 					}
 				}
