@@ -1072,6 +1072,17 @@ public:
 				JSWrapper::setField(ctx, "x_abs", event.data.axis.x_abs);
 				JSWrapper::setField(ctx, "y_abs", event.data.axis.y_abs);
 				break;
+			case InputEventType::KEYBOARD:
+				JSWrapper::setField(ctx, "keycode", (u32)event.data.keyboard.keycode);
+				JSWrapper::setField(ctx, "down", event.data.keyboard.down);
+				JSWrapper::setField(ctx, "is_repeat", event.data.keyboard.is_repeat);
+				break;
+			case InputEventType::MOUSE_BUTTON:
+				JSWrapper::setField(ctx, "button", (i32)event.data.mouse_button.button);
+				JSWrapper::setField(ctx, "down", event.data.mouse_button.down);
+				JSWrapper::setField(ctx, "x", event.data.mouse_button.x);
+				JSWrapper::setField(ctx, "y", event.data.mouse_button.y);
+				break;
 			case InputEventType::TEXT_INPUT:
 				JSWrapper::setField(ctx, "text", event.data.text.utf8);
 				break;
