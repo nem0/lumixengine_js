@@ -370,6 +370,14 @@ inline void push(duk_context* ctx, const IVec3& value)
 	push(ctx, value.z);
 	duk_put_prop_index(ctx, -2, 2);
 }
+inline void push(duk_context* ctx, Span<const Vec3> value)
+{
+	duk_push_array(ctx);
+	for (u32 i = 0; i < value.length(); ++i) {
+		push(ctx, value[i]);
+		duk_put_prop_index(ctx, -2, i);
+	}
+}
 inline void push(duk_context* ctx, const Quat& value)
 {
 	duk_push_array(ctx);
